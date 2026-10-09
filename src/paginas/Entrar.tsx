@@ -47,7 +47,7 @@ export default function Entrar() {
   return (
     <main className="ws-entrar">
       <img className="ws-entrar__logo" src={logo} alt="MEM" />
-      <span className="mem-label mem-muted">Workspace · MEM</span>
+      <span className="mem-label mem-muted">Workspace · Método Expertise Monetizada</span>
       <h1 className="mem-h2">Entrar</h1>
 
       {!supabase && (

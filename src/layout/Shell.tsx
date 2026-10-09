@@ -16,7 +16,10 @@ export default function Shell() {
   return (
     <div className="ws-shell">
       <nav className="ws-nav" aria-label="Navegação do Workspace">
-        <img className="ws-nav__logo" src={logo} alt="MEM" />
+        <div className="ws-nav__marca">
+          <img className="ws-nav__logo" src={logo} alt="MEM" />
+          <span className="mem-label ws-nav__sigla">Método Expertise Monetizada</span>
+        </div>
         <ul className="ws-nav__links">
           {links.map((l) => (
             <li key={l.para}>
