@@ -7,6 +7,8 @@ import Aviso from "../componentes/Aviso";
 // pela mentora (shouldCreateUser: false).
 export default function Entrar() {
   const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [comSenha, setComSenha] = useState(false);
   const [estado, setEstado] = useState<"livre" | "enviando" | "enviado">("livre");
   const [erro, setErro] = useState<string | null>(null);
 
@@ -15,6 +17,13 @@ export default function Entrar() {
     if (!supabase) return;
     setErro(null);
     setEstado("enviando");
+    if (comSenha) {
+      // Entrada com senha: não envia e-mail, então não esbarra no limite de links.
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
+      setEstado("livre");
+      if (error) setErro("E-mail ou senha não conferem.");
+      return;
+    }
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: false, emailRedirectTo: window.location.origin },
@@ -67,17 +76,51 @@ export default function Entrar() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <span className="mem-field__help">
-              Você recebe um link para entrar. Não há senha para lembrar.
-            </span>
+            {!comSenha && (
+              <span className="mem-field__help">
+                Você recebe um link para entrar. Não há senha para lembrar.
+              </span>
+            )}
           </div>
+          {comSenha && (
+            <div className="mem-field">
+              <label className="mem-field__label" htmlFor="senha">
+                Senha
+              </label>
+              <input
+                className="mem-input"
+                id="senha"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+              />
+            </div>
+          )}
           {erro && (
-            <Aviso variante="danger" titulo="Link não enviado">
+            <Aviso variante="danger" titulo={comSenha ? "Não foi possível entrar" : "Link não enviado"}>
               {erro}
             </Aviso>
           )}
           <button className="mem-btn mem-btn--primary" type="submit" disabled={estado === "enviando" || !supabase}>
-            {estado === "enviando" ? "Enviando o link" : "Receber link de entrada"}
+            {comSenha
+              ? estado === "enviando"
+                ? "Entrando"
+                : "Entrar"
+              : estado === "enviando"
+                ? "Enviando o link"
+                : "Receber link de entrada"}
+          </button>
+          <button
+            type="button"
+            className="mem-btn mem-btn--quiet"
+            onClick={() => {
+              setComSenha(!comSenha);
+              setErro(null);
+            }}
+          >
+            {comSenha ? "Entrar com link no e-mail" : "Entrar com senha"}
           </button>
         </form>
       )}
