@@ -4,11 +4,14 @@ import { BrowserRouter } from "react-router-dom";
 import "./styles/base.css";
 import "./styles/app.css";
 import App from "./App";
+import { ProvedorSessao } from "./lib/sessao";
 
 createRoot(document.getElementById("app")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <ProvedorSessao>
+        <App />
+      </ProvedorSessao>
     </BrowserRouter>
   </StrictMode>,
 );
