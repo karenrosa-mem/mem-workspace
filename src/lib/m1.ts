@@ -9,12 +9,12 @@ export const PERGUNTAS_ONDE = [
   },
   {
     chave: "por_que_agora",
-    pergunta: "Por que você está olhando para isso agora?",
-    apoio: "",
+    pergunta: "O que te fez buscar isso neste momento?",
+    apoio: "Marque o que vale para você. Se quiser, conte em uma frase.",
   },
   {
     chave: "o_que_construir",
-    pergunta: "O que você gostaria de construir?",
+    pergunta: "Daqui a 12 semanas, o que faria você dizer que valeu a pena?",
     apoio: "",
   },
   {
@@ -23,6 +23,17 @@ export const PERGUNTAS_ONDE = [
     apoio: "",
   },
 ] as const;
+
+// Opções de "por que agora" (decisão da Karen, 09/10): escolha + frase opcional.
+export const MOTIVOS = [
+  "Quero uma renda além do salário",
+  "Quero sair do emprego",
+  "Cheguei num teto onde estou",
+  "Quero mais autonomia",
+  "Outro motivo",
+];
+
+export type PorQueAgora = { motivos: string[]; texto?: string };
 
 export const FRASE_AINDA_NAO = "Começar sem ideia é um ótimo ponto de partida aqui.";
 
@@ -59,6 +70,10 @@ export function ondeVoceEsta(d: DadosJornada): Registro | undefined {
 }
 
 export function respostaCompleta(chave: string, conteudo: Record<string, unknown>): boolean {
+  if (chave === "por_que_agora" && typeof conteudo.por_que_agora === "object" && conteudo.por_que_agora) {
+    const p = conteudo.por_que_agora as PorQueAgora;
+    return p.motivos?.length > 0 || preenchido(p.texto);
+  }
   if (chave === "ideia") {
     const ideia = conteudo.ideia as Ideia | undefined;
     if (!ideia) return false;
@@ -106,4 +121,18 @@ export function situacoesCompletas(d: DadosJornada): number {
 export function anos(): number[] {
   const atual = new Date().getFullYear();
   return Array.from({ length: atual - 1969 }, (_, i) => atual - i);
+}
+
+// Texto de uma resposta de "Onde você está", para exibir.
+export function respostaTexto(chave: string, v: unknown): string {
+  if (v === undefined || v === null || v === "") return "—";
+  if (chave === "ideia") {
+    const i = v as Ideia;
+    return i.tem ? `Sim: ${i.texto ?? ""}` : "Ainda não";
+  }
+  if (chave === "por_que_agora" && typeof v === "object") {
+    const p = v as PorQueAgora;
+    return [p.motivos?.join(" · "), p.texto?.trim()].filter(Boolean).join(" — ") || "—";
+  }
+  return String(v);
 }

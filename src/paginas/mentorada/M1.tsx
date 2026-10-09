@@ -7,6 +7,9 @@ import { leitura, call, type DadosJornada, type Registro } from "../../lib/jorna
 import {
   PERGUNTAS_ONDE,
   FRASE_AINDA_NAO,
+  MOTIVOS,
+  respostaTexto,
+  type PorQueAgora,
   LEMBRETES,
   MINIMO_SITUACOES,
   anos,
@@ -96,6 +99,7 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
 
   const [texto, setTexto] = useState("");
   const [ideia, setIdeia] = useState<Ideia | null>(null);
+  const [motivos, setMotivos] = useState<PorQueAgora>({ motivos: [] });
   const [salvando, setSalvando] = useState(false);
   const [falhou, setFalhou] = useState(false);
 
@@ -104,6 +108,9 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
     const chave = PERGUNTAS_ONDE[atual].chave;
     if (chave === "ideia") {
       setIdeia((conteudo.ideia as Ideia | undefined) ?? null);
+    } else if (chave === "por_que_agora") {
+      const v = conteudo.por_que_agora;
+      setMotivos(typeof v === "object" && v ? (v as PorQueAgora) : { motivos: [], texto: typeof v === "string" ? v : "" });
     } else {
       setTexto(String(conteudo[chave] ?? ""));
     }
@@ -113,7 +120,8 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
   async function salvar() {
     if (!supabase || atual === null || !pessoa) return;
     const chave = PERGUNTAS_ONDE[atual].chave;
-    const valor = chave === "ideia" ? ideia : texto.trim();
+    const valor =
+      chave === "ideia" ? ideia : chave === "por_que_agora" ? { ...motivos, texto: motivos.texto?.trim() } : texto.trim();
     const novo = { ...conteudo, [chave]: valor };
     setSalvando(true);
     setFalhou(false);
@@ -137,7 +145,11 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
   const respondidas = PERGUNTAS_ONDE.length - PERGUNTAS_ONDE.filter((p) => !respostaCompleta(p.chave, conteudo)).length;
   const p = atual !== null ? PERGUNTAS_ONDE[atual] : null;
   const podeSalvar =
-    p?.chave === "ideia" ? !!ideia && (!ideia.tem || !!ideia.texto?.trim()) : texto.trim().length > 0;
+    p?.chave === "ideia"
+      ? !!ideia && (!ideia.tem || !!ideia.texto?.trim())
+      : p?.chave === "por_que_agora"
+        ? motivos.motivos.length > 0 || !!motivos.texto?.trim()
+        : texto.trim().length > 0;
 
   return (
     <section className="ws-bloco" id="onde">
@@ -172,6 +184,39 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
                   Sim, penso em…
                 </button>
               </div>
+            ) : p.chave === "por_que_agora" ? (
+              <>
+                <div className="ws-escolha" role="group" aria-label={p.pergunta}>
+                  {MOTIVOS.map((m) => {
+                    const marcado = motivos.motivos.includes(m);
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        aria-pressed={marcado}
+                        className={`mem-btn ${marcado ? "mem-btn--primary" : "mem-btn--secondary"}`}
+                        onClick={() =>
+                          setMotivos({
+                            ...motivos,
+                            motivos: marcado ? motivos.motivos.filter((x) => x !== m) : [...motivos.motivos, m],
+                          })
+                        }
+                      >
+                        {m}
+                      </button>
+                    );
+                  })}
+                </div>
+                <textarea
+                  id="pergunta"
+                  className="mem-input"
+                  rows={2}
+                  aria-label="Conte em uma frase"
+                  placeholder="Em uma frase, se quiser"
+                  value={motivos.texto ?? ""}
+                  onChange={(e) => setMotivos({ ...motivos, texto: e.target.value })}
+                />
+              </>
             ) : (
               <textarea
                 id="pergunta"
@@ -215,13 +260,7 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
       ) : (
         <dl className="ws-respostas">
           {PERGUNTAS_ONDE.map((q, i) => {
-            const v = conteudo[q.chave];
-            const resposta =
-              q.chave === "ideia"
-                ? (v as Ideia | undefined)?.tem
-                  ? `Sim: ${(v as Ideia).texto}`
-                  : "Ainda não"
-                : String(v ?? "");
+            const resposta = respostaTexto(q.chave, conteudo[q.chave]);
             return (
               <div key={q.chave} className="ws-respostas__item">
                 <dt className="mem-body-sm mem-muted">{q.pergunta}</dt>

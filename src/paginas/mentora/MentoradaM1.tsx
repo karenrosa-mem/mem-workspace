@@ -13,7 +13,7 @@ import {
   situacoesCompletas,
   perguntasFaltando,
   tituloDaSituacao,
-  type Ideia,
+  respostaTexto,
   type Situacao,
 } from "../../lib/m1";
 import { dataHora } from "../../lib/datas";
@@ -324,15 +324,7 @@ function MaterialDela({
       <span className="mem-label mem-muted">Material dela</span>
       <dl className="ws-respostas">
         {PERGUNTAS_ONDE.map((q) => {
-          const v = onde[q.chave];
-          const resposta =
-            q.chave === "ideia"
-              ? v
-                ? (v as Ideia).tem
-                  ? `Sim: ${(v as Ideia).texto}`
-                  : "Ainda não"
-                : "—"
-              : String(v ?? "—");
+          const resposta = respostaTexto(q.chave, onde[q.chave]);
           return (
             <div key={q.chave} className="ws-respostas__item">
               <dt className="mem-body-sm mem-muted">{q.pergunta}</dt>
@@ -344,8 +336,15 @@ function MaterialDela({
 
       <p className="mem-label mem-muted">
         Situações · {lista.length} · {situacoesCompletas(dados)} completas
-        {editavel && ` · ${Object.values(marcas).filter((m) => m.candidata).length} candidatas (referência: 8 a 15)`}
+        {editavel && ` · ${Object.values(marcas).filter((m) => m.candidata).length} candidatas a ativo`}
       </p>
+      {editavel && (
+        <p className="mem-body-sm mem-muted ws-measure">
+          Na Call 1 ou logo depois, marque as situações que podem esconder um ativo e dê a cada uma um
+          nome provisório. Elas viram a coleção “Seus ativos” no M2. Referência do método: de 8 a 15.
+          Ela só vê as marcas depois que você publicar a leitura.
+        </p>
+      )}
       {lista.length === 0 && <p className="mem-body mem-muted">Ela ainda não contou nenhuma situação.</p>}
       <ol className="ws-situacoes">
         {lista.map((r) => (
@@ -421,13 +420,13 @@ function SituacaoDaMentora({
               checked={!!marca.candidata}
               onChange={(e) => salvarMarca({ ...marca, candidata: e.target.checked, nome_provisorio: nomeProvisorio })}
             />
-            Candidata
+            Pode esconder um ativo
           </label>
           {marca.candidata && (
             <input
               className="mem-input"
               aria-label="Nome provisório"
-              placeholder="Nome provisório"
+              placeholder="Nome provisório do ativo"
               value={nomeProvisorio}
               onChange={(e) => setNomeProvisorio(e.target.value)}
               onBlur={() => nomeProvisorio !== (marca.nome_provisorio ?? "") && salvarMarca({ ...marca, nome_provisorio: nomeProvisorio })}
