@@ -1,0 +1,106 @@
+/* MEM — classes de componente. Usam apenas os tokens (var(--nome)). */
+
+.mem-root { background: var(--surface); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px; }
+.mem-label { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+.mem-data { font-family: var(--font-mono); font-size: 14px; line-height: 20px; }
+.mem-muted { color: var(--ink-muted); }
+
+/* Button */
+.mem-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 12px 22px; box-sizing: border-box; border-radius: var(--radius-1); font-family: var(--font-sans); font-size: 16px; font-weight: 600; line-height: 20px; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
+.mem-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mem-btn--primary { background: var(--brand); color: var(--on-brand); }
+.mem-btn--primary:hover { background: var(--brand-strong); }
+.mem-btn--secondary { background: transparent; color: var(--brand); border-color: var(--brand); }
+.mem-btn--secondary:hover { background: var(--brand-tint); }
+.mem-btn--quiet { background: transparent; color: var(--ink); padding-left: 0; padding-right: 0; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--icon); }
+.mem-btn--inverse { background: var(--on-inverse); color: var(--surface-inverse); }
+.mem-btn[disabled] { opacity: 1; background: var(--surface-sunken); color: var(--ink-muted); border-color: var(--line); cursor: not-allowed; }
+
+/* StatusTag — estatuto epistemológico */
+.mem-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-1); font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid transparent; white-space: nowrap; }
+.mem-tag--hipotese { border: 1px dashed var(--ink-muted); color: var(--ink-muted); }
+.mem-tag--evidencia { border-color: var(--status-done); color: var(--status-done); }
+.mem-tag--decisao { background: var(--brand); color: var(--on-brand); }
+.mem-tag--pendencia { border: 1px dashed var(--status-warn); color: var(--status-warn); }
+.mem-tag--relato { background: var(--surface-sunken); color: var(--ink-muted); }
+.mem-tag--validado { background: var(--status-done); color: var(--surface); }
+
+/* EvidenceStrength */
+.mem-strength { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
+.mem-strength__dots { display: inline-flex; gap: 3px; }
+.mem-dot { width: 10px; height: 10px; border-radius: var(--radius-pill); border: 1.5px solid var(--icon); box-sizing: border-box; }
+.mem-dot--on { background: var(--status-done); border-color: var(--status-done); }
+
+/* JourneyTrail */
+.mem-trail { display: flex; flex-direction: column; gap: 16px; }
+.mem-trail__pillar { display: flex; align-items: baseline; gap: 12px; }
+.mem-trail__row { display: flex; align-items: flex-start; }
+.mem-stop { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; flex: 1 1 0; }
+.mem-stop__track { display: flex; align-items: center; width: 100%; }
+.mem-marker { flex-shrink: 0; width: 16px; height: 16px; border-radius: var(--radius-pill); box-sizing: border-box; }
+.mem-marker--done { background: var(--status-done); }
+.mem-marker--current { width: 22px; height: 22px; border: 4px solid var(--brand); background: var(--surface); }
+.mem-marker--next { border: 2px solid var(--icon); background: var(--surface); }
+.mem-marker--gate { width: 14px; height: 14px; border-radius: 0; transform: rotate(45deg); border: 2px solid var(--ink); background: var(--surface); }
+.mem-path { flex: 1 1 auto; height: 0; border-top: 2px solid var(--status-done); margin: 0 6px; }
+.mem-path--future { border-top: 2px dashed var(--route); }
+.mem-path--current { border-top-color: var(--brand); }
+.mem-stop__name { font-size: 15px; line-height: 20px; font-weight: 500; padding-right: 8px; }
+.mem-stop__state { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.mem-stop--current .mem-stop__name { font-weight: 700; color: var(--brand); }
+.mem-stop--current .mem-stop__state { color: var(--brand); }
+.mem-stop--done .mem-stop__state { color: var(--status-done); }
+
+/* DeliverableCard */
+.mem-card { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-2); padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+.mem-card__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.mem-card__title { margin: 0; font-family: var(--font-sans); font-size: 22px; line-height: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.mem-card__meta { font-size: 15px; line-height: 22px; color: var(--ink); }
+.mem-card__foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+
+/* ExpertIANote — nota de margem */
+.mem-ai { background: var(--surface-sunken); border-radius: var(--radius-2); padding: 18px 22px; display: flex; flex-direction: column; gap: 8px; }
+.mem-ai__sig { display: flex; align-items: center; gap: 8px; color: var(--brand); }
+.mem-ai__ring { width: 12px; height: 12px; border-radius: var(--radius-pill); border: 2px solid var(--brand); box-sizing: border-box; position: relative; }
+.mem-ai__text { font-size: 16px; line-height: 24px; color: var(--ink); margin: 0; }
+.mem-ai__basis { font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+
+/* MentorNote — voz da mentora */
+.mem-mentor { border-top: 2px solid var(--ink); padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.mem-mentor__text { margin: 0; font-family: var(--font-serif); font-size: 19px; line-height: 30px; color: var(--ink); }
+.mem-mentor__sig { font-family: var(--font-serif); font-style: italic; font-size: 17px; color: var(--brand); }
+
+/* Quote */
+.mem-quote { margin: 0; border-left: 2px solid var(--brand); padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+.mem-quote__text { font-family: var(--font-serif); font-style: italic; font-size: 24px; line-height: 32px; color: var(--ink); }
+
+/* Alert */
+.mem-alert { display: flex; gap: 12px; align-items: flex-start; padding: 14px 18px; border-radius: var(--radius-2); border: 1px solid transparent; }
+.mem-alert__icon { flex-shrink: 0; width: 20px; height: 20px; margin-top: 2px; }
+.mem-alert__title { font-weight: 600; font-size: 16px; line-height: 22px; margin: 0; }
+.mem-alert__body { font-size: 15px; line-height: 22px; margin: 2px 0 0; color: var(--ink); }
+.mem-alert--warn { background: var(--status-warn-tint); border-color: var(--status-warn); }
+.mem-alert--warn .mem-alert__title { color: var(--status-warn); }
+.mem-alert--danger { background: var(--status-danger-tint); border-color: var(--status-danger); }
+.mem-alert--danger .mem-alert__title { color: var(--status-danger); }
+.mem-alert--done { background: var(--status-done-tint); border-color: var(--status-done); }
+.mem-alert--done .mem-alert__title { color: var(--status-done); }
+
+/* Field */
+.mem-field { display: flex; flex-direction: column; gap: 6px; }
+.mem-field__label { font-size: 15px; line-height: 20px; font-weight: 600; color: var(--ink); }
+.mem-field__help { font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+.mem-input { font-family: var(--font-sans); font-size: 16px; line-height: 24px; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--icon); border-radius: var(--radius-1); padding: 10px 12px; min-height: 44px; box-sizing: border-box; width: 100%; }
+.mem-input::placeholder { color: var(--ink-muted); }
+.mem-input:focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+textarea.mem-input { min-height: 96px; resize: vertical; }
+.mem-field--error .mem-input { border-color: var(--status-danger); }
+.mem-field--error .mem-field__help { color: var(--status-danger); }
+
+/* DataTable */
+.mem-table-wrap { overflow-x: auto; }
+.mem-table { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 22px; color: var(--ink); }
+.mem-table th { background: var(--surface-sunken); text-align: left; padding: 10px 14px; font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+.mem-table td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.mem-table td.num { font-family: var(--font-mono); font-size: 14px; text-align: right; white-space: nowrap; }
+.mem-table th.num { text-align: right; }

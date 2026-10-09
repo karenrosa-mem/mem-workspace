@@ -1,0 +1,10 @@
+/* Workspace · MEM — base de estilos.
+   Ordem de importação definida em mem-brand/README.md.
+   Não declarar cores, fontes, cantos ou sombras aqui: tudo vem dos tokens do kit. */
+
+@import "../../mem-brand/styles/fonts.css";
+@import "../../mem-brand/tokens/tokens.css";
+@import "../../mem-brand/styles/components.css";
+
+/* Tailwind v4: importar "../../mem-brand/tokens/tailwind-v4.css" aqui
+   quando a tecnologia for decidida, se a escolha usar Tailwind. */

@@ -1,0 +1,141 @@
+/* MEM — tokens. Gerado do Design System. Não editar valores aqui sem atualizar o Design System. */
+
+:root, [data-theme="papel"] {
+  --surface: #f8f4ec;
+  --surface-sunken: #ede3d3;
+  --surface-raised: #fffdf8;
+  --surface-inverse: #43151e;
+  --ink: #292321;
+  --ink-muted: #6f6153;
+  --icon: #8b7b6b;
+  --line: #dccfbc;
+  --route: #c9a99a;
+  --brand: #641f2b;
+  --brand-strong: #43151e;
+  --brand-tint: #f2e6e3;
+  --on-brand: #f8f4ec;
+  --on-inverse: #ede3d3;
+  --on-inverse-muted: #c9a99a;
+  --focus: #641f2b;
+  --status-done: #4f5a36;
+  --status-done-tint: #e6e7d8;
+  --status-warn: #875a12;
+  --status-warn-tint: #f3e6cc;
+  --status-danger: #a0381a;
+  --status-danger-tint: #f6e1d8;
+  --shadow-overlay: 0 8px 24px rgba(41, 35, 33, 0.16);
+  color-scheme: light;
+}
+
+[data-theme="noite"] {
+  --surface: #1e1917;
+  --surface-sunken: #171311;
+  --surface-raised: #28211e;
+  --surface-inverse: #43151e;
+  --ink: #f1eadf;
+  --ink-muted: #b9ac9c;
+  --icon: #9c8e7e;
+  --line: #3a312c;
+  --route: #7a5c52;
+  --brand: #d9a3aa;
+  --brand-strong: #ecc9cc;
+  --brand-tint: #3a2226;
+  --on-brand: #1e1917;
+  --on-inverse: #ede3d3;
+  --on-inverse-muted: #c9a99a;
+  --focus: #d9a3aa;
+  --status-done: #b3bc8f;
+  --status-done-tint: #2c2e22;
+  --status-warn: #e0b56a;
+  --status-warn-tint: #3a2e19;
+  --status-danger: #ee9a7c;
+  --status-danger-tint: #3d2219;
+  --shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+:root {
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-0: 0px;
+  --radius-1: 2px;
+  --radius-2: 4px;
+  --radius-pill: 999px;
+  --grid-columns: 12;
+  --gutter: 24px;
+  --margin-desktop: 80px;
+  --margin-mobile: 16px;
+  --max-width: 1200px;
+  --measure: 68ch;
+}
+
+/* Estilos de texto: aplique a classe ao elemento. */
+.mem-display {
+  font-family: var(--font-serif);
+  font-size: 64px; line-height: 64px; font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.mem-h1 {
+  font-family: var(--font-serif);
+  font-size: 44px; line-height: 48px; font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.mem-h2 {
+  font-family: var(--font-serif);
+  font-size: 32px; line-height: 38px; font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.mem-reading {
+  font-family: var(--font-serif);
+  font-size: 19px; line-height: 30px; font-weight: 400;
+}
+.mem-quote {
+  font-family: var(--font-serif);
+  font-size: 24px; line-height: 32px; font-weight: 400;
+  font-style: italic;
+}
+.mem-h3 {
+  font-family: var(--font-sans);
+  font-size: 22px; line-height: 28px; font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.mem-h4 {
+  font-family: var(--font-sans);
+  font-size: 18px; line-height: 24px; font-weight: 600;
+}
+.mem-body-lg {
+  font-family: var(--font-sans);
+  font-size: 18px; line-height: 28px; font-weight: 400;
+}
+.mem-body {
+  font-family: var(--font-sans);
+  font-size: 16px; line-height: 24px; font-weight: 400;
+}
+.mem-body-sm {
+  font-family: var(--font-sans);
+  font-size: 14px; line-height: 20px; font-weight: 400;
+}
+.mem-label {
+  font-family: var(--font-mono);
+  font-size: 12px; line-height: 16px; font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mem-data {
+  font-family: var(--font-mono);
+  font-size: 14px; line-height: 20px; font-weight: 400;
+}
+
+/* Base */
+body { background: var(--surface); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px; margin: 0; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

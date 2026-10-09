@@ -1,0 +1,33 @@
+/* Tailwind v4: importe depois de tokens.css. Gera classes como bg-surface, text-ink, border-line, font-serif. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-icon: var(--icon);
+  --color-line: var(--line);
+  --color-route: var(--route);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-tint: var(--brand-tint);
+  --color-on-brand: var(--on-brand);
+  --color-on-inverse: var(--on-inverse);
+  --color-on-inverse-muted: var(--on-inverse-muted);
+  --color-focus: var(--focus);
+  --color-status-done: var(--status-done);
+  --color-status-done-tint: var(--status-done-tint);
+  --color-status-warn: var(--status-warn);
+  --color-status-warn-tint: var(--status-warn-tint);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-tint: var(--status-danger-tint);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius-0: var(--radius-0);
+  --radius-1: var(--radius-1);
+  --radius-2: var(--radius-2);
+  --radius-pill: var(--radius-pill);
+  --shadow-overlay: var(--shadow-overlay);
+}
