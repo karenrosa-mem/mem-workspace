@@ -1,0 +1,70 @@
+/* Layout do Workspace. Só tokens do kit (mem-brand/tokens/tokens.css): nenhum valor de cor novo. */
+
+html,
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.ws-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.ws-nav {
+  background: var(--brand-strong);
+  color: var(--on-inverse);
+  padding: var(--space-6) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ws-nav__logo {
+  width: 120px;
+  height: auto;
+}
+
+.ws-nav__sig {
+  color: var(--on-inverse-muted);
+}
+
+.ws-main {
+  padding: var(--space-8) var(--margin-desktop);
+  max-width: var(--max-width);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ws-main > * {
+  margin: 0;
+}
+
+.ws-measure {
+  max-width: 68ch;
+}
+
+@media (max-width: 760px) {
+  .ws-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .ws-nav {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--margin-mobile);
+  }
+
+  .ws-nav__logo {
+    width: 88px;
+  }
+
+  .ws-main {
+    padding: var(--space-6) var(--margin-mobile);
+  }
+}
