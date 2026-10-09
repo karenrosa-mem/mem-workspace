@@ -45,3 +45,18 @@ export function dataHora(valor: string): string {
   }).format(d);
   return `${dia}, ${hora}`;
 }
+
+// "quinta", "segunda"… (sem o "-feira")
+export function diaDaSemana(valor: string): string {
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: FUSO, weekday: "long" })
+    .format(new Date(valor))
+    .split("-")[0];
+}
+
+export function somarHoras(valor: string, horas: number): string {
+  return new Date(new Date(valor).getTime() + horas * 3_600_000).toISOString();
+}
+
+export function horasAte(valor: string): number {
+  return (new Date(valor).getTime() - Date.now()) / 3_600_000;
+}

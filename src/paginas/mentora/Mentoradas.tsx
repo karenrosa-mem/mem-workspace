@@ -109,7 +109,7 @@ export default function Mentoradas() {
               {linhas.map((l) => (
                 <tr key={l.id}>
                   <td>
-                    {l.nome}
+                    <Link to={`/mentoradas/${l.id}`}>{l.nome}</Link>
                     {l.email && <div className="mem-body-sm mem-muted">{l.email}</div>}
                   </td>
                   <td>{l.movimento ? `M${l.movimento} · ${MOVIMENTOS[l.movimento]}` : "—"}</td>

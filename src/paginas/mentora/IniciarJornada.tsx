@@ -15,6 +15,7 @@ function sugerirCalls(inicio: string, hora: string): Call[] {
 export default function IniciarJornada() {
   const navegar = useNavigate();
   const [email, setEmail] = useState("");
+  const [mensagem, setMensagem] = useState("");
   const [inicio, setInicio] = useState(hojeBrasilia());
   const [calls, setCalls] = useState<Call[]>(() => sugerirCalls(hojeBrasilia(), "19:00"));
   const [enviando, setEnviando] = useState(false);
@@ -52,6 +53,7 @@ export default function IniciarJornada() {
       p_email: email.trim(),
       p_data_inicio: inicio,
       p_calls: calls.map((c) => isoBrasilia(c.data, c.hora)),
+      p_mensagem: mensagem.trim() || null,
     });
     setEnviando(false);
     if (error) {
@@ -111,6 +113,23 @@ export default function IniciarJornada() {
           <span className="mem-field__help">
             Termina no máximo em {dataCurta(limite)}. Ao mudar o início, as calls são sugeridas de
             novo, uma por semana.
+          </span>
+        </div>
+
+        <div className="mem-field">
+          <label className="mem-field__label" htmlFor="mensagem">
+            Mensagem de abertura
+          </label>
+          <textarea
+            id="mensagem"
+            className="mem-input ws-serif"
+            rows={4}
+            value={mensagem}
+            onChange={(e) => setMensagem(e.target.value)}
+          />
+          <span className="mem-field__help">
+            É a primeira coisa que ela lê, assinada por você. Três frases bastam: o que ela vai fazer
+            aqui e que você lê tudo antes da Call 1.
           </span>
         </div>
 

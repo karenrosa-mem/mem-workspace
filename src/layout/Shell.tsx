@@ -7,11 +7,11 @@ import { useSessao } from "../lib/sessao";
 export default function Shell() {
   const { pessoa, sair } = useSessao();
   const links = pessoa?.e_mentora
-    ? [
-        { para: "/", nome: "Mentoradas" },
-        { para: "/iniciar", nome: "Iniciar jornada" },
-      ]
-    : [{ para: "/", nome: "Agora" }];
+    ? [{ para: "/", nome: "Mentoradas", fim: false }]
+    : [
+        { para: "/", nome: "Agora", fim: true },
+        { para: "/jornada", nome: "Jornada", fim: false },
+      ];
 
   return (
     <div className="ws-shell">
@@ -20,7 +20,7 @@ export default function Shell() {
         <ul className="ws-nav__links">
           {links.map((l) => (
             <li key={l.para}>
-              <NavLink to={l.para} end className="ws-nav__link">
+              <NavLink to={l.para} end={l.fim} className="ws-nav__link">
                 {l.nome}
               </NavLink>
             </li>
