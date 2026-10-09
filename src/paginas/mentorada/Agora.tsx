@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
-import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
+import { MOVIMENTOS, SEMANAS_DA_JORNADA, pilarDe } from "../../lib/metodo";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, somarHoras } from "../../lib/datas";
@@ -107,7 +107,12 @@ export default function Agora() {
 
   return (
     <>
-      <span className="mem-label mem-muted">Agora</span>
+      <span className="mem-label mem-muted">
+        Agora
+        {atual && leituraCall1
+          ? ` · ${pilarDe(atual).nome} · movimento ${atual - pilarDe(atual).de + 1} de 5`
+          : ""}
+      </span>
       <h1 className="mem-h1">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Sua jornada"}</h1>
 
       {primeiroAcesso && mensagem && (

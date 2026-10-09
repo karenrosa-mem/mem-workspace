@@ -13,3 +13,23 @@ export const MOVIMENTOS: Record<number, string> = {
 };
 
 export const SEMANAS_DA_JORNADA = 12;
+
+// Os dois pilares (frases aprovadas pela Karen em 09/10).
+export const PILARES = [
+  {
+    nome: "MAPA",
+    de: 1,
+    ate: 5,
+    frase: "Descobrir o que você sabe fazer que vale dinheiro e escolher onde apostar.",
+  },
+  {
+    nome: "NORTE",
+    de: 6,
+    ate: 10,
+    frase: "Transformar a aposta numa oferta e testar com gente de verdade.",
+  },
+] as const;
+
+export function pilarDe(codigo: number) {
+  return PILARES.find((p) => codigo >= p.de && codigo <= p.ate)!;
+}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
-import { MOVIMENTOS } from "../../lib/metodo";
+import { MOVIMENTOS, PILARES } from "../../lib/metodo";
+import { leitura } from "../../lib/jornada";
 import type { Movimento } from "../../lib/jornada";
 import Aviso from "../../componentes/Aviso";
 
@@ -34,20 +35,43 @@ export default function Jornada() {
         Dez movimentos, um de cada vez. O losango marca uma decisão que você toma com a Karen antes
         de seguir.
       </p>
-      <Trilha movimentos={dados.movimentos} ligar={(n) => `/jornada/${n}`} />
+      <Trilha
+        movimentos={dados.movimentos}
+        ligar={(n) => `/jornada/${n}`}
+        mostrarPilares={!!leitura(dados, "call_1")}
+      />
     </>
   );
 }
 
-export function Trilha({ movimentos, ligar }: { movimentos: Movimento[]; ligar: (n: number) => string }) {
-  const linhas = [
-    movimentos.filter((m) => m.codigo <= 5),
-    movimentos.filter((m) => m.codigo > 5),
-  ];
+// Pilares (MAPA, NORTE) só aparecem para a mentorada depois da leitura da
+// Call 1: antes disso, nenhuma palavra do método (especificação do M1, seção 14).
+export function Trilha({
+  movimentos,
+  ligar,
+  mostrarPilares = true,
+}: {
+  movimentos: Movimento[];
+  ligar: (n: number) => string;
+  mostrarPilares?: boolean;
+}) {
+  const atual = movimentos.find((m) => m.estado === "aberto")?.codigo ?? 0;
   return (
     <nav className="mem-trail ws-trilha" aria-label="Trilha da jornada">
-      {linhas.map((linha, i) => (
-        <ol key={i} className="mem-trail__row ws-trilha__linha">
+      {PILARES.map((pilar) => {
+        const linha = movimentos.filter((m) => m.codigo >= pilar.de && m.codigo <= pilar.ate);
+        const aqui = atual >= pilar.de && atual <= pilar.ate;
+        return (
+        <div key={pilar.nome} className="ws-trilha__pilar">
+        {mostrarPilares && (
+          <div className="mem-trail__pillar">
+            <span className="mem-label" style={{ color: aqui ? "var(--brand)" : "var(--ink-muted)" }}>
+              {pilar.nome}
+            </span>
+            <span className={`mem-body-sm ${aqui ? "" : "mem-muted"}`}>{pilar.frase}</span>
+          </div>
+        )}
+        <ol className="mem-trail__row ws-trilha__linha">
           {linha.map((m, j) => {
             const classe =
               m.estado === "fechado" ? "mem-stop--done" : m.estado === "aberto" ? "mem-stop--current" : "";
@@ -85,7 +109,9 @@ export function Trilha({ movimentos, ligar }: { movimentos: Movimento[]; ligar: 
             );
           })}
         </ol>
-      ))}
+        </div>
+        );
+      })}
       <p className="mem-body-sm mem-muted ws-trilha__legenda">
         <span className="mem-marker mem-marker--gate" aria-hidden="true" /> decisão com a Karen
       </p>
