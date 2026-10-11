@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
-import { MOVIMENTOS, SEMANAS_DA_JORNADA, pilarDe } from "../../lib/metodo";
+import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
+import FaixaPilar from "../../componentes/FaixaPilar";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, somarHoras } from "../../lib/datas";
@@ -102,18 +103,18 @@ function passoM2(d: DadosJornada): Passo {
   const perto = c2 && horasAte(c2.data_atual) <= 24;
   if (faltam > 0 && perto)
     return {
-      titulo: `Para ${dia}, o essencial é dizer se reconhece cada padrão.`,
+      titulo: `Para ${dia}, o essencial é dizer se você se vê em cada possível ativo.`,
       acao: { rotulo: "Responder", para: "/jornada/2" },
     };
   if (faltam === total)
     return {
-      titulo: `Diga se reconhece cada padrão · ${total} padrões · ~20 min`,
+      titulo: `Responda sobre cada possível ativo · ${total} no total · ~5 min cada`,
       porque: `Na ${dia}, vocês decidem quais você leva ao mercado.`,
       acao: { rotulo: "Começar", para: "/jornada/2" },
     };
   if (faltam > 0)
     return {
-      titulo: faltam === 1 ? "Falta 1 padrão." : `Faltam ${faltam} padrões.`,
+      titulo: faltam === 1 ? "Falta responder 1 possível ativo." : `Falta responder ${faltam} possíveis ativos.`,
       acao: { rotulo: "Continuar", para: "/jornada/2" },
     };
   if (precisaEscolherDois(d) && !escolhaDois(d))
@@ -162,10 +163,10 @@ export default function Agora() {
     <>
       <span className="mem-label mem-muted">
         Agora
-        {atual && leituraCall1 ? ` · ${pilarDe(atual).nome}` : ""}
         {atual ? ` · Movimento ${atual} de 10` : ""}
       </span>
       <h1 className="mem-h1">{atual ? MOVIMENTOS[atual] : "Sua jornada"}</h1>
+      {atual && leituraCall1 && <FaixaPilar codigo={atual} compacta />}
 
       {primeiroAcesso && mensagem && (
         <section className="mem-mentor ws-measure">

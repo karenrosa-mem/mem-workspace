@@ -21,6 +21,7 @@ import { Trilha } from "../mentorada/Jornada";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import Colinha from "../../componentes/Colinha";
+import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
 
@@ -93,7 +94,7 @@ export default function MentoradaM1() {
           <details className="ws-bloco">
             <summary className="mem-label">M1 · leitura da Call 1 e material dela</summary>
             <LeituraKaren registro={leituraCall1} />
-            <MaterialDela dados={dados} marcas={{}} editavel={false} aoMudar={recarregar} />
+            <MaterialDela dados={dados} marcas={{}} editavel={false} aoMudar={recarregar} comOnde />
           </details>
         </>
       ) : (
@@ -156,10 +157,79 @@ function PreparacaoM1({
     await recarregar();
   }
 
+  const passos: Passo[] = [
+    {
+      id: "m1-material",
+      titulo: "Contar onde está e as situações",
+      quem: "Ela",
+      estado: pronta ? "feito" : call1Realizada ? "feito" : "esperando",
+      nota: pronta ? undefined : materialFaltando(dados),
+    },
+    {
+      id: "m1-pistas",
+      titulo: "Ler as situações e marcar as pistas de ativo",
+      quem: "Você",
+      estado: call1Realizada && candidatas > 0 ? "feito" : "agora",
+      nota: candidatas ? `${candidatas} marcada${candidatas > 1 ? "s" : ""}` : undefined,
+    },
+    { id: "m1-nota", titulo: "Preparar a Call 1", quem: "Você", estado: call1Realizada ? "feito" : "agora" },
+    {
+      id: "m1-call",
+      titulo: "Call 1",
+      quem: "Juntas",
+      estado: call1Realizada ? "feito" : "depois",
+      nota: call1Data ? dataHora(call1Data) : undefined,
+    },
+    {
+      id: "m1-leitura",
+      titulo: "Publicar a leitura da Call 1",
+      quem: "Você",
+      estado: call1Realizada ? "agora" : "depois",
+      nota: "até 48 h depois da call",
+    },
+  ];
+
   return (
     <>
-      <section className="ws-bloco">
-        <span className="mem-label mem-muted">Call 1 · juntas</span>
+      <Roteiro titulo="O caminho do M1" passos={passos} />
+
+      <Etapa
+        n={1}
+        passo={passos[0]}
+        porque="Antes da Call 1 ela responde quatro perguntas sobre o momento dela e conta pelo menos cinco situações reais. É o material que você lê para preparar a call."
+      >
+        <RespostasOnde dados={dados} />
+      </Etapa>
+
+      <Etapa
+        n={2}
+        passo={passos[1]}
+        porque="Leia cada situação. Marque como pista de ativo a que pode esconder algo que ela sabe fazer e que alguém precisa. Pode marcar antes, durante ou logo depois da call. As pistas são a matéria-prima do M2."
+      >
+        <MaterialDela
+          dados={dados}
+          marcas={marcas}
+          editavel
+          aoMudar={async () => {
+            await carregarMarcas();
+            await recarregar();
+          }}
+        />
+      </Etapa>
+
+      <Etapa
+        n={3}
+        passo={passos[2]}
+        porque="Anote o que você quer investigar na call. É a sua nota: ela nunca vê."
+      >
+        <NotaPrivada mentoriaId={mentoriaId} />
+      </Etapa>
+
+      <Etapa
+        n={4}
+        passo={passos[3]}
+        porque="Na call vocês conversam sobre as situações. Se ela contar uma situação nova, anote o título aqui: ela completa depois."
+      >
         <p className="mem-body-lg">
           {call1Data ? dataHora(call1Data) : "—"} ·{" "}
           {call1Realizada ? "realizada" : pronta ? "material pronto para a call" : `material incompleto: ${materialFaltando(dados)}`}
@@ -171,28 +241,21 @@ function PreparacaoM1({
             </button>
           </div>
         )}
-      </section>
+        <SituacaoNova dados={dados} aoCriar={recarregar} />
+      </Etapa>
 
-      <NotaPrivada mentoriaId={mentoriaId} />
-
-      <MaterialDela
-        dados={dados}
-        marcas={marcas}
-        editavel
-        aoMudar={async () => {
-          await carregarMarcas();
-          await recarregar();
-        }}
-      />
-
-      <SituacaoNova dados={dados} aoCriar={recarregar} />
-
-      <LeituraCall1
-        mentoriaId={mentoriaId}
-        candidatas={candidatas}
-        call1Realizada={call1Realizada}
-        aoPublicar={recarregar}
-      />
+      <Etapa
+        n={5}
+        passo={passos[4]}
+        porque="É o primeiro texto que ela lê depois da call. Ao publicar, ela vê as pistas marcadas nas próprias situações e o M2 abre."
+      >
+        <LeituraCall1
+          mentoriaId={mentoriaId}
+          candidatas={candidatas}
+          call1Realizada={call1Realizada}
+          aoPublicar={recarregar}
+        />
+      </Etapa>
     </>
   );
 }
@@ -281,8 +344,8 @@ function NotaPrivada({ mentoriaId }: { mentoriaId: string }) {
   );
 
   return (
-    <details className="ws-bloco ws-privado">
-      <summary className="mem-label">Nota privada · M1 · só você vê</summary>
+    <details className="ws-bloco ws-privado" open>
+      <summary className="mem-label">Nota privada · só você vê</summary>
       <div className="ws-form">
         <div className="mem-field">
           <label className="mem-field__label" htmlFor="nota-perfil">
@@ -335,24 +398,10 @@ function NotaPrivada({ mentoriaId }: { mentoriaId: string }) {
 }
 
 // ---------------------------------------------------------------------
-function MaterialDela({
-  dados,
-  marcas,
-  editavel,
-  aoMudar,
-}: {
-  dados: DadosJornada;
-  marcas: Record<string, Marca>;
-  editavel: boolean;
-  aoMudar: () => Promise<void>;
-}) {
+function RespostasOnde({ dados }: { dados: DadosJornada }) {
   const onde = ondeVoceEsta(dados)?.conteudo ?? {};
-  const lista = situacoes(dados);
-
   return (
-    <section className="ws-bloco">
-      <span className="mem-label mem-muted">Material dela</span>
-      <dl className="ws-respostas">
+    <dl className="ws-respostas">
         {PERGUNTAS_ONDE.map((q) => {
           const resposta = respostaTexto(q.chave, onde[q.chave]);
           return (
@@ -362,8 +411,28 @@ function MaterialDela({
             </div>
           );
         })}
-      </dl>
+    </dl>
+  );
+}
 
+function MaterialDela({
+  dados,
+  marcas,
+  editavel,
+  aoMudar,
+  comOnde = false,
+}: {
+  dados: DadosJornada;
+  marcas: Record<string, Marca>;
+  editavel: boolean;
+  aoMudar: () => Promise<void>;
+  comOnde?: boolean;
+}) {
+  const lista = situacoes(dados);
+
+  return (
+    <div className="ws-form">
+      {comOnde && <RespostasOnde dados={dados} />}
       <p className="mem-label mem-muted">
         Situações · {lista.length} · {situacoesCompletas(dados)} completas
         {editavel && ` · ${Object.values(marcas).filter((m) => m.candidata).length} pistas de ativo`}
@@ -387,7 +456,7 @@ function MaterialDela({
           />
         ))}
       </ol>
-    </section>
+    </div>
   );
 }
 
@@ -497,8 +566,8 @@ function SituacaoNova({ dados, aoCriar }: { dados: DadosJornada; aoCriar: () => 
   }
 
   return (
-    <section className="ws-bloco">
-      <span className="mem-label mem-muted">Situação nova que surgiu na call</span>
+    <div className="ws-form">
+      <p className="mem-field__label">Situação nova que surgiu na call</p>
       <div className="ws-acoes">
         <input
           className="mem-input ws-flex"
@@ -515,7 +584,7 @@ function SituacaoNova({ dados, aoCriar }: { dados: DadosJornada; aoCriar: () => 
         serve="Uma situação que ela contou ao vivo na call e não estava escrita. Anote só um título que ela reconheça; ela vê depois da leitura publicada e completa no M2."
         exemplo="Mediação na fusão de 2019."
       />
-    </section>
+    </div>
   );
 }
 
@@ -606,14 +675,13 @@ function LeituraCall1({
 
   // O que falta para publicar, dito com todas as letras (kit: botão desativado diz por quê).
   const faltando = [
-    !call1Realizada && "marcar a Call 1 como realizada (botão no topo da página)",
+    !call1Realizada && "marcar a Call 1 como realizada (passo 4)",
     !campos.o_que_investigamos?.trim() && "preencher “O que investigamos”",
     !campos.o_que_fazer_agora?.trim() && "preencher “O que fazer agora”",
   ].filter(Boolean) as string[];
 
   return (
-    <section className="ws-bloco">
-      <span className="mem-label mem-muted">Leitura da Call 1 · você publica em até 48 h</span>
+    <div>
       <div className="ws-form">
         {campo(
           "o_que_investigamos",
@@ -684,6 +752,6 @@ function LeituraCall1({
           {estado === "erro" && <span className="mem-body-sm">Não foi possível salvar.</span>}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

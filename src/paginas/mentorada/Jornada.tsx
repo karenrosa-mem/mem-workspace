@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
 import { MOVIMENTOS, PILARES } from "../../lib/metodo";
+import FaixaPilar from "../../componentes/FaixaPilar";
 import { leitura } from "../../lib/jornada";
 import type { Movimento } from "../../lib/jornada";
 import Aviso from "../../componentes/Aviso";
@@ -67,14 +68,7 @@ export function Trilha({
         const aqui = atual >= pilar.de && atual <= pilar.ate;
         return (
         <div key={pilar.nome} className="ws-trilha__pilar">
-        {mostrarPilares && (
-          <div className="mem-trail__pillar">
-            <span className="mem-label" style={{ color: aqui ? "var(--brand)" : "var(--ink-muted)" }}>
-              {pilar.nome}
-            </span>
-            <span className={`mem-body-sm ${aqui ? "" : "mem-muted"}`}>{pilar.frase}</span>
-          </div>
-        )}
+        {mostrarPilares && <FaixaPilar codigo={pilar.de} atual={aqui} />}
         <ol className="mem-trail__row ws-trilha__linha">
           {linha.map((m, j) => {
             const classe =

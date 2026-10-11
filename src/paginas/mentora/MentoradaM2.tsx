@@ -5,6 +5,10 @@ import { call, leitura, type DadosJornada, type Registro } from "../../lib/jorna
 import { situacaoCompleta, situacoes, tituloDaSituacao, type Situacao } from "../../lib/m1";
 import {
   textoComoSabe,
+  listaComoSabe,
+  padroesFaltando,
+  precisaEscolherDois,
+  reacaoCompleta,
   OUTRAS_VEZES,
   RECONHECE,
   ROTULOS,
@@ -27,6 +31,8 @@ import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import NotaPrivada from "../../componentes/NotaPrivada";
 import Colinha from "../../componentes/Colinha";
+import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
+import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 
 const NOTA_M2 = [
   { chave: "tensoes", rotulo: "Tensões entre prova e vontade", ajuda: "Ex.: prova forte com pouca vontade; muita vontade com pouca prova." },
@@ -35,7 +41,7 @@ const NOTA_M2 = [
   { chave: "classificacao_fina", rotulo: "Classificação fina por padrão", ajuda: "Experiência, conhecimento, habilidade, ativo, ativo hipotético. Ela nunca vê." },
 ];
 
-// Seção do M2 na página da mentorada, vista pela mentora.
+// Seção do M2 na página da mentorada, vista pela mentora: seis passos em ordem.
 export default function SecaoM2({
   dados,
   mentoriaId,
@@ -49,44 +55,180 @@ export default function SecaoM2({
   const curta = leitura(dados, "call_2");
   const decisao = decisaoM2(dados);
   const m2 = dados.movimentos.find((m) => m.codigo === 2);
+  const lista = padroes(dados);
+  const c2 = call(dados, 2);
+  const prazo = leitura(dados, "call_1")?.conteudo_mentora.prazo_padroes as string | undefined;
 
   if (m2?.estado === "nao_iniciado") return null;
+
+  const faltam = mapa ? padroesFaltando(dados) : lista.length;
+  const faltaEscolha = precisaEscolherDois(dados) && !escolhaDois(dados);
+  const respondeu = !!mapa && faltam === 0 && !faltaEscolha;
+  const call2Feita = c2?.estado === "realizado";
+  const fechado = m2?.estado === "fechado";
+  const publicada = !!(decisao && curta);
+  const porque = decisao ? String((decisao.conteudo as { porque?: string }).porque ?? "") : "";
+
+  const passos: Passo[] = [
+    {
+      id: "m2-padroes",
+      titulo: "Agrupar as pistas em padrões",
+      quem: "Você",
+      estado: mapa ? "feito" : "agora",
+      nota: lista.length ? (lista.length === 1 ? "1 padrão" : `${lista.length} padrões`) : undefined,
+    },
+    {
+      id: "m2-publicar",
+      titulo: "Publicar os padrões para ela",
+      quem: "Você",
+      estado: mapa ? "feito" : lista.length ? "agora" : "depois",
+      nota: !mapa && prazo ? `ela espera até ${dataCurta(prazo)}` : undefined,
+    },
+    {
+      id: "m2-respostas",
+      titulo: "Responder sobre cada possível ativo",
+      quem: "Ela",
+      estado: !mapa ? "depois" : respondeu ? "feito" : "esperando",
+      nota: mapa ? `${lista.length - faltam} de ${lista.length} respondidos` : undefined,
+    },
+    {
+      id: "m2-call",
+      titulo: "Call 2: registrar a decisão dela",
+      quem: "Juntas",
+      estado: publicada ? "feito" : mapa && call2Feita ? "agora" : "depois",
+      nota: c2 && !publicada ? dataHora(c2.data_atual) : undefined,
+    },
+    {
+      id: "m2-leitura",
+      titulo: "Publicar a decisão e a leitura curta",
+      quem: "Você",
+      estado: publicada ? "feito" : mapa && call2Feita ? "agora" : "depois",
+      nota: publicada ? undefined : "até 48 h depois da call",
+    },
+    {
+      id: "m2-porque",
+      titulo: "Escrever o porquê em uma frase",
+      quem: "Ela",
+      estado: fechado ? "feito" : publicada ? "esperando" : "depois",
+      nota: fechado ? "o M3 abriu" : undefined,
+    },
+  ];
 
   return (
     <section className="ws-secao">
       <h2 className="mem-h2">M2 · Enxergar seus ativos</h2>
-      {m2?.estado === "fechado" && decisao ? (
-        <>
-          <Aviso variante="done" titulo="M2 concluído">
-            A decisão está registrada e ela escreveu o porquê: “{String((decisao.conteudo as { porque?: string }).porque ?? "")}”.
-          </Aviso>
-          <ResumoDecisao dados={dados} decisao={decisao} />
-        </>
-      ) : !mapa ? (
-        <Agrupamento dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
-      ) : decisao && curta ? (
-        <>
-          <Aviso variante="warn" titulo="Aguardando o porquê dela">
-            A decisão foi publicada. Quando ela escrever o porquê em uma frase, o M2 fecha e o M3 abre.
-          </Aviso>
-          <ResumoDecisao dados={dados} decisao={decisao} />
-        </>
+      <Roteiro titulo="O caminho do M2" passos={passos} />
+
+      <Etapa
+        n={1}
+        passo={passos[0]}
+        aberta={!mapa}
+        porque="Junte as pistas de ativo que mostram a mesma coisa num padrão, com um nome que ela reconheça. A referência é de 3 a 5 padrões."
+      >
+        {mapa ? <ListaPadroes dados={dados} /> : <Agrupamento dados={dados} recarregar={recarregar} />}
+      </Etapa>
+
+      <Etapa
+        n={2}
+        passo={passos[1]}
+        aberta={!mapa}
+        porque="Ela vê os padrões como “possíveis ativos”, com as situações de cada um, e responde quatro perguntas sobre cada."
+      >
+        {mapa ? (
+          <LeituraKaren registro={mapa} />
+        ) : (
+          <PublicarLeitura
+            mentoriaId={mentoriaId}
+            tipo="mapa_ativos"
+            rotuloCampo="Sua leitura dos padrões"
+            ajuda="Ela lê isto antes dos padrões. Conte quantos padrões você enxergou, qual parece mais forte e por quê, e o que ela deve olhar com atenção ao responder. Não diga ainda o que é ativo: isso se decide na Call 2."
+            exemplo="Enxerguei quatro padrões na sua história. O que mais aparece é a mediação: está em três empresas diferentes, de 2016 a 2023. Ao responder, repare se você reconhece cada um como seu ou só como algo que fez por obrigação — as duas respostas valem."
+            rotuloBotao="Publicar os padrões"
+            aviso={lista.length < 3 || lista.length > 5 ? `${lista.length} padrões. A referência do método é de 3 a 5.` : null}
+            bloqueio={lista.length === 0 ? "Crie pelo menos um padrão no passo 1." : null}
+            aoPublicar={recarregar}
+          />
+        )}
+      </Etapa>
+
+      <Etapa
+        n={3}
+        passo={passos[2]}
+        aberta={!fechado}
+        porque="Para cada possível ativo ela diz se se vê nisso, quem tinha o problema, que sinais tem de resultado e quanta vontade tem. Embaixo de cada um, o que vale levar para a Call 2."
+      >
+        {mapa ? (
+          <>
+            <Respostas dados={dados} />
+            <NotaPrivada mentoriaId={mentoriaId} movimento={2} campos={NOTA_M2} />
+          </>
+        ) : (
+          <p className="mem-body mem-muted">Abre quando você publicar os padrões.</p>
+        )}
+      </Etapa>
+
+      {mapa && !publicada ? (
+        <RegistrarDecisao dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} passoCall={passos[3]} passoLeitura={passos[4]} />
       ) : (
         <>
-          <LeituraKaren registro={mapa} />
-          <Reacoes dados={dados} />
-          <NotaPrivada mentoriaId={mentoriaId} movimento={2} campos={NOTA_M2} />
-          <RegistrarDecisao dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
+          <Etapa
+            n={4}
+            passo={passos[3]}
+            aberta={!fechado}
+            porque="Na Call 2 ela decide o que segue para o mercado. Você registra a decisão dela, possível ativo por possível ativo."
+          >
+            {publicada && decisao ? (
+              <ResumoDecisao dados={dados} decisao={decisao} />
+            ) : (
+              <p className="mem-body mem-muted">Abre depois que ela responder e vocês fizerem a Call 2.</p>
+            )}
+          </Etapa>
+          <Etapa n={5} passo={passos[4]} aberta={!fechado}>
+            {curta ? <LeituraKaren registro={curta} /> : <p className="mem-body mem-muted">Abre depois da Call 2.</p>}
+          </Etapa>
         </>
       )}
+
+      <Etapa
+        n={6}
+        passo={passos[5]}
+        porque="Quando ela escreve por que escolheu o que escolheu, o M2 fecha e o M3 abre."
+      >
+        {fechado ? (
+          <Aviso variante="done" titulo="M2 concluído">
+            Ela escreveu: “{porque}”.
+          </Aviso>
+        ) : publicada ? (
+          <p className="mem-body">A decisão está publicada. Falta só ela escrever o porquê.</p>
+        ) : (
+          <p className="mem-body mem-muted">Abre depois que você publicar a decisão.</p>
+        )}
+      </Etapa>
     </section>
+  );
+}
+
+function ListaPadroes({ dados }: { dados: DadosJornada }) {
+  return (
+    <ul className="ws-lista-simples mem-body">
+      {padroes(dados).map((p) => (
+        <li key={p.id}>
+          {dadosPadrao(p).nome}
+          <span className="mem-muted">
+            {" "}
+            · {anosDoPadrao(dados, p).join(", ") || "sem ano"}
+            {dadosPadrao(p).rotulo ? ` · ${ROTULOS[dadosPadrao(p).rotulo!].toLowerCase()} (provisório)` : ""}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
 // ---------------------------------------------------------------------
 // Antes da leitura com os padrões: agrupar, separar outras experiências, publicar
 // ---------------------------------------------------------------------
-function Agrupamento({ dados, mentoriaId, recarregar }: { dados: DadosJornada; mentoriaId: string; recarregar: () => Promise<void> }) {
+function Agrupamento({ dados, recarregar }: { dados: DadosJornada; recarregar: () => Promise<void> }) {
   const prazo = leitura(dados, "call_1")?.conteudo_mentora.prazo_padroes as string | undefined;
   const sits = situacoes(dados);
   const aCompletar = sits.filter((s) => !situacaoCompleta(s)).length;
@@ -97,11 +239,7 @@ function Agrupamento({ dados, mentoriaId, recarregar }: { dados: DadosJornada; m
 
   return (
     <>
-      <p className="mem-body ws-measure">
-        Agrupe as pistas de ativo em 3 a 5 padrões. Para cada um: nome, as situações dela, quem tinha o
-        problema (ela confirma ou corrige) e se ela sabe fazer.
-        {prazo ? ` Ela espera os padrões até ${dataCurta(prazo)}.` : ""}
-      </p>
+      {prazo && <p className="mem-body-sm">Ela espera os padrões até {dataCurta(prazo)}.</p>}
       {aCompletar > 0 && (
         <p className="mem-body-sm mem-muted">
           Ela ainda tem {aCompletar} situação{aCompletar > 1 ? "ões" : ""} da call para completar.
@@ -151,17 +289,6 @@ function Agrupamento({ dados, mentoriaId, recarregar }: { dados: DadosJornada; m
         </div>
       )}
 
-      <PublicarLeitura
-        mentoriaId={mentoriaId}
-        tipo="mapa_ativos"
-        rotuloCampo="Sua leitura dos padrões"
-        ajuda="Ela lê isto antes dos padrões. Conte quantos padrões você enxergou, qual parece mais forte e por quê, e o que ela deve olhar com atenção ao responder. Não diga ainda o que é ativo: isso se decide na Call 2."
-        exemplo="Enxerguei quatro padrões na sua história. O que mais aparece é a mediação: está em três empresas diferentes, de 2016 a 2023. Ao responder, repare se você reconhece cada um como seu ou só como algo que fez por obrigação — as duas respostas valem."
-        rotuloBotao="Publicar os padrões"
-        aviso={lista.length < 3 || lista.length > 5 ? `${lista.length} padrões. A referência do método é de 3 a 5.` : null}
-        bloqueio={lista.length === 0 ? "Crie pelo menos um padrão antes de publicar." : null}
-        aoPublicar={recarregar}
-      />
     </>
   );
 }
@@ -491,85 +618,182 @@ function rotuloDe(lista: readonly { valor: string; rotulo: string }[], v?: strin
   return lista.find((o) => o.valor === v)?.rotulo ?? "—";
 }
 
-function Reacoes({ dados }: { dados: DadosJornada }) {
+// O que vale levar para a Call 2, a partir das respostas dela (só a mentora vê).
+function pautaDoPadrao(dados: DadosJornada, p: Registro, r?: Reacao): string[] {
+  if (!r || !r.reconhece) return ["Ela ainda não respondeu este."];
+  const pts: string[] = [];
+  const info = dadosPadrao(p);
+  const umaSituacao = situacoesDoPadrao(dados, p).length === 1;
+  const sinaisDela = listaComoSabe(r);
+  const soPercepcao = sinaisDela.length > 0 && sinaisDela.every((v) => v === "eu_percebi" || v === "ainda_nao_sei");
+  if (r.reconhece === "em_parte") pts.push("Ela se vê só em parte: comece pelo que não combina.");
+  if (r.reconhece === "nao_reconheco") pts.push("Ela não se vê nisso: entenda por quê antes de decidir.");
+  if (soPercepcao) pts.push("Nenhum sinal de fora (registro ou alguém que reconheceu): peça um exemplo concreto.");
+  if (r.vontade === "pouca") pts.push("Pouca vontade: pode ser prova boa sem desejo — talvez não siga.");
+  if (r.vontade === "muita" && soPercepcao) pts.push("Muita vontade e pouca prova: candidato a “ativo a confirmar”.");
+  const sugerido = info.quem_tinha_o_problema?.trim();
+  if (sugerido && r.quem_tinha?.trim() && r.quem_tinha.trim() !== sugerido) pts.push(`Ela corrigiu quem tinha o problema (você sugeriu “${sugerido}”).`);
+  if (umaSituacao && r.outras_vezes === "so_essa") pts.push("Aconteceu uma vez só: ainda não há repetição.");
+  const faltando = sinais(dados, p, r).filter((x) => !x.presente).map((x) => x.nome.toLowerCase());
+  if (faltando.length) pts.push(`Ainda não aparece: ${faltando.join(", ")}.`);
+  return pts.length ? pts : ["Nada pede atenção especial: confirme e siga."];
+}
+
+function Respostas({ dados }: { dados: DadosJornada }) {
+  const lista = padroes(dados);
   const escolha = escolhaDois(dados)?.conteudo as { padroes?: string[]; linha?: string } | undefined;
   return (
-    <div className="ws-bloco">
-      <span className="mem-label mem-muted">Reações dela</span>
-      <div className="mem-table-wrap">
-        <table className="mem-table">
-          <thead>
-            <tr>
-              <th>Padrão</th>
-              <th>Reconhece</th>
-              <th>Quem tinha o problema</th>
-              <th>Como sabe</th>
-              <th>Vontade</th>
-            </tr>
-          </thead>
-          <tbody>
-            {padroes(dados).map((p) => {
-              const r = reacaoDe(dados, p)?.conteudo as Reacao | undefined;
-              const sugerido = dadosPadrao(p).quem_tinha_o_problema;
-              const corrigiu = r?.quem_tinha && sugerido && r.quem_tinha.trim() !== sugerido.trim();
-              return (
-                <tr key={p.id}>
-                  <td>
-                    {dadosPadrao(p).nome}
-                    <div className="mem-body-sm mem-muted">
-                      {sinais(dados, p, r).filter((s) => s.presente).length} de 4 sinais acesos
-                    </div>
-                  </td>
-                  <td>
-                    {r ? (
-                      <>
-                        {rotuloDe(RECONHECE, r.reconhece)}
-                        {r.frase && <div className="mem-body-sm">“{r.frase}”</div>}
-                      </>
-                    ) : (
-                      <span className="mem-muted">ainda não respondeu</span>
-                    )}
-                  </td>
-                  <td>
-                    {r?.quem_tinha ?? "—"}
-                    {corrigiu && <div className="mem-body-sm mem-muted">corrigiu o seu “{sugerido}”</div>}
-                  </td>
-                  <td>
-                    {textoComoSabe(r)}
-                    {r?.outras_vezes && <div className="mem-body-sm mem-muted">{rotuloDe(OUTRAS_VEZES, r.outras_vezes)}</div>}
-                  </td>
-                  <td>{rotuloDe(VONTADE, r?.vontade)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <p className="mem-body-sm">
-        Se só pudesse levar dois:{" "}
-        {escolha?.padroes?.length ? (
-          <strong>{escolha.padroes.map((id) => nomePadrao(dados, id)).join(" e ")}</strong>
-        ) : (
-          <span className="mem-muted">ainda não escolheu</span>
-        )}
-        {escolha?.linha ? ` — “${escolha.linha}”` : ""}
-      </p>
+    <div className="ws-form">
+      {lista.map((p, i) => (
+        <CartaoRespostas
+          key={p.id}
+          dados={dados}
+          padrao={p}
+          indice={i + 1}
+          total={lista.length}
+          escolhido={!!escolha?.padroes?.includes(p.id)}
+        />
+      ))}
+      {precisaEscolherDois(dados) && (
+        <div className="ws-bloco">
+          <p className="mem-label mem-muted">Se só pudesse levar dois</p>
+          {escolha?.padroes?.length ? (
+            <p className="mem-body">
+              <strong>{escolha.padroes.map((id) => nomePadrao(dados, id)).join(" e ")}</strong>
+              {escolha.linha ? <span className="mem-muted"> — “{escolha.linha}”</span> : ""}
+            </p>
+          ) : (
+            <p className="mem-body mem-muted">Ela ainda não escolheu.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-type Linha = { segue: boolean; rotulo: Rotulo; razao: string; condicao: string };
+function CartaoRespostas({
+  dados,
+  padrao,
+  indice,
+  total,
+  escolhido,
+}: {
+  dados: DadosJornada;
+  padrao: Registro;
+  indice: number;
+  total: number;
+  escolhido: boolean;
+}) {
+  const info = dadosPadrao(padrao);
+  const r = reacaoDe(dados, padrao)?.conteudo as Reacao | undefined;
+  const sits = situacoesDoPadrao(dados, padrao);
+  const completa = reacaoCompleta(r, sits.length === 1);
+  const anos = anosDoPadrao(dados, padrao);
+  const linhas: [string, string][] = r
+    ? [
+        ["Você se vê nisso?", `${rotuloDe(RECONHECE, r.reconhece)}${r.frase ? ` — “${r.frase}”` : ""}`],
+        ["Quem tinha o problema", r.quem_tinha?.trim() || "—"],
+        ["Sinais de que deu resultado", textoComoSabe(r)],
+        ["Vontade nos próximos 5 a 10 anos", rotuloDe(VONTADE, r.vontade)],
+        ...(r.outras_vezes ? ([["Outras vezes", rotuloDe(OUTRAS_VEZES, r.outras_vezes)]] as [string, string][]) : []),
+      ]
+    : [];
 
-function RegistrarDecisao({ dados, mentoriaId, recarregar }: { dados: DadosJornada; mentoriaId: string; recarregar: () => Promise<void> }) {
+  return (
+    <article className="mem-card ws-padrao">
+      <div className="ws-situacao__topo">
+        <span className="mem-label mem-muted">
+          Possível ativo {indice} de {total}
+        </span>
+        {completa ? (
+          <span className="mem-tag mem-tag--evidencia">Respondido</span>
+        ) : r ? (
+          <span className="mem-tag mem-tag--pendencia">Pela metade</span>
+        ) : (
+          <span className="mem-tag mem-tag--relato">Sem resposta</span>
+        )}
+        {escolhido && <span className="mem-tag mem-tag--decisao">Um dos dois dela</span>}
+      </div>
+      <h4 className="mem-h3 ws-padrao__nome">{info.nome}</h4>
+      <p className="mem-body-sm mem-muted">
+        {sits.length === 1 ? "1 situação" : `${sits.length} situações`}
+        {anos.length ? ` · ${anos.join(", ")}` : ""}
+        {info.rotulo ? ` · sua leitura: ${ROTULOS[info.rotulo].toLowerCase()}` : ""}
+      </p>
+
+      <ul className="ws-sinais-linha">
+        {sinais(dados, padrao, r).map((x) => (
+          <li key={x.nome} className={`ws-sinal ${x.presente ? "" : "ws-sinal--ainda"}`}>
+            <span className={`mem-marker mem-marker--${x.presente ? "done" : "next"}`} aria-hidden="true" />
+            <span className="mem-body-sm">
+              {x.nome}
+              {x.detalhe && <span className="mem-muted"> · {x.detalhe}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      {r && (
+        <div className="ws-padrao__parte">
+          <p className="mem-label mem-muted">O que ela respondeu</p>
+          <dl className="ws-resumo">
+            {linhas.map(([k, v]) => (
+              <div key={k}>
+                <dt className="mem-body-sm mem-muted">{k}</dt>
+                <dd className="mem-body">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+
+      <div className="ws-pauta">
+        <p className="mem-label">Para levar à Call 2</p>
+        <ul className="ws-lista-simples mem-body-sm">
+          {pautaDoPadrao(dados, padrao, r).map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      </div>
+    </article>
+  );
+}
+
+type Linha = { segue?: boolean; rotulo: Rotulo; razao: string; condicao: string };
+
+const SEGUE = [
+  { valor: "sim", rotulo: "Sim, segue", detalhe: "vai para o mercado no M3" },
+  { valor: "nao", rotulo: "Não, fica guardado", detalhe: "continua visível para ela" },
+] as const;
+
+const ROTULOS_FINAIS = [
+  { valor: "ativo", rotulo: "Ativo", detalhe: "base boa: repetição, resultado e alguém com o problema" },
+  { valor: "ativo_a_confirmar", rotulo: "Ativo a confirmar", detalhe: "base fraca: o mercado vai dizer" },
+  { valor: "outra_experiencia", rotulo: "Outra experiência", detalhe: "ela fez, mas não é um ativo" },
+] as const;
+
+function RegistrarDecisao({
+  dados,
+  mentoriaId,
+  recarregar,
+  passoCall,
+  passoLeitura,
+}: {
+  dados: DadosJornada;
+  mentoriaId: string;
+  recarregar: () => Promise<void>;
+  passoCall: Passo;
+  passoLeitura: Passo;
+}) {
   const { pessoa } = useSessao();
   const c2 = call(dados, 2);
   const lista = padroes(dados);
   const [linhas, setLinhas] = useState<Record<string, Linha>>(() =>
     Object.fromEntries(
-      lista.map((p) => [p.id, { segue: false, rotulo: (dadosPadrao(p).rotulo ?? "ativo") as Rotulo, razao: "", condicao: "" }]),
+      lista.map((p) => [p.id, { rotulo: (dadosPadrao(p).rotulo ?? "ativo") as Rotulo, razao: "", condicao: "" }]),
     ),
   );
-  const escolhidos = Object.entries(linhas).filter(([, l]) => l.segue);
+  const escolhidos = Object.entries(linhas).filter(([, l]) => l.segue === true);
 
   async function marcarRealizada() {
     if (!supabase || !c2) return;
@@ -583,22 +807,22 @@ function RegistrarDecisao({ dados, mentoriaId, recarregar }: { dados: DadosJorna
     const conteudo_mentora = {
       escolhidos: escolhidos.map(([id, l]) => ({ padrao: id, rotulo: l.rotulo })),
       nao_seguiram: Object.entries(linhas)
-        .filter(([, l]) => !l.segue)
+        .filter(([, l]) => l.segue === false)
         .map(([id, l]) => ({ padrao: id, razao: l.razao.trim(), condicao_volta: l.condicao.trim() })),
     };
     const existente = decisaoM2(dados);
     const d = existente
       ? await supabase.from("registro").update({ conteudo_mentora }).eq("id", existente.id)
       : await supabase.from("registro").insert({
-      conta_id: dados.jornada.conta_id,
-      jornada_id: dados.jornada.id,
-      movimento_codigo: 2,
-      tipo: "decisao_m2",
-      conteudo_mentora,
-      autora_papel: "mentora",
-      autora_id: pessoa.id,
-      pendente_publicacao: true,
-    });
+          conta_id: dados.jornada.conta_id,
+          jornada_id: dados.jornada.id,
+          movimento_codigo: 2,
+          tipo: "decisao_m2",
+          conteudo_mentora,
+          autora_papel: "mentora",
+          autora_id: pessoa.id,
+          pendente_publicacao: true,
+        });
     if (d.error) return false;
     const marcas = Object.entries(linhas).map(([id, l]) => ({
       registro_id: id,
@@ -611,88 +835,96 @@ function RegistrarDecisao({ dados, mentoriaId, recarregar }: { dados: DadosJorna
     return !m.error;
   }
 
-  const faltaRazao = Object.values(linhas).some((l) => !l.segue && !l.razao.trim());
-  const bloqueio =
-    c2?.estado !== "realizado"
-      ? "Marque a Call 2 como realizada."
-      : escolhidos.length === 0
-        ? "Marque pelo menos um padrão que segue."
-        : faltaRazao
-          ? "Escreva a razão de cada padrão que não segue."
-          : null;
+  const semDecisao = lista.filter((p) => linhas[p.id]?.segue === undefined).map((p) => dadosPadrao(p).nome);
+  const semRazao = lista
+    .filter((p) => linhas[p.id]?.segue === false && !linhas[p.id].razao.trim())
+    .map((p) => dadosPadrao(p).nome);
+  const faltando = [
+    c2?.estado !== "realizado" && "marcar a Call 2 como realizada (passo 4)",
+    semDecisao.length > 0 && `decidir se segue: ${semDecisao.join("; ")}`,
+    semDecisao.length === 0 && escolhidos.length === 0 && "pelo menos um possível ativo precisa seguir",
+    semRazao.length > 0 && `escrever por que não segue: ${semRazao.join("; ")}`,
+  ].filter(Boolean) as string[];
 
   return (
-    <div className="ws-bloco">
-      <span className="mem-label mem-muted">Call 2 · juntas · decisão dela</span>
-      <p className="mem-body-lg">
-        {c2 ? dataHora(c2.data_atual) : "—"} · {c2?.estado === "realizado" ? "realizada" : "marcada"}
-      </p>
-      {c2 && c2.estado !== "realizado" && (
-        <div>
-          <button type="button" className="mem-btn mem-btn--secondary" onClick={marcarRealizada}>
-            Marcar Call 2 como realizada
-          </button>
-        </div>
-      )}
+    <>
+      <Etapa
+        n={4}
+        passo={passoCall}
+        porque="Na Call 2 ela decide o que segue para o mercado. A decisão é dela; você registra, possível ativo por possível ativo. Nada é apagado: o que não segue continua visível para ela."
+      >
+        <p className="mem-body-lg">
+          {c2 ? dataHora(c2.data_atual) : "—"} · {c2?.estado === "realizado" ? "realizada" : "marcada"}
+        </p>
+        {c2 && c2.estado !== "realizado" && (
+          <div>
+            <button type="button" className="mem-btn mem-btn--secondary" onClick={marcarRealizada}>
+              Marcar Call 2 como realizada
+            </button>
+          </div>
+        )}
 
-      <Colinha
-        serve="Registre o que ela decidiu na Call 2. Para cada padrão: se segue para o mercado e com qual rótulo final. Para o que não segue, a razão e em que condição pode voltar. A decisão é dela; você registra. Nada é apagado: o que não seguiu continua visível para ela."
-        exemplo="Mediação: segue, ativo. Gestores de primeira viagem: segue, ativo a confirmar. Desligamentos: não segue — prova boa, pouca vontade; pode voltar se o mercado mostrar demanda forte por desligamento humanizado."
-      />
-      <div className="ws-decisao">
-        {lista.map((p) => {
+        {c2?.estado !== "realizado" && (
+          <p className="mem-body mem-muted">O registro da decisão abre quando você marcar a Call 2 como realizada.</p>
+        )}
+        {c2?.estado === "realizado" && lista.map((p, i) => {
           const l = linhas[p.id];
           const set = (n: Partial<Linha>) => setLinhas({ ...linhas, [p.id]: { ...l, ...n } });
+          let k = 0;
           return (
-            <div key={p.id} className="ws-situacao">
-              <p className="mem-body ws-situacao__titulo">{dadosPadrao(p).nome}</p>
-              <div className="ws-acoes">
-                <label className="ws-marca__check mem-body-sm">
-                  <input type="checkbox" checked={l.segue} onChange={(e) => set({ segue: e.target.checked })} />
-                  Segue para o mercado
-                </label>
-                <select
-                  className="mem-input ws-input-curto"
-                  aria-label="Rótulo final"
-                  value={l.rotulo}
-                  onChange={(e) => set({ rotulo: e.target.value as Rotulo })}
-                >
-                  {(Object.keys(ROTULOS) as Rotulo[]).map((r) => (
-                    <option key={r} value={r}>
-                      {ROTULOS[r]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {!l.segue && (
-                <div className="ws-acoes ws-marca">
-                  <input className="mem-input" aria-label="Por que não segue" placeholder="Por que não segue" value={l.razao} onChange={(e) => set({ razao: e.target.value })} />
-                  <input className="mem-input" aria-label="Pode voltar se…" placeholder="Pode voltar se…" value={l.condicao} onChange={(e) => set({ condicao: e.target.value })} />
-                </div>
+            <article key={p.id} className="mem-card ws-padrao">
+              <span className="mem-label mem-muted">
+                Possível ativo {i + 1} de {lista.length}
+              </span>
+              <h4 className="mem-h3 ws-padrao__nome">{dadosPadrao(p).nome}</h4>
+              <Pergunta n={++k} feita={l.segue !== undefined} titulo="Ela decidiu levar este para o mercado?">
+                <Opcoes rotulo="Segue para o mercado" opcoes={SEGUE} valor={l.segue === undefined ? undefined : l.segue ? "sim" : "nao"} aoEscolher={(v) => set({ segue: v === "sim" })} />
+              </Pergunta>
+              <Pergunta n={++k} feita={l.segue !== undefined} titulo="Com que rótulo fica?">
+                <Opcoes rotulo="Rótulo final" opcoes={ROTULOS_FINAIS} valor={l.rotulo} aoEscolher={(v) => set({ rotulo: v as Rotulo })} />
+                <Colinha serve={`Sua leitura provisória era “${ROTULOS[(dadosPadrao(p).rotulo ?? "ativo") as Rotulo].toLowerCase()}”. O rótulo final é o que vocês combinaram na call; ela vê.`} />
+              </Pergunta>
+              {l.segue === false && (
+                <>
+                  <Pergunta n={++k} feita={!!l.razao.trim()} titulo="Por que não segue?">
+                    <input className="mem-input" aria-label="Por que não segue" value={l.razao} onChange={(e) => set({ razao: e.target.value })} />
+                    <Colinha serve="Em uma frase, com as palavras dela. Ela lê isto junto do possível ativo." exemplo="Tem prova, mas pouca vontade de fazer isso pelos próximos anos." />
+                  </Pergunta>
+                  <Pergunta n={++k} feita={!!l.condicao.trim()} titulo="Em que condição pode voltar? (opcional)">
+                    <input className="mem-input" aria-label="Pode voltar se" value={l.condicao} onChange={(e) => set({ condicao: e.target.value })} />
+                    <Colinha serve="O que precisaria acontecer para valer olhar de novo." exemplo="Se o mercado mostrar demanda forte por desligamento humanizado." />
+                  </Pergunta>
+                </>
               )}
-            </div>
+            </article>
           );
         })}
-      </div>
-      {escolhidos.length > 3 && (
-        <Aviso variante="warn" titulo={`${escolhidos.length} ativos seguem`}>
-          Mais de três: ela vai precisar justificar ao escrever o porquê.
-        </Aviso>
-      )}
+        {escolhidos.length > 3 && (
+          <Aviso variante="warn" titulo={`${escolhidos.length} possíveis ativos seguem`}>
+            Mais de três: ela vai precisar justificar ao escrever o porquê.
+          </Aviso>
+        )}
+      </Etapa>
 
-      <PublicarLeitura
-        mentoriaId={mentoriaId}
-        tipo="call_2"
-        rotuloCampo="Leitura curta · o que decidimos"
-        ajuda="Publique em até 48 h. Resuma o que vocês decidiram juntas: o que segue e com qual rótulo, o que não segue e por quê. A decisão é dela: escreva como registro do que ela escolheu. Ao publicar, ela vê a decisão e escreve o porquê em uma frase."
-        exemplo="Você decidiu levar ao mercado a mediação de conflitos (ativo) e a preparação de gestores de primeira viagem (ativo a confirmar: a base ainda é só a sua percepção, e o mercado vai nos dizer). Desligamentos e processos ficam guardados: há prova, mas pouca vontade."
-        rotuloBotao="Publicar decisão e leitura"
-        aviso={null}
-        bloqueio={bloqueio}
-        antesDePublicar={gravarDecisao}
-        aoPublicar={recarregar}
-      />
-    </div>
+      <Etapa
+        n={5}
+        passo={passoLeitura}
+        porque="Ao publicar, ela vê a decisão sobre cada possível ativo e esta leitura, e escreve o porquê em uma frase."
+      >
+        <PublicarLeitura
+          mentoriaId={mentoriaId}
+          tipo="call_2"
+          rotuloCampo="Leitura curta · o que decidimos"
+          ajuda="Resuma o que vocês decidiram juntas: o que segue e com qual rótulo, o que não segue e por quê. A decisão é dela: escreva como registro do que ela escolheu."
+          exemplo="Você decidiu levar ao mercado a mediação de conflitos (ativo) e a preparação de gestores de primeira viagem (ativo a confirmar: a base ainda é só a sua percepção, e o mercado vai nos dizer). Desligamentos e processos ficam guardados: há prova, mas pouca vontade."
+          rotuloBotao="Publicar decisão e leitura"
+          aviso={null}
+          bloqueio={faltando.length ? `Para publicar, falta: ${faltando.join("; ")}.` : null}
+          antesDePublicar={gravarDecisao}
+          aoPublicar={recarregar}
+        />
+      </Etapa>
+    </>
   );
 }
 

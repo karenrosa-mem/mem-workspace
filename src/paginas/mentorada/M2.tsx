@@ -36,6 +36,7 @@ import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
+import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 
 // M2 · Enxergar seus ativos — tela da mentorada.
 export default function M2() {
@@ -76,7 +77,7 @@ export default function M2() {
             </>
           ) : (
             <p className="mem-body-lg">
-              A Karen está organizando suas pistas de ativo em padrões. Quando ela publicar, eles aparecem aqui.
+              A Karen está juntando suas pistas em possíveis ativos. Quando ela publicar, eles aparecem aqui.
             </p>
           )}
         </section>
@@ -244,54 +245,6 @@ function ResumoReacao({ reacao, podeEditar, aoEditar }: { reacao?: Reacao; podeE
           </button>
         </div>
       )}
-    </div>
-  );
-}
-
-function Opcoes({
-  rotulo,
-  opcoes,
-  valor,
-  marcados,
-  aoEscolher,
-}: {
-  rotulo: string;
-  opcoes: readonly { valor: string; rotulo: string; detalhe?: string }[];
-  valor?: string;
-  marcados?: string[]; // quando vem, a pergunta aceita mais de uma resposta
-  aoEscolher: (v: string) => void;
-}) {
-  const varias = !!marcados;
-  const marcado = (v: string) => (varias ? marcados.includes(v) : valor === v);
-  return (
-    <div className={`ws-opcoes ${opcoes.some((o) => o.detalhe) ? "ws-opcoes--grade" : ""}`} role={varias ? "group" : "radiogroup"} aria-label={rotulo}>
-      {opcoes.map((o) => (
-        <button
-          key={o.valor}
-          type="button"
-          role={varias ? "checkbox" : "radio"}
-          aria-checked={marcado(o.valor)}
-          className={`ws-opcao ${marcado(o.valor) ? "ws-opcao--marcada" : ""}`}
-          onClick={() => aoEscolher(o.valor)}
-        >
-          <span className="ws-opcao__rotulo">{o.rotulo}</span>
-          {o.detalhe && <span className="ws-opcao__detalhe">{o.detalhe}</span>}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Pergunta({ n, feita, titulo, children }: { n: number; feita: boolean; titulo: string; children: React.ReactNode }) {
-  return (
-    <div className="ws-pergunta-bloco">
-      <span className={`ws-pergunta-bloco__n ${feita ? "ws-pergunta-bloco__n--feita" : ""}`} aria-hidden="true">
-        {feita ? "✓" : n}
-      </span>
-      <div className="ws-pergunta-bloco__corpo">
-        <p className="mem-h4 ws-pergunta-bloco__titulo">{titulo}</p>
-        {children}
-      </div>
     </div>
   );
 }
