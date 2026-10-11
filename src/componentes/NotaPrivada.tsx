@@ -11,10 +11,14 @@ export default function NotaPrivada({
   mentoriaId,
   movimento,
   campos,
+  aberta = false,
+  titulo,
 }: {
   mentoriaId: string;
   movimento: number;
   campos: CampoNota[];
+  aberta?: boolean;
+  titulo?: string;
 }) {
   const { pessoa } = useSessao();
   const [notaId, setNotaId] = useState<string | null>(null);
@@ -59,8 +63,8 @@ export default function NotaPrivada({
   }
 
   return (
-    <details className="ws-bloco ws-privado">
-      <summary className="mem-label">Nota privada · M{movimento} · só você vê</summary>
+    <details className="ws-bloco ws-privado" open={aberta}>
+      <summary className="mem-label">{titulo ?? `Nota privada · M${movimento} · só você vê`}</summary>
       <div className="ws-form">
         {campos.map((c) => (
           <div className="mem-field" key={c.chave}>

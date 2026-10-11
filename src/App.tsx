@@ -4,6 +4,7 @@ import Entrar from "./paginas/Entrar";
 import Agora from "./paginas/mentorada/Agora";
 import Mentoradas from "./paginas/mentora/Mentoradas";
 import IniciarJornada from "./paginas/mentora/IniciarJornada";
+import GuiaCall from "./paginas/mentora/GuiaCall";
 import MentoradaM1 from "./paginas/mentora/MentoradaM1";
 import Jornada, { MovimentoEmConstrucao, MOVIMENTOS_PRONTOS } from "./paginas/mentorada/Jornada";
 import M1 from "./paginas/mentorada/M1";
@@ -37,6 +38,7 @@ export default function App() {
             <Route index element={<Mentoradas />} />
             <Route path="iniciar" element={<IniciarJornada />} />
             <Route path="mentoradas/:id" element={<MentoradaM1 />} />
+            <Route path="mentoradas/:id/call/:n" element={<GuiaCall />} />
           </>
         ) : (
           <>

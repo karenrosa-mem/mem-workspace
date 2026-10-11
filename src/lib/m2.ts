@@ -186,3 +186,25 @@ export function nomePadrao(d: DadosJornada, id: string): string {
 }
 
 export { tituloDaSituacao };
+
+// O que vale levar para a Call 2, a partir das respostas dela (só a mentora vê).
+export function pautaDoPadrao(dados: DadosJornada, p: Registro, r?: Reacao): string[] {
+  if (!r || !r.reconhece) return ["Ela ainda não respondeu este."];
+  const pts: string[] = [];
+  const info = dadosPadrao(p);
+  const umaSituacao = situacoesDoPadrao(dados, p).length === 1;
+  const sinaisDela = listaComoSabe(r);
+  const soPercepcao = sinaisDela.length > 0 && sinaisDela.every((v) => v === "eu_percebi" || v === "ainda_nao_sei");
+  if (r.reconhece === "em_parte") pts.push("Ela se vê só em parte: comece pelo que não combina.");
+  if (r.reconhece === "nao_reconheco") pts.push("Ela não se vê nisso: entenda por quê antes de decidir.");
+  if (soPercepcao) pts.push("Nenhum sinal de fora (registro ou alguém que reconheceu): peça um exemplo concreto.");
+  if (r.vontade === "pouca") pts.push("Pouca vontade: pode ser prova boa sem desejo — talvez não siga.");
+  if (r.vontade === "muita" && soPercepcao) pts.push("Muita vontade e pouca prova: candidato a “ativo a confirmar”.");
+  const sugerido = info.quem_tinha_o_problema?.trim();
+  if (sugerido && r.quem_tinha?.trim() && r.quem_tinha.trim() !== sugerido) pts.push(`Ela corrigiu quem tinha o problema (você sugeriu “${sugerido}”).`);
+  if (umaSituacao && r.outras_vezes === "so_essa") pts.push("Aconteceu uma vez só: ainda não há repetição.");
+  const faltando = sinais(dados, p, r).filter((x) => !x.presente).map((x) => x.nome.toLowerCase());
+  if (faltando.length) pts.push(`Ainda não aparece: ${faltando.join(", ")}.`);
+  return pts.length ? pts : ["Nada pede atenção especial: confirme e siga."];
+}
+

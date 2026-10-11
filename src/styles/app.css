@@ -1077,3 +1077,144 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
   flex-direction: column;
   gap: var(--space-1);
 }
+
+/* Guia da call */
+.ws-guia-atalho {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--brand);
+  border-left-width: 4px;
+  border-radius: var(--radius-1);
+  background: var(--brand-tint);
+  color: var(--ink);
+  text-decoration: none;
+  max-width: 44rem;
+}
+
+.ws-guia-atalho .mem-label {
+  color: var(--brand);
+}
+
+.ws-guia-atalho:hover .mem-body {
+  text-decoration: underline;
+}
+
+.ws-guia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.ws-guia > * {
+  margin: 0;
+}
+
+.ws-guia__objetivo {
+  background: var(--brand-strong);
+  color: var(--on-inverse);
+  border-radius: var(--radius-2);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ws-guia__objetivo > * {
+  margin: 0;
+}
+
+.ws-guia__objetivo .mem-label {
+  color: var(--on-inverse-muted);
+}
+
+.ws-guia__objetivo .mem-body-lg {
+  color: var(--on-brand);
+  margin-bottom: var(--space-2);
+}
+
+.ws-guia__progresso {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.ws-guia__barra {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.ws-guia__barra > span {
+  display: block;
+  height: 100%;
+  background: var(--status-done);
+}
+
+.ws-guia__bloco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-4);
+}
+
+.ws-guia__itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ws-guia__item {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  background: var(--surface-raised);
+  cursor: pointer;
+}
+
+.ws-guia__item input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 3px;
+  accent-color: var(--status-done);
+}
+
+.ws-guia__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ws-guia__item--feito .ws-guia__item {
+  background: var(--surface);
+}
+
+.ws-guia__item--feito .ws-guia__texto .mem-body {
+  color: var(--ink-muted);
+  text-decoration: line-through;
+}
+
+.ws-guia__grupo {
+  margin: var(--space-3) 0 var(--space-1);
+}
+
+.ws-guia__itens li:first-child .ws-guia__grupo {
+  margin-top: 0;
+}

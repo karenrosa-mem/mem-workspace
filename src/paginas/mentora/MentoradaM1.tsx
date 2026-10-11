@@ -86,6 +86,14 @@ export default function MentoradaM1() {
       </span>
       <h1 className="mem-h1">{nome || "Mentorada"}</h1>
       <p className="mem-body-lg">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Jornada"}</p>
+      {atual && atual <= 2 && call(dados, atual) && (
+        <Link className="ws-guia-atalho" to={`/mentoradas/${dados.jornada.id}/call/${atual}`}>
+          <span className="mem-label">Guia da Call {atual}</span>
+          <span className="mem-body">
+            {dataHora(call(dados, atual)!.data_atual)} · o roteiro da call com o que é dela, para marcar enquanto conversa
+          </span>
+        </Link>
+      )}
 
       <Trilha movimentos={dados.movimentos} ligar={() => `/mentoradas/${dados.jornada.id}`} />
 
@@ -235,13 +243,16 @@ function PreparacaoM1({
           {call1Data ? dataHora(call1Data) : "—"} ·{" "}
           {call1Realizada ? "realizada" : pronta ? "material pronto para a call" : `material incompleto: ${materialFaltando(dados)}`}
         </p>
-        {!call1Realizada && call1Id && (
-          <div>
+        <div className="ws-acoes">
+          <Link className="mem-btn mem-btn--primary" to={`/mentoradas/${dados.jornada.id}/call/1`}>
+            Abrir guia da Call 1
+          </Link>
+          {!call1Realizada && call1Id && (
             <button type="button" className="mem-btn mem-btn--secondary" onClick={marcarRealizada}>
               Marcar Call 1 como realizada
             </button>
-          </div>
-        )}
+          )}
+        </div>
         <SituacaoNova dados={dados} aoCriar={recarregar} />
       </Etapa>
 

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useSessao } from "../../lib/sessao";
 import { call, leitura, type DadosJornada, type Registro } from "../../lib/jornada";
 import { situacaoCompleta, situacoes, tituloDaSituacao, type Situacao } from "../../lib/m1";
 import {
   textoComoSabe,
-  listaComoSabe,
+  pautaDoPadrao,
   padroesFaltando,
   precisaEscolherDois,
   reacaoCompleta,
@@ -644,27 +645,6 @@ function rotuloDe(lista: readonly { valor: string; rotulo: string }[], v?: strin
   return lista.find((o) => o.valor === v)?.rotulo ?? "—";
 }
 
-// O que vale levar para a Call 2, a partir das respostas dela (só a mentora vê).
-function pautaDoPadrao(dados: DadosJornada, p: Registro, r?: Reacao): string[] {
-  if (!r || !r.reconhece) return ["Ela ainda não respondeu este."];
-  const pts: string[] = [];
-  const info = dadosPadrao(p);
-  const umaSituacao = situacoesDoPadrao(dados, p).length === 1;
-  const sinaisDela = listaComoSabe(r);
-  const soPercepcao = sinaisDela.length > 0 && sinaisDela.every((v) => v === "eu_percebi" || v === "ainda_nao_sei");
-  if (r.reconhece === "em_parte") pts.push("Ela se vê só em parte: comece pelo que não combina.");
-  if (r.reconhece === "nao_reconheco") pts.push("Ela não se vê nisso: entenda por quê antes de decidir.");
-  if (soPercepcao) pts.push("Nenhum sinal de fora (registro ou alguém que reconheceu): peça um exemplo concreto.");
-  if (r.vontade === "pouca") pts.push("Pouca vontade: pode ser prova boa sem desejo — talvez não siga.");
-  if (r.vontade === "muita" && soPercepcao) pts.push("Muita vontade e pouca prova: candidato a “ativo a confirmar”.");
-  const sugerido = info.quem_tinha_o_problema?.trim();
-  if (sugerido && r.quem_tinha?.trim() && r.quem_tinha.trim() !== sugerido) pts.push(`Ela corrigiu quem tinha o problema (você sugeriu “${sugerido}”).`);
-  if (umaSituacao && r.outras_vezes === "so_essa") pts.push("Aconteceu uma vez só: ainda não há repetição.");
-  const faltando = sinais(dados, p, r).filter((x) => !x.presente).map((x) => x.nome.toLowerCase());
-  if (faltando.length) pts.push(`Ainda não aparece: ${faltando.join(", ")}.`);
-  return pts.length ? pts : ["Nada pede atenção especial: confirme e siga."];
-}
-
 function Respostas({ dados }: { dados: DadosJornada }) {
   const lista = padroes(dados);
   const escolha = escolhaDois(dados)?.conteudo as { padroes?: string[]; linha?: string } | undefined;
@@ -882,13 +862,16 @@ function RegistrarDecisao({
         <p className="mem-body-lg">
           {c2 ? dataHora(c2.data_atual) : "—"} · {c2?.estado === "realizado" ? "realizada" : "marcada"}
         </p>
-        {c2 && c2.estado !== "realizado" && (
-          <div>
+        <div className="ws-acoes">
+          <Link className="mem-btn mem-btn--primary" to={`/mentoradas/${dados.jornada.id}/call/2`}>
+            Abrir guia da Call 2
+          </Link>
+          {c2 && c2.estado !== "realizado" && (
             <button type="button" className="mem-btn mem-btn--secondary" onClick={marcarRealizada}>
               Marcar Call 2 como realizada
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {c2?.estado !== "realizado" && (
           <p className="mem-body mem-muted">O registro da decisão abre quando você marcar a Call 2 como realizada.</p>
