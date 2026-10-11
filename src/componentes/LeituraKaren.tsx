@@ -1,5 +1,6 @@
 import type { Registro } from "../lib/jornada";
 import { dataCurta } from "../lib/datas";
+import { DEFINICAO_ATIVO } from "../lib/m2";
 
 // MentorNote do kit: a voz da mentora em serif, com assinatura.
 const SECOES: [string, string][] = [
@@ -17,8 +18,12 @@ const TITULOS: Record<string, string> = {
 };
 
 export default function LeituraKaren({ registro }: { registro: Registro }) {
-  const c = registro.conteudo_mentora;
-  const tipo = String(c.tipo_leitura ?? "");
+  const tipo = String(registro.conteudo_mentora.tipo_leitura ?? "");
+  // Na leitura da Call 1, a definição de ativo entra sempre igual (decisão de 11/10).
+  const c =
+    tipo === "call_1" && !registro.conteudo_mentora.o_que_e_ativo
+      ? { ...registro.conteudo_mentora, o_que_e_ativo: DEFINICAO_ATIVO }
+      : registro.conteudo_mentora;
   return (
     <section className="mem-mentor ws-measure">
       <span className="mem-label mem-muted">

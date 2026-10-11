@@ -21,6 +21,7 @@ import { Trilha } from "../mentorada/Jornada";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import Colinha from "../../componentes/Colinha";
+import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
@@ -605,12 +606,13 @@ function LeituraCall1({
           "O que você enxergou nas situações dela e na conversa: o que se repete, em que anos e em que contextos, e o que ela mesma percebeu. Fale com ela (“você”). É o primeiro texto que ela lê depois da call, antes de ver as marcas nas situações.",
           "Você contou três situações, em anos bem diferentes (2016, 2021 e 2023), em que entrou num conflito entre gestor e time e as pessoas ficaram. Na call, você mesma percebeu que chama isso de “só conversar com as pessoas”, mas o que você descreveu tem método: ouvir os dois lados antes de alguém decidir.",
         )}
-        {campo(
-          "o_que_e_ativo",
-          "O que é um ativo",
-          "A primeira vez que ela encontra a palavra. Uma ou duas frases, ligando a definição ao material dela.",
-          "Um ativo é algo que você sabe fazer, já fez mais de uma vez, gera resultado e resolve o problema de alguém. As situações que marquei são as que podem esconder um ativo; na próxima etapa, a gente vê quais se sustentam.",
-        )}
+        <div className="ws-colinha mem-body-sm">
+          <p className="mem-field__label">O que é um ativo</p>
+          <p className="mem-muted">
+            Entra sozinho na leitura, sempre igual: “{DEFINICAO_ATIVO}” É a primeira vez que ela
+            encontra a palavra. Se quiser ligar a definição ao material dela, faça isso em “O que investigamos”.
+          </p>
+        </div>
         {campo(
           "o_que_fazer_agora",
           "O que fazer agora",
