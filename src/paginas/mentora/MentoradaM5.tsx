@@ -181,7 +181,8 @@ function ComparacaoMentora({ dados }: { dados: DadosJornada }) {
           const l = leituraValida(dados, cr.chave);
           return (
             <article key={cr.chave} className="mem-card ws-padrao">
-              <h4 className="mem-h3">{cr.pergunta}</h4>
+              <h4 className="mem-h3">{cr.nome}</h4>
+              <p className="mem-body-sm mem-muted">Para ela: “{cr.pergunta}”</p>
               <ColunasFatos dados={dados} chave={cr.chave} />
               <div className="ws-sua-leitura">
                 <p className="mem-label mem-muted">Leitura dela</p>
@@ -534,7 +535,7 @@ function Investigacao({ dados, recarregar }: { dados: DadosJornada; recarregar: 
         Primeiro desempate: “dá para testar logo?”. Só se ainda empatar: uma ou duas conversas a mais na semana seguinte, no critério que
         empatou. A aposta fica para depois; ela vê “voltamos ao campo só para entender…”.
       </p>
-      <Opcoes rotulo="Critério que empatou" opcoes={CRITERIOS.map((c) => ({ valor: c.chave, rotulo: c.pergunta }))} valor={criterio} aoEscolher={(v) => setCriterio(v as ChaveCriterio)} />
+      <Opcoes rotulo="Critério que empatou" opcoes={CRITERIOS.map((c) => ({ valor: c.chave, rotulo: c.nome }))} valor={criterio} aoEscolher={(v) => setCriterio(v as ChaveCriterio)} />
       <input className="mem-input" aria-label="O que ela vai investigar" placeholder="O que ela vai investigar" value={texto} onChange={(e) => setTexto(e.target.value)} />
       <Colinha serve="Na linguagem dela. Aparece no topo da tela dela." exemplo="se o problema aparece fora do círculo da sua amiga." />
       {erro && <p className="mem-body-sm">{erro}</p>}

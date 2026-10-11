@@ -623,7 +623,7 @@ function GuiaCall4({ dados, nota, nota5, chave }: { dados: DadosJornada; nota: N
           const l = leituraValida(dados, cr.chave);
           return {
             id: `m5-${cr.chave}`,
-            texto: `${cr.pergunta} Ela leu: ${l ? nomeEscolha(dados, l.escolha) : "sem resposta"}`,
+            texto: `${cr.nome}. Ela leu: ${l ? nomeEscolha(dados, l.escolha) : "sem resposta"}`,
             detalhe: l ? `“${l.porque}” · Os fatos sustentam? Se não: “o que sustenta isso?”` : "Faça a leitura com ela na call.",
           };
         })),

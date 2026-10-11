@@ -81,8 +81,8 @@ export default function M5() {
                   </li>
                 ) : (
                   <li className="mem-body">
-                    Cinco perguntas, uma de cada vez. Em cada uma, você vê o que cada hipótese mostrou no Movimento 4 e diz onde aquilo
-                    aparece com mais clareza, com uma linha de porquê.
+                    Cinco perguntas, uma de cada vez. Em cada uma, você vê lado a lado o que cada hipótese mostrou no Movimento 4,
+                    escolhe em qual hipótese aquilo aparece mais e explica por quê em uma linha.
                   </li>
                 )}
                 <li className="mem-body">Para cada hipótese, responda: é para você?</li>
@@ -190,7 +190,7 @@ function Criterios({ dados, travada, aoSalvar }: { dados: DadosJornada; travada:
         return (
           <article key={cr.chave} className="mem-card ws-padrao" id={`criterio-${cr.chave}`}>
             <span className="mem-label mem-muted">
-              Pergunta {i + 1} de {CRITERIOS.length}
+              Pergunta {i + 1} de {CRITERIOS.length} · {cr.nome.toLowerCase()}
             </span>
             <h3 className="mem-h3">{cr.pergunta}</h3>
             {abrir ? (
@@ -238,7 +238,7 @@ function LeituraForm({
   const salvar = useSalvarComparacao(dados, aoSalvar);
   const opcoes = [
     ...comparadas(dados).map((c) => ({ valor: c.hipotese.id, rotulo: c.nome })),
-    { valor: "empatam", rotulo: "Empatam", detalhe: "aparece com a mesma clareza" },
+    { valor: "empatam", rotulo: "Empatam", detalhe: "aparece igual nas hipóteses" },
     { valor: "nao_da", rotulo: "Ainda não dá para dizer", detalhe: "o que você ouviu não basta" },
   ];
 
@@ -260,8 +260,8 @@ function LeituraForm({
       </div>
       <div className="ws-sua-leitura ws-form">
         <p className="mem-label mem-muted">Sua leitura</p>
-        <Pergunta n={1} feita={!!escolha} titulo="Onde isso aparece com mais clareza?">
-          <Opcoes rotulo="Onde aparece com mais clareza" opcoes={opcoes} valor={escolha} aoEscolher={setEscolha} />
+        <Pergunta n={1} feita={!!escolha} titulo="Sua resposta">
+          <Opcoes rotulo={cr.pergunta} opcoes={opcoes} valor={escolha} aoEscolher={setEscolha} />
           <Colinha serve={cr.serve} exemplo={cr.exemplo} />
         </Pergunta>
         <Pergunta n={2} feita={!!porque.trim()} titulo="Por quê? Uma linha">
@@ -388,7 +388,7 @@ function ResumoComparacao({ dados }: { dados: DadosJornada }) {
             const l = leituraValida(dados, cr.chave);
             return (
               <li key={cr.chave}>
-                {cr.pergunta} <strong>{l ? nomeEscolha(dados, l.escolha) : "—"}</strong>
+                {cr.nome}: <strong>{l ? nomeEscolha(dados, l.escolha) : "—"}</strong>
                 {l?.porque ? ` — ${l.porque}` : ""}
               </li>
             );
