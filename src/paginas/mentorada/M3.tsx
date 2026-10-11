@@ -54,7 +54,7 @@ export default function M3() {
   return (
     <>
       <span className="mem-label mem-muted">Movimento 3 · Formular hipóteses</span>
-      <h1 className="mem-h1">Para quem isso pode valer</h1>
+      <h1 className="mem-h1">Quem mais tem o problema que você resolve?</h1>
 
       {decisao && <DecisaoCall3 dados={dados} decisao={decisao} aoSalvar={recarregar} />}
       {leituraC3 && <LeituraKaren registro={leituraC3} />}
@@ -64,7 +64,7 @@ export default function M3() {
           <p className="mem-label mem-muted">O que fazer aqui</p>
           <ol className="ws-como__passos">
             <li className="mem-body">Para cada ativo, responda quem mais passa pelo mesmo problema. ~5 min por ativo.</li>
-            <li className="mem-body">Monte de 3 a 5 hipóteses no total. ~10 min cada.</li>
+            <li className="mem-body">Escolha de 3 a 5 públicos e monte uma hipótese para cada. ~5 min cada.</li>
             <li className="mem-body">
               Vocês decidem juntas quais vão a campo{c3 ? ` na Call 3 (${dataHora(c3.data_atual)})` : " na Call 3"}.
             </li>
@@ -228,10 +228,29 @@ function QuemMaisAtivo({
 function Hipoteses({ dados, travado, aoSalvar }: { dados: DadosJornada; travado: boolean; aoSalvar: () => Promise<void> }) {
   const lista = hipoteses(dados);
   const completas = hipotesesCompletas(dados);
-  const [editando, setEditando] = useState<string | "nova" | null>(null);
+  const [editando, setEditando] = useState<string | null>(null); // id da hipótese, "pub:<público>" ou "livre"
   const semHipotese = ativosSemHipotese(dados);
   const c3 = call(dados, 3);
   const diaDaCall = !!c3 && hojeBrasilia() >= diaBrasilia(c3.data_atual);
+  const ativos = ativosEscolhidos(dados);
+  const usados = new Set(lista.map((h) => (dadosHipotese(h).publico ?? "").trim().toLowerCase()));
+  const livres = publicos(dados).filter((p) => p.origem !== "novo" && !usados.has(p.descricao.trim().toLowerCase()));
+  const fechar = () => setEditando(null);
+
+  // A hipótese do público do M2 nasce com o rascunho do que mudou nas situações dela.
+  function inicialDe(descricao: string, ativoId?: string, origem?: string): Hipotese {
+    const h: Hipotese = { ativo: ativoId ?? (ativos.length === 1 ? ativos[0].id : undefined), publico: descricao };
+    if (origem === "m2") {
+      const a = ativos.find((x) => x.id === ativoId);
+      const mudou = a
+        ? situacoesDoAtivo(dados, a)
+            .map((s) => (s.conteudo as Situacao).o_que_mudou?.trim())
+            .find(Boolean)
+        : undefined;
+      if (mudou) h.transformacao = mudou.charAt(0).toLowerCase() + mudou.slice(1).replace(/\.$/, "");
+    }
+    return h;
+  }
 
   return (
     <section className="ws-etapa" id="hipoteses">
@@ -240,37 +259,67 @@ function Hipoteses({ dados, travado, aoSalvar }: { dados: DadosJornada; travado:
           {completas >= 3 ? "✓" : 2}
         </span>
         <div className="ws-etapa__titulos">
-          <span className="mem-label mem-muted">
-            Parte 2 · {completas} de 3 a 5 completas
-          </span>
-          <h2 className="mem-h3 ws-etapa__titulo">Suas hipóteses</h2>
+          <span className="mem-label mem-muted">Parte 2 · {completas} de 3 a 5 completas · ~5 min cada</span>
+          <h2 className="mem-h3 ws-etapa__titulo">Uma hipótese por público</h2>
         </div>
       </div>
       <div className="ws-etapa__corpo">
+        {!travado && (
+          <p className="mem-body mem-muted ws-measure">
+            Escolha de 3 a 5 públicos da sua lista. Para cada um, só o que é novo: o problema como essa pessoa diria, onde isso
+            acontece e o que muda para ela.
+          </p>
+        )}
         {lista.length > 5 && !travado && (
           <p className="mem-body-sm">Você tem {lista.length}. Na Call 3, vocês escolhem até 5. Nada é bloqueado.</p>
         )}
         {lista.map((h, i) =>
           editando === h.id ? (
-            <EditorHipotese
-              key={h.id}
-              dados={dados}
-              registro={h}
-              reformular={diaDaCall}
-              aoFechar={() => setEditando(null)}
-              aoSalvar={aoSalvar}
-            />
+            <EditorHipotese key={h.id} dados={dados} registro={h} reformular={diaDaCall} fixo aoFechar={fechar} aoSalvar={aoSalvar} />
           ) : (
             <CartaoHipotese key={h.id} dados={dados} registro={h} n={i + 1} podeEditar={!travado} aoEditar={() => setEditando(h.id)} />
           ),
         )}
+
+        {!travado && livres.length > 0 && (
+          <div className="ws-padrao__parte">
+            <p className="mem-label mem-muted">Públicos da sua lista ainda sem hipótese</p>
+            {livres.map((p) => {
+              const k = `pub:${p.descricao}`;
+              return editando === k ? (
+                <EditorHipotese
+                  key={k}
+                  dados={dados}
+                  inicial={inicialDe(p.descricao, p.ativo, p.origem)}
+                  rascunhoM2={p.origem === "m2"}
+                  fixo
+                  reformular={false}
+                  aoFechar={fechar}
+                  aoSalvar={aoSalvar}
+                />
+              ) : (
+                <div key={k} className="ws-publico-livre">
+                  <span className="mem-body">
+                    {p.descricao}
+                    <span className="mem-muted"> · {ROTULO_ORIGEM[p.origem]}</span>
+                    {p.origem === "m2" && <span className="mem-muted"> · já vem com um rascunho</span>}
+                  </span>
+                  <button type="button" className="mem-btn mem-btn--secondary" onClick={() => setEditando(k)}>
+                    Montar hipótese
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {!travado &&
-          (editando === "nova" ? (
-            <EditorHipotese dados={dados} reformular={false} aoFechar={() => setEditando(null)} aoSalvar={aoSalvar} />
+          (editando === "livre" ? (
+            <EditorHipotese dados={dados} reformular={false} aoFechar={fechar} aoSalvar={aoSalvar} />
           ) : (
             <div>
-              <button type="button" className="mem-btn mem-btn--primary" onClick={() => setEditando("nova")}>
-                {lista.length ? "Nova hipótese" : "Montar a primeira hipótese"}
+              <button type="button" className="mem-btn mem-btn--quiet" onClick={() => setEditando("livre")}>
+                Hipótese com outro público
               </button>
             </div>
           ))}
@@ -345,19 +394,27 @@ function CartaoHipotese({
 function EditorHipotese({
   dados,
   registro,
+  inicial,
+  fixo = false,
+  rascunhoM2 = false,
   reformular,
   aoFechar,
   aoSalvar,
 }: {
   dados: DadosJornada;
   registro?: Registro;
+  inicial?: Hipotese;
+  fixo?: boolean; // ativo e público já definidos: só o que é novo
+  rascunhoM2?: boolean;
   reformular: boolean;
   aoFechar: () => void;
   aoSalvar: () => Promise<void>;
 }) {
   const { pessoa } = useSessao();
   const ativos = ativosEscolhidos(dados);
-  const [h, setH] = useState<Hipotese>(() => ({ ...(registro ? dadosHipotese(registro) : {}), ...(ativos.length === 1 && !registro ? { ativo: ativos[0].id } : {}) }));
+  const [h, setH] = useState<Hipotese>(() =>
+    registro ? dadosHipotese(registro) : inicial ?? (ativos.length === 1 ? { ativo: ativos[0].id } : {}),
+  );
   const [outro, setOutro] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -415,12 +472,23 @@ function EditorHipotese({
       {reformular && registro && (
         <p className="mem-body-sm">Hoje é dia da Call 3: ao salvar, a versão anterior fica guardada.</p>
       )}
-      <div className="ws-frase-viva">
-        <p className="mem-label mem-muted">Sua frase</p>
-        <Frase dados={dados} h={h} />
-      </div>
+      {fixo && (
+        <div className="ws-padrao__parte">
+          <h3 className="mem-h3 ws-padrao__nome">{h.publico}</h3>
+          <p className="mem-body-sm mem-muted">Ativo: {ativo?.nome ?? "—"}</p>
+          {!h.ativo && (
+            <Opcoes rotulo="Ativo" opcoes={ativos.map((a) => ({ valor: a.id, rotulo: a.nome }))} valor={h.ativo} aoEscolher={(v) => setH({ ...h, ativo: v })} />
+          )}
+          {rascunhoM2 && (
+            <p className="mem-body-sm">
+              Este é o público que você já conhece do Movimento 2. A transformação veio do que mudou nas suas situações: confira e ajuste
+              para o ponto de vista dessa pessoa.
+            </p>
+          )}
+        </div>
+      )}
 
-      <Pergunta n={++k} feita={!!h.ativo} titulo="De qual ativo nasce esta hipótese?">
+      {!fixo && <Pergunta n={++k} feita={!!h.ativo} titulo="De qual ativo nasce esta hipótese?">
         <Opcoes rotulo="Ativo" opcoes={ativos.map((a) => ({ valor: a.id, rotulo: a.nome }))} valor={h.ativo} aoEscolher={(v) => setH({ ...h, ativo: v })} />
         {ativo && (
           <details className="ws-referencia">
@@ -441,9 +509,9 @@ function EditorHipotese({
             </ul>
           </details>
         )}
-      </Pergunta>
+      </Pergunta>}
 
-      <Pergunta n={++k} feita={!!h.publico?.trim()} titulo="Para quem?">
+      {!fixo && <Pergunta n={++k} feita={!!h.publico?.trim()} titulo="Para quem?">
         {lista.length > 0 && (
           <Opcoes
             rotulo="Público"
@@ -472,22 +540,22 @@ function EditorHipotese({
           </div>
         )}
         <Colinha serve="É quem você vai procurar para conversar no próximo movimento. Quanto mais específico, mais fácil encontrar." />
-      </Pergunta>
+      </Pergunta>}
 
-      <Pergunta n={++k} feita={!!h.problema?.trim()} titulo="Que problema essa pessoa tem?">
+      <Pergunta n={++k} feita={!!h.problema?.trim()} titulo="Que problema essa pessoa tem, como ela diria?">
         <input className="mem-input" aria-label="Problema" value={h.problema ?? ""} onChange={(e) => setH({ ...h, problema: e.target.value })} />
-        <Colinha serve="Complete a frase “…que sofre com ___”, como essa pessoa diria, não como você diria." exemplo="ter que cobrar quem até ontem era colega" />
+        <Colinha serve="Com as palavras dela, não com as suas. É o que você vai checar nas conversas." exemplo="ter que cobrar quem até ontem era colega" />
       </Pergunta>
 
-      <Pergunta n={++k} feita={!!h.contexto?.trim()} titulo="Em que momento ou situação isso aparece?">
+      <Pergunta n={++k} feita={!!h.contexto?.trim()} titulo="Em que momento ou lugar isso acontece com ela?">
         <input className="mem-input" aria-label="Contexto" value={h.contexto ?? ""} onChange={(e) => setH({ ...h, contexto: e.target.value })} />
-        <Colinha serve="Complete a frase “…em ___”. Diz onde encontrar essas pessoas." exemplo="nos primeiros seis meses depois da promoção" />
+        <Colinha serve="É também por onde você vai encontrá-la no próximo movimento." exemplo="nos primeiros seis meses depois da promoção" />
       </Pergunta>
 
       <Pergunta n={++k} feita={!!h.transformacao?.trim()} titulo="O que muda para ela, de um jeito que dá para ver?">
         <input className="mem-input" aria-label="Transformação" value={h.transformacao ?? ""} onChange={(e) => setH({ ...h, transformacao: e.target.value })} />
         <Colinha
-          serve="Complete a frase “…a alcançar ___”. Uma mudança que alguém de fora perceberia; evite só sentimentos como “mais confiança”."
+          serve="Uma mudança que alguém de fora perceberia. Evite só sentimentos, como “mais confiança”."
           exemplo="um time que cumpre o combinado sem escalar para o chefe"
         />
       </Pergunta>
@@ -497,14 +565,13 @@ function EditorHipotese({
         <Colinha serve="As três valem. “Imagino” não é pior: só avisa que vai ser preciso encontrar pessoas que você ainda não conhece." />
       </Pergunta>
 
-      {completa && (
-        <div className="ws-pauta">
-          <p className="mem-label">Antes de salvar</p>
-          <p className="mem-body-sm">
-            Leia a frase inteira: “{fraseTexto(dados, h)}” Essa frase só poderia ser sua? Se servisse para qualquer pessoa, ainda está genérica.
-          </p>
-        </div>
-      )}
+      <div className="ws-pauta">
+        <p className="mem-label">Sua hipótese, montada</p>
+        <Frase dados={dados} h={h} />
+        {completa && (
+          <p className="mem-body-sm">Leia em voz alta. Essa frase só poderia ser sua? Se servisse para qualquer pessoa, ainda está genérica.</p>
+        )}
+      </div>
 
       {erro && (
         <Aviso variante="danger" titulo="Não salvo">

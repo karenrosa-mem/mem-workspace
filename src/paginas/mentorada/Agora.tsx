@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
 import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
 import FaixaPilar from "../../componentes/FaixaPilar";
-import { ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
+import { DEFINICAO_HIPOTESE, ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, somarHoras } from "../../lib/datas";
@@ -132,14 +132,14 @@ function passoM3(d: DadosJornada): Passo {
   if (semQuemMais)
     return {
       titulo: `Quem mais passa por isso? · 2 perguntas sobre ${semQuemMais.nome} · ~5 min`,
-      porque: "Uma hipótese é uma ideia de para quem isso vale, que ainda vai ser testada com pessoas reais. Começa por quem mais tem esse problema.",
+      porque: DEFINICAO_HIPOTESE,
       acao: { rotulo: "Responder", para: "/jornada/3#quem-mais" },
     };
   if (completas < 3 && perto)
     return { titulo: `Para ${dia}, o essencial são 3 hipóteses completas.`, acao: { rotulo: "Continuar", para: "/jornada/3#hipoteses" } };
   if (total === 0)
     return {
-      titulo: "Monte sua primeira hipótese · ~10 min",
+      titulo: "Escolha um público e monte a primeira hipótese · ~5 min",
       porque: `Na ${dia}, vocês decidem quais você leva para conversar com pessoas reais.`,
       acao: { rotulo: "Começar", para: "/jornada/3#hipoteses" },
     };

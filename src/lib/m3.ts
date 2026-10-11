@@ -1,8 +1,10 @@
+// Frase-modelo sem o "em" antes do contexto (11/10): ela escreve "nos primeiros meses…", "quando…".
 // Regras do M3 · Formular hipóteses (Especificação V1 do M3 e Modelo por movimento, M3).
 import type { DadosJornada, Registro } from "./jornada";
 import { dadosPadrao, decisaoM2, reacaoDe, situacoesDoPadrao, type Reacao, type Rotulo } from "./m2";
 
-export const DEFINICAO_HIPOTESE = "Uma hipótese é uma ideia de para quem isso vale, que ainda vai ser testada com pessoas reais.";
+export const DEFINICAO_HIPOTESE =
+  "Uma hipótese é um palpite organizado: quem tem o problema que você resolve e o que muda para essa pessoa. Ainda é palpite: no próximo movimento, você conversa com gente real para ver se é verdade.";
 
 export const LASTRO = [
   { valor: "ja_ajudei", rotulo: "Já ajudei", detalhe: "ajudei alguém assim com esse problema" },
@@ -90,8 +92,8 @@ export function frase(d: DadosJornada, h: Hipotese): { partes: { texto: string; 
       v(h.publico ? h.publico.charAt(0).toLowerCase() + h.publico.slice(1) : undefined, "[público]"),
       { texto: " que sofre com ", lacuna: false },
       v(h.problema, "[problema]"),
-      { texto: ", em ", lacuna: false },
-      v(h.contexto, "[contexto]"),
+      { texto: ", ", lacuna: false },
+      v(h.contexto, "[quando ou onde]"),
       { texto: ", a alcançar ", lacuna: false },
       v(h.transformacao, "[transformação]"),
       { texto: ", usando ", lacuna: false },

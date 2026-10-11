@@ -1277,3 +1277,15 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-frase-viva > p {
   margin: 0;
 }
+
+.ws-publico-livre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  background: var(--surface-raised);
+}
