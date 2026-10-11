@@ -80,14 +80,23 @@ export default function M2() {
       ) : (
         <>
           <LeituraKaren registro={mapa} />
-          <p className="mem-body ws-measure ws-definicao">
-            <strong>{DEFINICAO_ATIVO}</strong> Ao lado de cada padrão estão esses quatro sinais, acesos
-            conforme o que você já contou. São sinais, não prova: o que é ativo, vocês decidem juntas
-            {c2 ? ` na Call 2 (${dataHora(c2.data_atual)})` : " na Call 2"}.
-          </p>
+          <section className="ws-bloco ws-como">
+            <p className="mem-label mem-muted">O que fazer aqui</p>
+            <ol className="ws-como__passos">
+              <li className="mem-body">
+                Leia cada possível ativo que a Karen encontrou nas suas situações.
+              </li>
+              <li className="mem-body">Responda as perguntas de cada um. Leva uns 5 minutos por possível ativo.</li>
+              <li className="mem-body">
+                O que é ativo de verdade, vocês decidem juntas
+                {c2 ? ` na Call 2 (${dataHora(c2.data_atual)})` : " na Call 2"}.
+              </li>
+            </ol>
+            <p className="mem-body-sm mem-muted ws-measure">{DEFINICAO_ATIVO}</p>
+          </section>
 
-          {padroes(dados).map((p, i) => (
-            <BlocoPadrao key={p.id} dados={dados} padrao={p} indice={i + 1} aoSalvar={recarregar} travado={!!decisao} />
+          {padroes(dados).map((p, i, todos) => (
+            <BlocoPadrao key={p.id} dados={dados} padrao={p} indice={i + 1} total={todos.length} aoSalvar={recarregar} travado={!!decisao} />
           ))}
 
           <OutrasExperiencias dados={dados} />
@@ -104,12 +113,14 @@ function BlocoPadrao({
   dados,
   padrao,
   indice,
+  total,
   aoSalvar,
   travado,
 }: {
   dados: DadosJornada;
   padrao: Registro;
   indice: number;
+  total: number;
   aoSalvar: () => Promise<void>;
   travado: boolean;
 }) {
@@ -122,60 +133,56 @@ function BlocoPadrao({
   const completa = reacaoCompleta(reacaoSalva, sits.length === 1);
   const [editando, setEditando] = useState(!completa);
   const rotulo = (info.rotulo_final ?? info.rotulo) as Rotulo | undefined;
+  const listaSinais = sinais(dados, padrao, reacaoSalva);
 
   return (
-    <section className="ws-bloco ws-padrao" id={`padrao-${padrao.id}`}>
+    <section className="mem-card ws-padrao" id={`padrao-${padrao.id}`}>
       <div className="ws-situacao__topo">
-        <span className="mem-label mem-muted">Padrão {indice}</span>
-        {rotulo && (
-          <span className="mem-label ws-candidata">
-            {ROTULOS[rotulo]}
-            {info.rotulo_final ? "" : " · provisório"}
-          </span>
-        )}
+        <span className="mem-label mem-muted">
+          Possível ativo {indice} de {total} · a Karen identificou
+        </span>
         {info.status === "nao_seguiu" && <span className="mem-tag mem-tag--relato">Não seguiu</span>}
         {info.status === "escolhido" && <span className="mem-tag mem-tag--decisao">Decisão · segue</span>}
+        {completa && !info.status && <span className="mem-tag mem-tag--evidencia">Respondido</span>}
       </div>
       <h2 className="mem-h2 ws-padrao__nome">{info.nome}</h2>
+      {info.rotulo_final && rotulo && <p className="mem-label ws-candidata">{ROTULOS[rotulo]}</p>}
 
-      <div className="ws-padrao__corpo">
-        <div className="ws-padrao__situacoes">
-          <p className="mem-label mem-muted">
-            Suas situações{anos.length ? ` · ${anos.join(" · ")}` : ""}
-            {tempo ? ` · ${tempo} de prática` : ""}
-          </p>
-          <ol className="ws-situacoes">
-            {sits.map((s) => {
-              const c = s.conteudo as Situacao;
-              return (
-                <li key={s.id} className="ws-situacao">
-                  <span className="mem-data">{c.ano ?? "—"}</span>
-                  <p className="mem-body ws-situacao__titulo">{tituloDaSituacao(s)}</p>
-                  {c.o_que_mudou && <p className="mem-body-sm mem-muted">O que mudou: {c.o_que_mudou}</p>}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-        <aside className="ws-sinais" aria-label="Sinais de um ativo">
-          <p className="mem-label mem-muted">Sinais de um ativo</p>
-          <ul>
-            {sinais(dados, padrao, reacaoSalva).map((s) => (
-              <li key={s.nome} className="ws-sinal">
-                <span className={`mem-marker mem-marker--${s.presente ? "done" : "next"}`} aria-hidden="true" />
-                <span className="mem-body-sm">
-                  {s.nome}
-                  <span className="mem-muted">
-                    {" "}
-                    · {s.presente ? "aceso" : "ainda não"}
-                    {s.detalhe ? ` · ${s.detalhe}` : ""}
-                  </span>
-                </span>
+      <div className="ws-padrao__parte">
+        <p className="mem-label mem-muted">
+          Onde isso aparece na sua história{anos.length ? ` · ${anos.join(" · ")}` : ""}
+          {tempo ? ` · ${tempo} de prática` : ""}
+        </p>
+        <ul className="ws-padrao__sits">
+          {sits.map((s) => {
+            const c = s.conteudo as Situacao;
+            return (
+              <li key={s.id}>
+                <span className="mem-data">{c.ano ?? "—"}</span>
+                <span className="mem-body">{tituloDaSituacao(s)}</span>
               </li>
-            ))}
-          </ul>
-          <p className="mem-body-sm mem-muted">Sinais do que você contou, não prova.</p>
-        </aside>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div className="ws-padrao__parte">
+        <p className="mem-label mem-muted">O que suas situações já mostram</p>
+        <ul className="ws-sinais-linha">
+          {listaSinais.map((s) => (
+            <li key={s.nome} className={`ws-sinal ${s.presente ? "" : "ws-sinal--ainda"}`}>
+              <span className={`mem-marker mem-marker--${s.presente ? "done" : "next"}`} aria-hidden="true" />
+              <span className="mem-body-sm">
+                {s.nome}
+                {s.detalhe && <span className="mem-muted"> · {s.detalhe}</span>}
+                <span className="ws-sr"> {s.presente ? "(aparece)" : "(ainda não aparece)"}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mem-body-sm mem-muted">
+          São as quatro partes de um ativo. O que ainda não aparece, vocês olham juntas na call.
+        </p>
       </div>
 
       {info.status === "nao_seguiu" && (info.razao || info.condicao_volta) && (
@@ -209,32 +216,32 @@ function rotuloDe(lista: readonly { valor: string; rotulo: string }[], v?: strin
 
 function ResumoReacao({ reacao, podeEditar, aoEditar }: { reacao?: Reacao; podeEditar: boolean; aoEditar: () => void }) {
   if (!reacao) return null;
-  const comoSabe = COMO_SABE.flatMap((g) => g.opcoes as readonly { valor: string; rotulo: string }[]);
+  const linhas: [string, string][] = [
+    ["Você se vê nisso?", `${rotuloDe(RECONHECE, reacao.reconhece)}${reacao.frase ? ` — ${reacao.frase}` : ""}`],
+    ["Quem tinha o problema", reacao.quem_tinha ?? "—"],
+    ["Sinal de que deu resultado", rotuloDe(COMO_SABE, reacao.como_sabe)],
+    ["Vontade nos próximos 5 a 10 anos", rotuloDe(VONTADE, reacao.vontade)],
+  ];
+  if (reacao.outras_vezes) linhas.push(["Outras vezes", rotuloDe(OUTRAS_VEZES, reacao.outras_vezes)]);
   return (
-    <dl className="ws-respostas">
-      <div className="ws-respostas__item">
-        <dt className="mem-body-sm mem-muted">Você reconhece isso como seu?</dt>
-        <dd className="mem-body">
-          {rotuloDe(RECONHECE, reacao.reconhece)} — {reacao.frase}
-        </dd>
-      </div>
-      <div className="ws-respostas__item">
-        <dt className="mem-body-sm mem-muted">Quem tinha o problema</dt>
-        <dd className="mem-body">{reacao.quem_tinha}</dd>
-      </div>
-      <div className="ws-respostas__item">
-        <dt className="mem-body-sm mem-muted">Como você sabe que funcionava · vontade</dt>
-        <dd className="mem-body">
-          {rotuloDe(comoSabe, reacao.como_sabe)} · vontade: {rotuloDe(VONTADE, reacao.vontade).toLowerCase()}
-          {reacao.outras_vezes && ` · ${rotuloDe(OUTRAS_VEZES, reacao.outras_vezes).toLowerCase()}`}
-          {podeEditar && (
-            <button type="button" className="mem-btn mem-btn--quiet ws-editar" onClick={aoEditar}>
-              Editar
-            </button>
-          )}
-        </dd>
-      </div>
-    </dl>
+    <div className="ws-padrao__parte">
+      <p className="mem-label mem-muted">Suas respostas</p>
+      <dl className="ws-resumo">
+        {linhas.map(([k, v]) => (
+          <div key={k}>
+            <dt className="mem-body-sm mem-muted">{k}</dt>
+            <dd className="mem-body">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {podeEditar && (
+        <div>
+          <button type="button" className="mem-btn mem-btn--quiet" onClick={aoEditar}>
+            Mudar respostas
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -245,24 +252,39 @@ function Opcoes({
   aoEscolher,
 }: {
   rotulo: string;
-  opcoes: readonly { valor: string; rotulo: string }[];
+  opcoes: readonly { valor: string; rotulo: string; detalhe?: string }[];
   valor?: string;
   aoEscolher: (v: string) => void;
 }) {
   return (
-    <div className="ws-escolha" role="radiogroup" aria-label={rotulo}>
+    <div className={`ws-opcoes ${opcoes.some((o) => o.detalhe) ? "ws-opcoes--grade" : ""}`} role="radiogroup" aria-label={rotulo}>
       {opcoes.map((o) => (
         <button
           key={o.valor}
           type="button"
           role="radio"
           aria-checked={valor === o.valor}
-          className={`mem-btn ${valor === o.valor ? "mem-btn--primary" : "mem-btn--secondary"}`}
+          className={`ws-opcao ${valor === o.valor ? "ws-opcao--marcada" : ""}`}
           onClick={() => aoEscolher(o.valor)}
         >
-          {o.rotulo}
+          <span className="ws-opcao__rotulo">{o.rotulo}</span>
+          {o.detalhe && <span className="ws-opcao__detalhe">{o.detalhe}</span>}
         </button>
       ))}
+    </div>
+  );
+}
+
+function Pergunta({ n, feita, titulo, children }: { n: number; feita: boolean; titulo: string; children: React.ReactNode }) {
+  return (
+    <div className="ws-pergunta-bloco">
+      <span className={`ws-pergunta-bloco__n ${feita ? "ws-pergunta-bloco__n--feita" : ""}`} aria-hidden="true">
+        {feita ? "✓" : n}
+      </span>
+      <div className="ws-pergunta-bloco__corpo">
+        <p className="mem-h4 ws-pergunta-bloco__titulo">{titulo}</p>
+        {children}
+      </div>
     </div>
   );
 }
@@ -313,39 +335,43 @@ function FormReacao({
     await aoSalvar();
   }
 
-  const naoReconhece = r.reconhece === "nao_reconheco";
+  const nome = dadosPadrao(padrao).nome ?? "isto";
+  const pergunta1 =
+    r.reconhece === "nao_reconheco"
+      ? "O que não bate?"
+      : r.reconhece === "em_parte"
+        ? "O que combina com você e o que não combina?"
+        : "O que mais combina com você aqui?";
   const algo = !!(r.reconhece || r.frase || r.como_sabe || r.vontade);
+  let n = 0;
 
   return (
     <div className="ws-form ws-reacao">
-      <div className="mem-field">
-        <span className="mem-field__label">Você reconhece isso como seu?</span>
-        <Opcoes rotulo="Você reconhece isso como seu?" opcoes={RECONHECE} valor={r.reconhece} aoEscolher={(v) => setR({ ...r, reconhece: v })} />
-        <Colinha serve="Olhe as suas situações reunidas sob este nome. Você se vê nisso? Não existe resposta certa: se não reconhecer, isso vira conversa na call." />
-      </div>
-      {r.reconhece && (
-        <div className="mem-field">
-          <label className="mem-field__label" htmlFor={`frase-${padrao.id}`}>
-            {naoReconhece ? "O que não bate?" : "Em uma frase, o que é isso nas suas palavras?"}
-          </label>
-          <input
-            id={`frase-${padrao.id}`}
-            className="mem-input"
-            value={r.frase ?? ""}
-            onChange={(e) => setR({ ...r, frase: e.target.value })}
-          />
-          <Colinha
-            serve={naoReconhece ? "O que não combina com você nesse padrão, em uma linha." : "Com as suas palavras, não com o nome que a Karen deu. Uma linha basta."}
-            exemplo={naoReconhece ? "Eu fiz isso, mas foi por obrigação, não é o que eu faço bem." : "Eu faço as duas partes se ouvirem antes de alguém decidir."}
-          />
-        </div>
-      )}
-      <div className="mem-field">
-        <label className="mem-field__label" htmlFor={`quem-${padrao.id}`}>
-          Quem tinha o problema que você resolvia?
-        </label>
+      <p className="mem-label mem-muted">Suas respostas · ~5 min</p>
+
+      <Pergunta n={++n} feita={!!r.reconhece && !!r.frase?.trim()} titulo="Você se vê nisso?">
+        <Opcoes rotulo="Você se vê nisso?" opcoes={RECONHECE} valor={r.reconhece} aoEscolher={(v) => setR({ ...r, reconhece: v })} />
+        {r.reconhece && (
+          <div className="mem-field">
+            <label className="mem-field__label" htmlFor={`frase-${padrao.id}`}>
+              {pergunta1}
+            </label>
+            <input id={`frase-${padrao.id}`} className="mem-input" value={r.frase ?? ""} onChange={(e) => setR({ ...r, frase: e.target.value })} />
+            <Colinha
+              serve="Uma linha, com as suas palavras. Não precisa dar outro nome: diga o que você reconhece (ou não) nas situações acima."
+              exemplo={r.reconhece === "nao_reconheco" ? "Eu fiz, mas foi por obrigação; não é o que eu faço bem." : "O momento em que eu faço as duas partes se ouvirem antes de alguém decidir."}
+            />
+          </div>
+        )}
+      </Pergunta>
+
+      <Pergunta
+        n={++n}
+        feita={!!r.quem_tinha?.trim() && (!!inicial.quem_tinha_confirmado || r.quem_tinha !== preenchido)}
+        titulo="Quem tinha o problema que você resolvia?">
         <input
           id={`quem-${padrao.id}`}
+          aria-label="Quem tinha o problema"
           className="mem-input"
           value={r.quem_tinha ?? ""}
           onChange={(e) => setR({ ...r, quem_tinha: e.target.value })}
@@ -354,33 +380,27 @@ function FormReacao({
           serve={
             preenchido
               ? "A Karen sugeriu isto a partir das suas situações. Se estiver certo, deixe como está; se não, corrija com as suas palavras."
-              : "Quem estava do outro lado com o problema que você resolvia. Seja específica: quem e em que momento."
+              : "Quem estava do outro lado com o problema. Seja específica: quem e em que momento."
           }
           exemplo="Gestores promovidos de dentro do time, no primeiro ano no cargo."
         />
-      </div>
-      <div className="mem-field">
-        <span className="mem-field__label">Como você sabe que isso funcionava?</span>
-        {COMO_SABE.map((g) => (
-          <div key={g.grupo || "outro"} className="ws-grupo">
-            {g.grupo && <span className="mem-label mem-muted">{g.grupo}</span>}
-            <Opcoes rotulo={g.grupo || "Outra"} opcoes={g.opcoes} valor={r.como_sabe} aoEscolher={(v) => setR({ ...r, como_sabe: v })} />
-          </div>
-        ))}
-        <Colinha serve="“Tem número ou documento”: um resultado registrado (indicador, relatório, e-mail). “Alguém reconheceu”: um chefe, cliente ou colega disse. “Eu percebi”: você notou, mas ninguém registrou. “Ainda não sei” é uma resposta válida: vira pergunta para a call." />
-      </div>
-      <div className="mem-field">
-        <span className="mem-field__label">Quanta vontade você tem de trabalhar com isso nos próximos anos?</span>
+      </Pergunta>
+
+      <Pergunta n={++n} feita={!!r.como_sabe} titulo={`Que sinal você tem de que “${nome}” deu resultado?`}>
+        <Opcoes rotulo="Sinal de resultado" opcoes={COMO_SABE} valor={r.como_sabe} aoEscolher={(v) => setR({ ...r, como_sabe: v })} />
+      </Pergunta>
+
+      <Pergunta n={++n} feita={!!r.vontade} titulo="Quanta vontade você tem de trabalhar com isso nos próximos 5 a 10 anos?">
         <Opcoes rotulo="Vontade" opcoes={VONTADE} valor={r.vontade} aoEscolher={(v) => setR({ ...r, vontade: v })} />
-        <Colinha serve="A única opinião que pedimos aqui. Seja honesta: dá para saber fazer muito bem uma coisa e não querer fazer mais." />
-      </div>
+        <Colinha serve="A única opinião que pedimos aqui. Dá para saber fazer muito bem uma coisa e não querer fazer mais: seja honesta." />
+      </Pergunta>
+
       {umaSituacao && (
-        <div className="mem-field">
-          <span className="mem-field__label">Isso aconteceu outras vezes?</span>
+        <Pergunta n={++n} feita={!!r.outras_vezes} titulo="Isso aconteceu outras vezes, além da situação acima?">
           <Opcoes rotulo="Outras vezes" opcoes={OUTRAS_VEZES} valor={r.outras_vezes} aoEscolher={(v) => setR({ ...r, outras_vezes: v })} />
-          <Colinha serve="Este padrão tem uma situação só. Você fez isso outras vezes, mesmo sem ter contado aqui?" />
-        </div>
+        </Pergunta>
       )}
+
       {falhou && (
         <Aviso variante="danger" titulo="Não foi possível salvar">
           Suas respostas continuam aqui. Tente de novo.
@@ -388,8 +408,9 @@ function FormReacao({
       )}
       <div className="ws-acoes">
         <button type="button" className="mem-btn mem-btn--primary" disabled={!algo || salvando} onClick={salvar}>
-          {salvando ? "Salvando" : "Salvar este padrão"}
+          {salvando ? "Salvando" : "Salvar respostas"}
         </button>
+        <span className="mem-body-sm mem-muted">Pode salvar pela metade e voltar depois.</span>
       </div>
     </div>
   );

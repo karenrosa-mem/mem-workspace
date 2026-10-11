@@ -492,7 +492,7 @@ function rotuloDe(lista: readonly { valor: string; rotulo: string }[], v?: strin
 }
 
 function Reacoes({ dados }: { dados: DadosJornada }) {
-  const comoSabe = COMO_SABE.flatMap((g) => g.opcoes as readonly { valor: string; rotulo: string }[]);
+  const comoSabe = COMO_SABE as readonly { valor: string; rotulo: string }[];
   const escolha = escolhaDois(dados)?.conteudo as { padroes?: string[]; linha?: string } | undefined;
   return (
     <div className="ws-bloco">

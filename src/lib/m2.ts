@@ -22,19 +22,19 @@ export type Padrao = {
   condicao_volta?: string;
 };
 
+// Textos da mentorada revistos pela Karen em 11/10 (os valores gravados não mudam).
 export const RECONHECE = [
-  { valor: "reconheco", rotulo: "Reconheço" },
+  { valor: "reconheco", rotulo: "Sim, sou eu" },
   { valor: "em_parte", rotulo: "Em parte" },
-  { valor: "nao_reconheco", rotulo: "Não reconheço" },
+  { valor: "nao_reconheco", rotulo: "Não me vejo nisso" },
 ] as const;
 
+// Sinal de resultado: registro e reconhecimento são sinais de fora; "eu percebi" é percepção.
 export const COMO_SABE = [
-  { grupo: "De fora", opcoes: [
-    { valor: "numero_documento", rotulo: "Tem número ou documento" },
-    { valor: "alguem_reconheceu", rotulo: "Alguém reconheceu" },
-  ] },
-  { grupo: "De dentro", opcoes: [{ valor: "eu_percebi", rotulo: "Eu percebi" }] },
-  { grupo: "", opcoes: [{ valor: "ainda_nao_sei", rotulo: "Ainda não sei" }] },
+  { valor: "numero_documento", rotulo: "Tenho registro", detalhe: "um número, relatório, e-mail ou avaliação" },
+  { valor: "alguem_reconheceu", rotulo: "Alguém me disse", detalhe: "um chefe, cliente ou colega reconheceu" },
+  { valor: "eu_percebi", rotulo: "Eu percebi", detalhe: "notei a diferença, mas ninguém registrou" },
+  { valor: "ainda_nao_sei", rotulo: "Ainda não sei", detalhe: "vira pergunta para a call" },
 ] as const;
 
 export const VONTADE = [
@@ -118,7 +118,7 @@ export function sinais(d: DadosJornada, p: Registro, reacao?: Reacao): Sinal[] {
   const anos = anosDoPadrao(d, p);
   const declarado = sits.length === 1 && (reacao?.outras_vezes === "algumas" || reacao?.outras_vezes === "sempre");
   return [
-    { nome: "Sabe fazer", presente: !!dados.sabe_fazer },
+    { nome: "Você sabe fazer", presente: !!dados.sabe_fazer },
     {
       nome: "Já fez mais de uma vez",
       presente: anos.length >= 2 || declarado,
@@ -129,7 +129,7 @@ export function sinais(d: DadosJornada, p: Registro, reacao?: Reacao): Sinal[] {
       presente: sits.some((s) => !!(s.conteudo as Situacao).o_que_mudou?.trim()),
     },
     {
-      nome: "Alguém tem o problema",
+      nome: "Alguém tinha o problema",
       presente: !!reacao?.quem_tinha_confirmado && !!reacao?.quem_tinha?.trim(),
     },
   ];
