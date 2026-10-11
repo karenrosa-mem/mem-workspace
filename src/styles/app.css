@@ -1363,3 +1363,36 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-roteiro-conversa[open] {
   background: var(--surface-raised);
 }
+
+/* Dica do ExpertIA */
+.ws-dica-expertia {
+  border: 1px dashed var(--route);
+  border-radius: var(--radius-1);
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+}
+
+.ws-dica-expertia > * {
+  margin: 0;
+}
+
+.ws-dica-expertia .mem-label {
+  color: var(--ink-muted);
+}
+
+.ws-link-botao {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--brand);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ws-link {
+  color: var(--brand);
+}

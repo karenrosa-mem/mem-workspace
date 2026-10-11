@@ -184,13 +184,20 @@ function passoM4(d: DadosJornada): Passo {
   const c4 = call(d, 4);
   const dia = c4 ? diaDaSemana(c4.data_atual) : "a Call 4";
   const lista = frentes(d);
-  const conversas = d.registros.filter((r) => r.tipo === "conversa");
+  const conversas = d.registros.filter((r) => r.tipo === "conversa" || r.tipo === "relato" || r.tipo === "sinal_mercado");
+  const semTrilha = lista.find((f) => !(f.conteudo as { trilha?: string }).trilha);
+  if (semTrilha)
+    return {
+      titulo: "Escolha como investigar cada hipótese: pesquisando sozinha, conversando com pessoas, ou as duas.",
+      porque: DEFINICAO_EVIDENCIA,
+      acao: { rotulo: "Escolher", para: `/jornada/4#frente-${semTrilha.id}` },
+    };
   if (conversas.length === 0) {
     const primeira = lista[0];
     return {
-      titulo: `Sua primeira conversa${primeira ? `: ${proximoPasso(d, primeira, naDia(dia).toLowerCase())}` : ""}`,
-      porque: "Roteiro à mão. Registre logo depois, ~3 min. " + DEFINICAO_EVIDENCIA,
-      acao: { rotulo: "Ver o roteiro", para: "/jornada/4" },
+      titulo: primeira ? proximoPasso(d, primeira, naDia(dia).toLowerCase()) : "Comece pela primeira hipótese.",
+      porque: DEFINICAO_EVIDENCIA,
+      acao: { rotulo: "Começar", para: "/jornada/4" },
     };
   }
   const revisadas = conversas.some((r) => !!(r.conteudo_mentora as { nota?: string }).nota?.trim());
@@ -207,7 +214,7 @@ function passoM4(d: DadosJornada): Passo {
     return {
       titulo: proximoPasso(d, f, naDia(dia).toLowerCase()),
       porque: revisadas ? "A Karen deixou notas nas suas conversas: vale ler antes da próxima." : conversas.length <= 2 ? "A Karen vai olhar suas primeiras conversas em até 48 h. Pode seguir conversando." : undefined,
-      acao: { rotulo: "Registrar conversa", para: `/jornada/4#frente-${f.id}` },
+      acao: { rotulo: "Continuar", para: `/jornada/4#frente-${f.id}` },
     };
   }
   if (!enviadoEm(d, 4))

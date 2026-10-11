@@ -491,7 +491,8 @@ function GuiaCall3({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
       detalhe: "“Estou pesquisando como [público] lida com [problema]. Posso te fazer umas perguntas sobre a sua experiência?”",
     },
     { id: "m4-nunca", texto: "Combine o que ela nunca pergunta.", detalhe: ROTEIRO_NUNCA.map((x) => `“${x}”`).join(" · ") },
-    { id: "m4-meta", texto: "Defina a meta de conversas de cada hipótese.", detalhe: "3 é o ponto de partida; menos se o acesso é difícil. Nunca menos de 2." },
+    { id: "m4-trilha", texto: "Para cada hipótese, ajude a escolher a trilha: pesquisa de mercado, conversas ou as duas.", detalhe: "Quem tem acesso fácil ao público (já ajudou alguém assim) ganha com a conversa. Para quem trava, a pesquisa vem primeiro." },
+    { id: "m4-meta", texto: "Defina a meta de conversas de cada hipótese que terá conversa.", detalhe: "2 é o ponto de partida. Nunca menos de 2." },
     { id: "m4-comeco", texto: "Por onde ela começa: normalmente por quem já ajudou." },
     { id: "m4-medo", texto: "Pergunte se ela tem receio de abordar alguém. Trate aqui, ao vivo." },
     { id: "m4-registro", texto: "Mostre o registro: logo depois de cada conversa, pelo celular, ~3 min." },
@@ -580,7 +581,8 @@ function GuiaCall4({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
     ...linhas(nota.pagamento).map((t, i) => ({ id: `pag-${i}`, texto: t, detalhe: "Pagamento ligado à hipótese?" })),
   ];
   const decidir: Item[] = [
-    { id: "d4-criterio", texto: "Só segue para comparação quem tem 2 ou mais conversas do público com caso concreto." },
+    { id: "d4-criterio", texto: "Segue para comparação: 2 conversas do público com caso concreto, ou 3 relatos com caso e 1 sinal de demanda sustentada." },
+    { id: "d4-trilha", texto: "Se a hipótese passou só pela pesquisa, diga: no teste comercial (M9) ela vai confirmar se este público responde a ela." },
     { id: "d4-dela", texto: "Entre as que podem seguir, a escolha é dela. Uma hipótese sem sinal não segue só porque ela gosta." },
     { id: "d4-validacao", texto: "Diga com todas as letras: seguir não é validar. É ter material para comparar." },
     { id: "d4-registrar", texto: "Registre a decisão de cada hipótese, com a razão. O M5 abre e vocês seguem para a segunda parte da call." },

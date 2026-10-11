@@ -18,7 +18,18 @@ import {
   proximoPasso,
   resumo,
   situacaoPublico,
+  ONDE_RELATO,
+  ONDE_SINAL,
+  TEMPO,
+  TRILHAS,
+  podeSeguir,
+  relatosDe,
+  sinaisMercadoDe,
+  sustentado,
+  trilha,
   type Conversa,
+  type Relato,
+  type SinalMercado,
   type Frente,
   type FrenteMentora,
   type RevisaoConversa,
@@ -206,7 +217,7 @@ function MetaFrente({ dados, frente, travado, aoSalvar }: { dados: DadosJornada;
           )}
           {salvo && <span className="mem-body-sm mem-muted">Salvo.</span>}
         </div>
-        <Colinha serve="3 é o ponto de partida. Menos quando o acesso é difícil; mais quando os sinais vierem contraditórios. Nunca menos de 2: nenhuma conclusão sai de uma conversa só." />
+        <Colinha serve="Vale para a trilha de conversas. 2 é o ponto de partida; mais quando os sinais vierem contraditórios. Nunca menos de 2: nenhuma conclusão sai de uma conversa só." />
       </div>
     </article>
   );
@@ -226,6 +237,34 @@ function FrenteMentoraCartao({ dados, frente, n, travado, aoSalvar }: { dados: D
         </strong>{" "}
         · {resumo(dados, frente)}
       </p>
+      <p className="mem-body-sm mem-muted">
+        Trilha: {TRILHAS.find((t) => t.valor === trilha(frente))?.rotulo.toLowerCase() ?? "ainda não escolheu"}
+      </p>
+      {relatosDe(dados, frente).map((r) => (
+        <RelatoMentora key={r.id} registro={r} travado={travado} aoSalvar={aoSalvar} />
+      ))}
+      {sinaisMercadoDe(dados, frente).map((r) => {
+        const x = r.conteudo as SinalMercado;
+        return (
+          <p key={r.id} className="mem-body-sm">
+            Sinal de mercado ({ONDE_SINAL.find((o) => o.valor === x.onde)?.rotulo ?? ""}): {x.nome}
+            {x.tempo ? ` · ${TEMPO.find((t) => t.valor === x.tempo)?.rotulo.toLowerCase()}` : ""}
+            {x.anuncios ? ` · ${x.anuncios} anúncios` : ""}
+            {x.mais_vendidos ? " · entre os mais vendidos" : ""}
+            {x.preco ? ` · ${x.preco}` : ""}
+            {sustentado(r) ? " · sustentado" : ""}
+            {x.link && (
+              <>
+                {" "}
+                ·{" "}
+                <a href={x.link} target="_blank" rel="noreferrer">
+                  link
+                </a>
+              </>
+            )}
+          </p>
+        );
+      })}
       {fr.checagem && (
         <p className="mem-body-sm">
           Alguém já cobra? {fr.checagem === "sim" ? `Sim: ${(fr.checagem_links ?? []).join("; ")}` : "Não encontrou"}
@@ -348,6 +387,37 @@ function RevisaoConversaCartao({ registro, n, travado, aoSalvar }: { registro: R
   );
 }
 
+function RelatoMentora({ registro, travado, aoSalvar }: { registro: Registro; travado: boolean; aoSalvar: () => Promise<void> }) {
+  const x = registro.conteudo as Relato;
+  const naoConta = (registro.conteudo_mentora as { nao_conta?: boolean }).nao_conta === true;
+  async function alternar() {
+    if (!supabase) return;
+    const r = await supabase.from("registro").update({ conteudo_mentora: { ...registro.conteudo_mentora, nao_conta: !naoConta } }).eq("id", registro.id);
+    if (!r.error) await aoSalvar();
+  }
+  return (
+    <div className="ws-conversa">
+      <span className="mem-label mem-muted">
+        Relato · {ONDE_RELATO.find((o) => o.valor === x.onde)?.rotulo ?? ""} · {x.caso ? "ela marcou caso concreto" : "sem caso concreto"}
+        {naoConta ? " · você marcou: não conta" : ""}
+      </span>
+      <p className="mem-body-sm ws-fala">“{x.trecho}”</p>
+      <div className="ws-acoes">
+        {x.link && (
+          <a className="mem-body-sm" href={x.link} target="_blank" rel="noreferrer">
+            conferir o link
+          </a>
+        )}
+        {!travado && x.caso && (
+          <button type="button" className="ws-link-botao mem-body-sm" onClick={alternar}>
+            {naoConta ? "voltar a contar" : "não conta (não é caso concreto ou não é do público)"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------
 type Linha = { resultado?: "segue" | "volta" | "guardada"; razao: string; condicao: string };
 
@@ -435,7 +505,7 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
     <Etapa
       n={5}
       passo={passo}
-      porque="No início da Call 4, hipótese por hipótese: o que apareceu, o que não apareceu, o que ainda é dúvida. A escolha é dela, dentro do critério: só segue para comparação quem tem pelo menos 2 conversas do público com caso concreto. Seguir não é validar."
+      porque="No início da Call 4, hipótese por hipótese: o que apareceu, o que não apareceu, o que ainda é dúvida. A escolha é dela, dentro do critério: segue para comparação quem tem 2 conversas do público com caso concreto, ou 3 relatos com caso e 1 sinal de demanda sustentada. Seguir não é validar."
     >
       <div className="ws-acoes">
         <Link className="mem-btn mem-btn--primary" to={`/mentoradas/${dados.jornada.id}/call/4`}>
@@ -446,7 +516,7 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
         const l = linhas[f.id] ?? { razao: "", condicao: "" };
         const set = (n: Partial<Linha>) => setLinhas({ ...linhas, [f.id]: { ...l, ...n } });
         const casos = contagem(dados, f).caso;
-        const pode = casos >= 2;
+        const pode = podeSeguir(dados, f);
         let k = 0;
         return (
           <article key={f.id} className="mem-card ws-padrao">
@@ -466,7 +536,8 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
               />
               {!pode && (
                 <p className="mem-body-sm mem-muted">
-                  Não pode seguir para comparação: {casos === 1 ? "1 conversa" : `${casos} conversas`} do público com caso concreto (o mínimo é 2).
+                  Não pode seguir para comparação ainda: {casos === 1 ? "1 conversa" : `${casos} conversas`} do público com caso concreto (o mínimo
+                  é 2), e a pesquisa ainda não tem 3 relatos com caso e 1 sinal de demanda sustentada.
                 </p>
               )}
             </Pergunta>

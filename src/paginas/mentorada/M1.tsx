@@ -25,6 +25,7 @@ import {
 } from "../../lib/m1";
 import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import DicaExpertIA from "../../componentes/DicaExpertIA";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
 import { faltaEnvioM1 } from "../../lib/m1";
 import Colinha from "../../componentes/Colinha";
@@ -438,6 +439,10 @@ function CartaoSituacao({
             </li>
           ))}
         </ul>
+        <DicaExpertIA>
+          Se travar para lembrar, converse com o ExpertIA: ele faz perguntas sobre a sua trajetória e ajuda a puxar situações.
+          O que entra aqui é escrito por você, do seu jeito.
+        </DicaExpertIA>
         <div className="ws-acoes">
           <button type="button" className="mem-btn mem-btn--secondary" onClick={() => setLembrete(null)}>
             Começar sem lembrete

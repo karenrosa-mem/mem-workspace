@@ -20,7 +20,7 @@ Adaptações aprovadas pela Karen em 09/10/2026, onde o kit e o método divergem
 3. **Gates:** o losango continua no mapa da jornada (`JourneyTrail`), mas sem "Gate N" nem "Atravessar gate" para a mentorada. Texto na linguagem dela (por exemplo, "decisão com a Karen"). Nomes internos ficam só nas telas da mentora.
 4. **Entregáveis E01–E11 e etapas antigas ("Diagnóstico", "Pesquisa"):** não usar. O `DeliverableCard` é usado com os nomes dos movimentos (M1–M10) e dos registros do modelo por movimento.
 
-`ExpertIANote` não entra na V1 (o Workspace V1 funciona sem o ExpertIA).
+O Workspace V1 funciona sem o ExpertIA. Decisão da Karen em 11/10/2026: as mentoradas têm acesso a ele, e entram dicas discretas (`src/componentes/DicaExpertIA.tsx`, texto simples) só onde ele poupa trabalho de verdade: lembrar situações (M1), outros públicos (M3), pesquisa de mercado (M4) e, mais à frente, a oferta. O componente `ExpertIANote` do kit continua fora da V1.
 
 ## Fontes de verdade do produto
 

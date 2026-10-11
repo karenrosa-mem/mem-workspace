@@ -9,7 +9,7 @@ set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
 select public.t_ok((select count(*) from public.registro where tipo = 'frente') = 2, 'M4 abre com uma frente por hipótese que foi a campo');
 select id as f1 from public.registro where tipo = 'frente' and origem_id = :'h1' \gset
 select id as f2 from public.registro where tipo = 'frente' and origem_id = :'h2' \gset
-select public.t_ok((select (conteudo_mentora->>'meta')::int from public.registro where id = :'f1') = 3, 'meta começa em 3');
+select public.t_ok((select (conteudo_mentora->>'meta')::int from public.registro where id = :'f1') = 2, 'meta começa em 2');
 
 -- Conversas da frente 1
 insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, origem_id, conteudo, autora_papel, autora_id)
@@ -46,9 +46,22 @@ insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, conte
 select public.t_erro(format($$select public.registrar_decisao_m4(%L)$$, :'dm4'), 'frente sem 2 casos concretos não segue para comparação');
 update public.registro set conteudo_mentora = jsonb_build_object('frentes', jsonb_build_array(
     jsonb_build_object('frente', :'f1', 'resultado', 'segue', 'razao', 'dois casos concretos'),
-    jsonb_build_object('frente', :'f2', 'resultado', 'guardada', 'razao', '', 'condicao_volta', 'duas conversas com capital desigual'))) where id = :'dm4';
+    jsonb_build_object('frente', :'f2', 'resultado', 'segue', 'razao', ''))) where id = :'dm4';
 select public.t_erro(format($$select public.registrar_decisao_m4(%L)$$, :'dm4'), 'frente sem razão não registra');
-update public.registro set conteudo_mentora = jsonb_set(conteudo_mentora, '{frentes,1,razao}', '"só uma conversa válida"') where id = :'dm4';
+update public.registro set conteudo_mentora = jsonb_set(conteudo_mentora, '{frentes,1,razao}', '"o tema vende e os relatos se repetem"') where id = :'dm4';
+
+-- Trilha de pesquisa para a frente 2: 3 relatos com caso + 1 sinal sustentado
+set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, origem_id, conteudo, autora_papel, autora_id)
+  select conta_id, id, 4, 'relato', :'f2', jsonb_build_object('onde','avaliacao','trecho','t'||g,'link','https://x','caso', true), 'mentorada', auth.uid()
+  from public.jornada, generate_series(1,2) g;
+select public.t_ok(not public.pesquisa_suficiente(:'f2'), '2 relatos e nenhum sinal: ainda não basta');
+insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, origem_id, conteudo, autora_papel, autora_id)
+  select conta_id, id, 4, 'relato', :'f2', '{"onde":"comentario","trecho":"minha sócia contratou sem me avisar","caso":true}', 'mentorada', auth.uid() from public.jornada;
+insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, origem_id, conteudo, autora_papel, autora_id)
+  select conta_id, id, 4, 'sinal_mercado', :'f2', '{"onde":"anuncio","nome":"Curso Sócias em Paz","tempo":"mais_3","anuncios":4}', 'mentorada', auth.uid() from public.jornada;
+select public.t_ok(public.pesquisa_suficiente(:'f2'), '3 relatos com caso + 1 sinal sustentado: a pesquisa basta');
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
 select public.t_erro(format($$select public.registrar_decisao_m4(%L)$$, :'dm4'), 'Ana não registra a decisão');
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
@@ -57,6 +70,7 @@ select public.t_ok((select estado from public.movimento where codigo = 4) = 'fec
                and (select estado from public.movimento where codigo = 5) = 'aberto', 'decisão registrada: M4 fecha e M5 abre');
 select public.t_ok((select count(*) from public.gate_registro where identificacao = 'gate_3') = 1, 'Gate 3 registrado');
 set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
-select public.t_ok((select conteudo_mentora->>'resultado' from public.registro where id = :'f2') = 'guardada', 'Ana vê a frente guardada, com razão');
+select public.t_ok((select conteudo_mentora->>'base' from public.registro where id = :'f2') = 'pesquisa'
+               and (select conteudo_mentora->>'base' from public.registro where id = :'f1') = 'conversas', 'cada frente guarda por qual trilha seguiu');
 reset role;
 \echo TODOS OS TESTES DO M4 PASSARAM

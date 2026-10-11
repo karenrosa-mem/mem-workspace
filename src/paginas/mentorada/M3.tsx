@@ -32,6 +32,7 @@ import {
 import { dataHora, diaBrasilia, hojeBrasilia } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
+import DicaExpertIA from "../../componentes/DicaExpertIA";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
@@ -206,6 +207,12 @@ function QuemMaisAtivo({
           serve="Quem sofre exatamente desse problema, em outro lugar. Não basta alguém que poderia se beneficiar: precisa ter o mesmo problema. Um por linha."
           exemplo={"Donas de pequenos negócios com sócias\nGerentes de clínica"}
         />
+        {!travado && (
+          <DicaExpertIA>
+            Se travar, peça ao ExpertIA outros tipos de pessoa que vivem exatamente este problema. Fique só com os que você
+            reconhece: ter o mesmo problema, não só poder se beneficiar.
+          </DicaExpertIA>
+        )}
       </Pergunta>
       {doAtivo.length > 0 && (
         <div className="ws-padrao__parte">
