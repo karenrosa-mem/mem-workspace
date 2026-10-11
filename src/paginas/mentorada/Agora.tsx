@@ -6,7 +6,7 @@ import { enviadoEm } from "../../lib/envio";
 import { DEFINICAO_HIPOTESE, ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
-import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, somarHoras } from "../../lib/datas";
+import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, naDia, somarHoras } from "../../lib/datas";
 import { decisaoM2, escolhaDois, padroes, padroesFaltando, precisaEscolherDois } from "../../lib/m2";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
@@ -111,7 +111,7 @@ function passoM2(d: DadosJornada): Passo {
   if (faltam === total)
     return {
       titulo: `Responda sobre cada possível ativo · ${total} no total · ~5 min cada`,
-      porque: `Na ${dia}, vocês decidem quais você leva ao mercado.`,
+      porque: `${naDia(dia)}, vocês decidem quais você leva ao mercado.`,
       acao: { rotulo: "Começar", para: "/jornada/2" },
     };
   if (faltam > 0)
@@ -130,7 +130,7 @@ function passoM2(d: DadosJornada): Passo {
       porque: "Na call, vocês decidem quais ativos você leva ao mercado.",
       acao: { rotulo: "Enviar", para: "/jornada/2#envio" },
     };
-  return { titulo: `Enviado. Na ${dia}, vocês decidem quais ativos você leva ao mercado.` };
+  return { titulo: `Enviado. ${naDia(dia)}, vocês decidem quais ativos você leva ao mercado.` };
 }
 
 function passoM3(d: DadosJornada): Passo {
@@ -153,7 +153,7 @@ function passoM3(d: DadosJornada): Passo {
   if (total === 0)
     return {
       titulo: "Escolha um público e monte a primeira hipótese · ~5 min",
-      porque: `Na ${dia}, vocês decidem quais você leva para conversar com pessoas reais.`,
+      porque: `${naDia(dia)}, vocês decidem quais você leva para conversar com pessoas reais.`,
       acao: { rotulo: "Começar", para: "/jornada/3#hipoteses" },
     };
   if (completas < 3)
@@ -169,14 +169,14 @@ function passoM3(d: DadosJornada): Passo {
       acao: { rotulo: "Responder", para: "/jornada/3#hipoteses" },
     };
   if (total > 5)
-    return { titulo: `Você tem ${total}. Na ${dia}, vocês escolhem até 5.`, porque: "Nada é bloqueado.", acao: { rotulo: "Ver", para: "/jornada/3#hipoteses" } };
+    return { titulo: `Você tem ${total}. ${naDia(dia)}, vocês escolhem até 5.`, porque: "Nada é bloqueado.", acao: { rotulo: "Ver", para: "/jornada/3#hipoteses" } };
   if (!enviadoEm(d, 3))
     return {
       titulo: `Tudo pronto para ${dia}. Envie para a Karen.`,
-      porque: "Na call, vocês decidem quais hipóteses vão a campo.",
+      porque: "Na call, vocês escolhem quais hipóteses você vai testar em conversas.",
       acao: { rotulo: "Enviar", para: "/jornada/3#envio" },
     };
-  return { titulo: `Enviado. Na ${dia}, vocês decidem quais hipóteses vão a campo.`, acao: { rotulo: "Rever", para: "/jornada/3#hipoteses" } };
+  return { titulo: `Enviado. ${naDia(dia)}, vocês escolhem quais hipóteses você vai testar em conversas.`, acao: { rotulo: "Rever", para: "/jornada/3#hipoteses" } };
 }
 
 export default function Agora() {

@@ -65,3 +65,8 @@ export function horasAte(valor: string): number {
 export function diaBrasilia(valor: string): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: FUSO }).format(new Date(valor));
 }
+
+// "Na quinta" / "No sábado"
+export function naDia(dia: string): string {
+  return /^(sábado|domingo)/.test(dia) ? `No ${dia}` : `Na ${dia}`;
+}

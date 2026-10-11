@@ -68,7 +68,7 @@ export default function M3() {
             <li className="mem-body">Para cada ativo, responda quem mais passa pelo mesmo problema. ~5 min por ativo.</li>
             <li className="mem-body">Escolha de 3 a 5 públicos e monte uma hipótese para cada. ~5 min cada.</li>
             <li className="mem-body">
-              Vocês decidem juntas quais vão a campo{c3 ? ` na Call 3 (${dataHora(c3.data_atual)})` : " na Call 3"}.
+              Vocês escolhem juntas quais hipóteses você vai testar em conversas{c3 ? ` na Call 3 (${dataHora(c3.data_atual)})` : " na Call 3"}.
             </li>
           </ol>
           <p className="mem-body-sm mem-muted ws-measure">{DEFINICAO_HIPOTESE}</p>
@@ -375,7 +375,7 @@ function CartaoHipotese({
     <article className="mem-card ws-padrao">
       <div className="ws-situacao__topo">
         <span className="mem-label mem-muted">Hipótese {n}</span>
-        {status.status === "vai_a_campo" && <span className="mem-tag mem-tag--decisao">Vai a campo</span>}
+        {status.status === "vai_a_campo" && <span className="mem-tag mem-tag--decisao">Vai testar</span>}
         {status.status === "guardada" && <span className="mem-tag mem-tag--relato">Guardada</span>}
         {!status.status && (hipoteseCompleta(h) ? <span className="mem-tag mem-tag--evidencia">Completa</span> : <span className="mem-tag mem-tag--pendencia">Falta completar</span>)}
         {lastro && <span className="mem-tag mem-tag--relato">{lastro.rotulo}</span>}
@@ -682,7 +682,7 @@ function DecisaoCall3({ dados, decisao, aoSalvar }: { dados: DadosJornada; decis
   return (
     <section className="ws-bloco">
       <span className="mem-label mem-muted">Decisão da Call 3 · sua</span>
-      <p className="mem-h3">Vão a campo</p>
+      <p className="mem-h3">Você vai testar em conversas</p>
       <ul className="ws-lista-simples mem-body">
         {(c.vao ?? []).map((id) => (
           <li key={id}>{nome(id)}</li>
