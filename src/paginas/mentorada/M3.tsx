@@ -267,7 +267,7 @@ function Hipoteses({ dados, travado, aoSalvar }: { dados: DadosJornada; travado:
       <div className="ws-etapa__corpo">
         {!travado && (
           <p className="mem-body mem-muted ws-measure">
-            Escolha de 3 a 5 públicos da sua lista. Para cada um, só o que é novo: o problema como essa pessoa diria, onde isso
+            Escolha de 3 a 5 públicos da sua lista. Para cada um, só o que é novo: do que essa pessoa reclama, quando isso
             acontece e o que muda para ela.
           </p>
         )}
