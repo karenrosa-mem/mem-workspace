@@ -27,6 +27,7 @@ import { enviadoEm } from "../../lib/envio";
 import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
 import SecaoM3 from "./MentoradaM3";
+import SecaoM4 from "./MentoradaM4";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
 type Nota = {
@@ -88,7 +89,7 @@ export default function MentoradaM1() {
       </span>
       <h1 className="mem-h1">{nome || "Mentorada"}</h1>
       <p className="mem-body-lg">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Jornada"}</p>
-      {atual && atual <= 3 && call(dados, atual) && (
+      {atual && atual <= 4 && call(dados, atual) && (
         <Link className="ws-guia-atalho" to={`/mentoradas/${dados.jornada.id}/call/${atual}`}>
           <span className="mem-label">Guia da Call {atual}</span>
           <span className="mem-body">
@@ -101,16 +102,23 @@ export default function MentoradaM1() {
 
       {leituraCall1 ? (
         <>
-          {mentoriaId && <SecaoM3 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />}
           {mentoriaId &&
-            (dados.movimentos.find((m) => m.codigo === 3)?.estado === "nao_iniciado" ? (
-              <SecaoM2 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
-            ) : (
-              <details className="ws-bloco">
-                <summary className="mem-label">M2 · padrões, respostas dela e decisão</summary>
-                <SecaoM2 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
-              </details>
-            ))}
+            ([
+              [4, "M4 · conversas, revisões e decisão", SecaoM4],
+              [3, "M3 · hipóteses e decisão", SecaoM3],
+              [2, "M2 · padrões, respostas dela e decisão", SecaoM2],
+            ] as const).map(([codigo, rotulo, Secao]) => {
+              const estado = dados.movimentos.find((m) => m.codigo === codigo)?.estado;
+              if (estado === "nao_iniciado") return null;
+              return estado === "aberto" ? (
+                <Secao key={codigo} dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
+              ) : (
+                <details key={codigo} className="ws-bloco">
+                  <summary className="mem-label">{rotulo}</summary>
+                  <Secao dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
+                </details>
+              );
+            })}
           <details className="ws-bloco">
             <summary className="mem-label">M1 · leitura da Call 1 e material dela</summary>
             <LeituraKaren registro={leituraCall1} />

@@ -3,6 +3,7 @@ import { useJornada } from "../../lib/useJornada";
 import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
 import FaixaPilar from "../../componentes/FaixaPilar";
 import { enviadoEm } from "../../lib/envio";
+import { DEFINICAO_EVIDENCIA, frentes, prontaFrente, proximoPasso } from "../../lib/m4";
 import { DEFINICAO_HIPOTESE, ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
@@ -179,6 +180,45 @@ function passoM3(d: DadosJornada): Passo {
   return { titulo: `Enviado. ${naDia(dia)}, vocês escolhem quais hipóteses você vai testar em conversas.`, acao: { rotulo: "Rever", para: "/jornada/3#hipoteses" } };
 }
 
+function passoM4(d: DadosJornada): Passo {
+  const c4 = call(d, 4);
+  const dia = c4 ? diaDaSemana(c4.data_atual) : "a Call 4";
+  const lista = frentes(d);
+  const conversas = d.registros.filter((r) => r.tipo === "conversa");
+  if (conversas.length === 0) {
+    const primeira = lista[0];
+    return {
+      titulo: `Sua primeira conversa${primeira ? `: ${proximoPasso(d, primeira, naDia(dia).toLowerCase())}` : ""}`,
+      porque: "Roteiro à mão. Registre logo depois, ~3 min. " + DEFINICAO_EVIDENCIA,
+      acao: { rotulo: "Ver o roteiro", para: "/jornada/4" },
+    };
+  }
+  const revisadas = conversas.some((r) => !!(r.conteudo_mentora as { nota?: string }).nota?.trim());
+  const naoProntas = lista.filter((f) => !prontaFrente(d, f));
+  const perto = c4 && horasAte(c4.data_atual) <= 24;
+  if (naoProntas.length && perto)
+    return {
+      titulo: `Para ${dia}, o essencial é ter pelo menos 2 conversas por hipótese.`,
+      porque: "Se não conseguiu acesso, tudo bem: vira conversa com a Karen.",
+      acao: { rotulo: "Continuar", para: "/jornada/4" },
+    };
+  if (naoProntas.length) {
+    const f = naoProntas[0];
+    return {
+      titulo: proximoPasso(d, f, naDia(dia).toLowerCase()),
+      porque: revisadas ? "A Karen deixou notas nas suas conversas: vale ler antes da próxima." : conversas.length <= 2 ? "A Karen vai olhar suas primeiras conversas em até 48 h. Pode seguir conversando." : undefined,
+      acao: { rotulo: "Registrar conversa", para: `/jornada/4#frente-${f.id}` },
+    };
+  }
+  if (!enviadoEm(d, 4))
+    return {
+      titulo: `Tudo pronto para ${dia}. Envie para a Karen.`,
+      porque: "Na call, vocês olham o que cada hipótese mostrou.",
+      acao: { rotulo: "Enviar", para: "/jornada/4#envio" },
+    };
+  return { titulo: `Enviado. ${naDia(dia)}, vocês olham o que cada hipótese mostrou.` };
+}
+
 export default function Agora() {
   const { dados, erro } = useJornada();
 
@@ -204,13 +244,15 @@ export default function Agora() {
   const atual = movimentoAtual(dados);
   const mensagem = leitura(dados, "mensagem_abertura");
   const leituraCall1 = leitura(dados, "call_1");
-  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3(dados) : null;
+  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3(dados) : atual === 4 ? passoM4(dados) : null;
   const ultimaLeitura =
     atual === 2
       ? leitura(dados, "mapa_ativos") ?? leituraCall1
       : atual === 3
         ? leitura(dados, "call_2")
-        : undefined;
+        : atual === 4
+          ? leitura(dados, "call_3")
+          : undefined;
   const primeiroAcesso = atual === 1 && !dados.registros.some((r) => r.autora_papel === "mentorada");
   const proxima = dados.encontros.find((e) => e.tipo === "call" && e.estado === "marcado");
 

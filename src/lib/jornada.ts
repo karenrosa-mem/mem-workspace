@@ -30,6 +30,7 @@ export type Registro = {
   autora_papel: "mentorada" | "mentora" | "workspace";
   pendente_publicacao: boolean;
   versao_atual?: number;
+  origem_id?: string | null;
   criado_em: string;
   atualizado_em: string;
 };
@@ -69,7 +70,7 @@ export async function carregarJornada(
     db
       .from("registro")
       .select(
-        "id, tipo, movimento_codigo, conteudo, conteudo_mentora, estado_edicao, autora_papel, pendente_publicacao, versao_atual, criado_em, atualizado_em",
+        "id, tipo, movimento_codigo, conteudo, conteudo_mentora, estado_edicao, autora_papel, pendente_publicacao, versao_atual, origem_id, criado_em, atualizado_em",
       )
       .eq("jornada_id", id)
       .order("criado_em"),

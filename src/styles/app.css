@@ -1333,3 +1333,33 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
   font-weight: 700;
   flex: none;
 }
+
+/* M4 · conversas */
+.ws-conversa {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  background: var(--surface);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ws-conversa > p {
+  margin: 0;
+}
+
+.ws-fala {
+  border-left: 2px solid var(--route);
+  padding-left: var(--space-3);
+}
+
+.ws-extras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ws-roteiro-conversa[open] {
+  background: var(--surface-raised);
+}

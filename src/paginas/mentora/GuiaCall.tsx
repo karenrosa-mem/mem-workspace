@@ -18,6 +18,7 @@ import {
   type Reacao,
 } from "../../lib/m2";
 import { LASTRO, dadosHipotese, disputaPublico, fraseTexto, hipoteses } from "../../lib/m3";
+import { ROTEIRO, ROTEIRO_NUNCA, contagem, conversasDe, fraseDaFrente, frentes, ideiasDe, meta, resumo, situacaoPublico, type Conversa, type Frente } from "../../lib/m4";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -27,7 +28,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2, 3]);
+const GUIAS_PRONTOS = new Set([1, 2, 3, 4]);
 
 export default function GuiaCall() {
   const { id, n } = useParams();
@@ -108,8 +109,10 @@ export default function GuiaCall() {
         <GuiaCall1 dados={dados} nota={nota} chave={`${id}:1`} />
       ) : numero === 2 ? (
         <GuiaCall2 dados={dados} nota={nota} chave={`${id}:2`} />
-      ) : (
+      ) : numero === 3 ? (
         <GuiaCall3 dados={dados} nota={nota} chave={`${id}:3`} />
+      ) : (
+        <GuiaCall4 dados={dados} nota={nota} chave={`${id}:4`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -480,7 +483,21 @@ function GuiaCall3({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
     { id: "dec-registrar", texto: "Registre a decisão: o M4 abre e vocês seguem para a segunda metade da call." },
   ];
 
-  const todos = [...abrir, ...confrontar, ...daNota, ...decidir];
+  const segundaMetade: Item[] = [
+    { id: "m4-roteiro", texto: "Leiam o roteiro juntas.", detalhe: ROTEIRO.join(" · ") },
+    {
+      id: "m4-abertura",
+      texto: "Ensaiem a abertura duas vezes.",
+      detalhe: "“Estou pesquisando como [público] lida com [problema]. Posso te fazer umas perguntas sobre a sua experiência?”",
+    },
+    { id: "m4-nunca", texto: "Combine o que ela nunca pergunta.", detalhe: ROTEIRO_NUNCA.map((x) => `“${x}”`).join(" · ") },
+    { id: "m4-meta", texto: "Defina a meta de conversas de cada hipótese.", detalhe: "3 é o ponto de partida; menos se o acesso é difícil. Nunca menos de 2." },
+    { id: "m4-comeco", texto: "Por onde ela começa: normalmente por quem já ajudou." },
+    { id: "m4-medo", texto: "Pergunte se ela tem receio de abordar alguém. Trate aqui, ao vivo." },
+    { id: "m4-registro", texto: "Mostre o registro: logo depois de cada conversa, pelo celular, ~3 min." },
+  ];
+
+  const todos = [...abrir, ...confrontar, ...daNota, ...decidir, ...segundaMetade];
   const feitos = todos.filter((i) => marcados[i.id]).length;
 
   return (
@@ -510,8 +527,80 @@ function GuiaCall3({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
         vazio="Nada anotado na nota privada do M3 (passo 3 da página dela)."
       />
       <Bloco n={4} titulo="Decidir" itens={decidir} marcados={marcados} alternar={alternar} />
-      <Aviso variante="warn" titulo="Segunda metade da call">
-        A preparação das conversas (M4) ganha guia quando o M4 for construído.
+      <Bloco
+        n={5}
+        titulo="Segunda metade: preparar as conversas"
+        porque="Depois de registrar a decisão, o M4 abre. Defina a meta de cada hipótese no passo 1 do M4, na página dela."
+        itens={segundaMetade}
+        marcados={marcados}
+        alternar={alternar}
+      />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 4 · início: o que cada hipótese mostrou
+// ---------------------------------------------------------------------
+function GuiaCall4({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const lista = frentes(dados);
+
+  const porFrente: Item[] = lista.flatMap((f, i) => {
+    const grupo = `Hipótese ${i + 1}: ${fraseDaFrente(dados, f)}`;
+    const k = contagem(dados, f);
+    const conv = conversasDe(dados, f);
+    const fr = f.conteudo as Frente;
+    const itens: Item[] = [
+      { grupo, id: `apareceu-${f.id}`, texto: "O que apareceu", detalhe: `${resumo(dados, f)} · meta ${meta(f)}` },
+      {
+        grupo,
+        id: `nao-${f.id}`,
+        texto: "O que não apareceu",
+        detalhe:
+          [k.tentou === 0 && "ninguém tentou resolver", k.pagou.length === 0 && "ninguém pagou", k.caso < 2 && "menos de 2 casos concretos"]
+            .filter(Boolean)
+            .join(" · ") || "—",
+      },
+      { grupo, id: `duvida-${f.id}`, texto: "O que ainda é dúvida: pergunte a ela." },
+    ];
+    const falas = conv.flatMap((c) => ((c.conteudo as Conversa).falas ?? []).slice(0, 1));
+    if (falas.length) itens.push({ grupo, id: `falas-${f.id}`, texto: "Releia as falas com ela", detalhe: falas.map((x) => `“${x}”`).join(" · ") });
+    if (k.aAvaliar) itens.push({ grupo, id: `avaliar-${f.id}`, texto: `${k.aAvaliar} conversa(s) “em parte do público”: decida se contam antes de registrar.` });
+    if (fr.sem_acesso) itens.push({ grupo, id: `acesso-${f.id}`, texto: `Ela não conseguiu acesso: ${fr.sem_acesso}` });
+    ideiasDe(dados, f).forEach((x) =>
+      itens.push({ grupo, id: `ideia-${x.id}`, texto: `Ideia nova dela: ${String((x.conteudo as { texto?: string }).texto ?? "")}`, detalhe: "É hipótese, não prova." }),
+    );
+    if (conv.some((c) => situacaoPublico(c) === "nao_conta")) itens.push({ grupo, id: `fora-${f.id}`, texto: "Há conversas que não contam: mostre por quê, sem sermão." });
+    return itens;
+  });
+  const daNota: Item[] = [
+    ...linhas(nota.combinacao).map((t, i) => ({ id: `comb-${i}`, texto: t, detalhe: "Sua leitura (ela não vê forte/médio/fraco)" })),
+    ...linhas(nota.forcando).map((t, i) => ({ id: `forc-${i}`, texto: t, detalhe: "Desejo passando na frente da evidência?" })),
+    ...linhas(nota.pagamento).map((t, i) => ({ id: `pag-${i}`, texto: t, detalhe: "Pagamento ligado à hipótese?" })),
+  ];
+  const decidir: Item[] = [
+    { id: "d4-criterio", texto: "Só segue para comparação quem tem 2 ou mais conversas do público com caso concreto." },
+    { id: "d4-dela", texto: "Entre as que podem seguir, a escolha é dela. Uma hipótese sem sinal não segue só porque ela gosta." },
+    { id: "d4-validacao", texto: "Diga com todas as letras: seguir não é validar. É ter material para comparar." },
+    { id: "d4-registrar", texto: "Registre a decisão de cada hipótese, com a razão. O M5 abre e vocês seguem para a segunda parte da call." },
+  ];
+
+  const todos = [...porFrente, ...daNota, ...decidir];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+
+  return (
+    <>
+      <Objetivo
+        objetivo="Início da Call 4: para cada hipótese, o que apareceu, o que não apareceu e o que ainda é dúvida. Depois, ela decide o que segue para comparação."
+        sai={["A decisão de cada hipótese (segue, volta ou guardada), com a razão", "O M5 aberto, para a segunda parte da call"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="Hipótese por hipótese" porque="Só os fatos, sem nota nem ranking." itens={porFrente} marcados={marcados} alternar={alternar} vazio="Nenhuma hipótese em teste." />
+      <Bloco n={2} titulo="Da sua nota privada" itens={daNota} marcados={marcados} alternar={alternar} vazio="Nada anotado na nota privada do M4." />
+      <Bloco n={3} titulo="Decidir" itens={decidir} marcados={marcados} alternar={alternar} />
+      <Aviso variante="warn" titulo="Segunda parte da call">
+        A comparação (M5) ganha guia quando o M5 for construído.
       </Aviso>
     </>
   );
