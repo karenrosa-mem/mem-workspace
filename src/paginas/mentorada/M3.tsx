@@ -240,6 +240,7 @@ function Hipoteses({ dados, travado, aoSalvar }: { dados: DadosJornada; travado:
   // A hipótese do público do M2 nasce com o rascunho do que mudou nas situações dela.
   function inicialDe(descricao: string, ativoId?: string, origem?: string): Hipotese {
     const h: Hipotese = { ativo: ativoId ?? (ativos.length === 1 ? ativos[0].id : undefined), publico: descricao };
+    if (origem === "m2" || origem === "ja_ajudei") h.lastro = "ja_ajudei";
     if (origem === "m2") {
       const a = ativos.find((x) => x.id === ativoId);
       const mudou = a
@@ -423,12 +424,14 @@ function EditorHipotese({
 
   const lista = publicos(dados);
   const ativo = ativos.find((a) => a.id === h.ativo);
+  const origemPublico = lista.find((p) => p.descricao.trim().toLowerCase() === (h.publico ?? "").trim().toLowerCase())?.origem;
+  const lastroConhecido = fixo && (origemPublico === "m2" || origemPublico === "ja_ajudei");
   const daLista = lista.some((p) => p.descricao === h.publico);
 
   async function salvar() {
     if (!supabase || !pessoa || !h.ativo) return;
     setSalvando(true);
-    const conteudo = { ...h, publico: h.publico?.trim() };
+    const conteudo = { ...h, publico: h.publico?.trim(), ...(lastroConhecido && !h.lastro ? { lastro: "ja_ajudei" } : {}) };
     let falha: string | null = null;
     if (registro && reformular && registro.conteudo && JSON.stringify(registro.conteudo) !== JSON.stringify(conteudo)) {
       const r = await supabase.rpc("reformular_hipotese", { p_registro: registro.id, p_conteudo: conteudo });
@@ -481,9 +484,12 @@ function EditorHipotese({
           )}
           {rascunhoM2 && (
             <p className="mem-body-sm">
-              Este é o público que você já conhece do Movimento 2. A transformação veio do que mudou nas suas situações: confira e ajuste
-              para o ponto de vista dessa pessoa.
+              Este é o público que você já conhece do Movimento 2. O que muda veio das suas situações: confira e ajuste para o ponto de
+              vista dessa pessoa.
             </p>
+          )}
+          {lastroConhecido && (
+            <p className="mem-body-sm mem-muted">Você já ajudou esse público: esta hipótese tem lastro de quem viveu.</p>
           )}
         </div>
       )}
@@ -542,14 +548,20 @@ function EditorHipotese({
         <Colinha serve="É quem você vai procurar para conversar no próximo movimento. Quanto mais específico, mais fácil encontrar." />
       </Pergunta>}
 
-      <Pergunta n={++k} feita={!!h.problema?.trim()} titulo="Que problema essa pessoa tem, como ela diria?">
+      <Pergunta n={++k} feita={!!h.problema?.trim()} titulo="Do que essa pessoa reclama?">
         <input className="mem-input" aria-label="Problema" value={h.problema ?? ""} onChange={(e) => setH({ ...h, problema: e.target.value })} />
-        <Colinha serve="Com as palavras dela, não com as suas. É o que você vai checar nas conversas." exemplo="ter que cobrar quem até ontem era colega" />
+        <Colinha
+          serve="O problema do jeito que essa pessoa contaria para uma amiga, não com o nome técnico que você daria. Não precisa descrever a pessoa inteira: só a queixa."
+          exemplo="“Não consigo cobrar quem até ontem era meu colega” (e não “dificuldade de liderança”)."
+        />
       </Pergunta>
 
-      <Pergunta n={++k} feita={!!h.contexto?.trim()} titulo="Em que momento ou lugar isso acontece com ela?">
+      <Pergunta n={++k} feita={!!h.contexto?.trim()} titulo="Quando isso costuma acontecer?">
         <input className="mem-input" aria-label="Contexto" value={h.contexto ?? ""} onChange={(e) => setH({ ...h, contexto: e.target.value })} />
-        <Colinha serve="É também por onde você vai encontrá-la no próximo movimento." exemplo="nos primeiros seis meses depois da promoção" />
+        <Colinha
+          serve="Um palpite mesmo: o momento ou a situação em que essa queixa aparece. No próximo movimento, você confere conversando; e é por aí que vai procurar essas pessoas."
+          exemplo="nos primeiros seis meses depois da promoção"
+        />
       </Pergunta>
 
       <Pergunta n={++k} feita={!!h.transformacao?.trim()} titulo="O que muda para ela, de um jeito que dá para ver?">
@@ -560,10 +572,10 @@ function EditorHipotese({
         />
       </Pergunta>
 
-      <Pergunta n={++k} feita={!!h.lastro} titulo="Você já viu esse público com esse problema?">
+      {!lastroConhecido && <Pergunta n={++k} feita={!!h.lastro} titulo="Você já viu esse público com esse problema?">
         <Opcoes rotulo="Lastro" opcoes={LASTRO} valor={h.lastro} aoEscolher={(v) => setH({ ...h, lastro: v })} />
         <Colinha serve="As três valem. “Imagino” não é pior: só avisa que vai ser preciso encontrar pessoas que você ainda não conhece." />
-      </Pergunta>
+      </Pergunta>}
 
       <div className="ws-pauta">
         <p className="mem-label">Sua hipótese, montada</p>
