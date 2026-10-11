@@ -35,10 +35,33 @@ import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 
 const NOTA_M2 = [
-  { chave: "tensoes", rotulo: "Tensões entre prova e vontade", ajuda: "Ex.: prova forte com pouca vontade; muita vontade com pouca prova." },
-  { chave: "concordancia", rotulo: "Suspeita de concordância automática", ajuda: "Frases que só repetem o nome que você deu." },
-  { chave: "perfil", rotulo: "Perfil", ajuda: "Sua leitura do perfil dela, se mudou desde o M1." },
-  { chave: "classificacao_fina", rotulo: "Classificação fina por padrão", ajuda: "Experiência, conhecimento, habilidade, ativo, ativo hipotético. Ela nunca vê." },
+  {
+    chave: "tensoes",
+    rotulo: "Tensões entre prova e vontade",
+    ajuda:
+      "Onde a prova e a vontade apontam para lados opostos: há registro e reconhecimento, mas ela marcou pouca vontade; ou muita vontade com só a percepção dela. É o que você mais precisa abrir na Call 2.",
+    exemplo: "Desligamentos: tem e-mail do diretor e avaliação, mas marcou pouca vontade. Gestores novos: muita vontade, só “eu percebi”.",
+  },
+  {
+    chave: "concordancia",
+    rotulo: "Suspeita de concordância automática",
+    ajuda:
+      "Respostas que parecem concordar com você sem pensar: marcou “Sim, sou eu” em tudo, ou a frase dela só repete o nome que você deu. Anote para perguntar na call com as palavras dela.",
+    exemplo: "Em “Organizar processos que ninguém entende” ela escreveu só “organizar processos”. Perguntar: me conta uma vez em que fez isso.",
+  },
+  {
+    chave: "perfil",
+    rotulo: "Perfil",
+    ajuda: "Só se a sua leitura do perfil dela mudou desde o M1: qual era, qual parece agora e o que mudou sua leitura.",
+    exemplo: "No M1 achei B; as respostas do M2 puxam para A: ela tem prova de fora em quase tudo.",
+  },
+  {
+    chave: "classificacao_fina",
+    rotulo: "Classificação fina por padrão",
+    ajuda:
+      "Para cada padrão, a sua classificação técnica: experiência, conhecimento, habilidade, ativo ou ativo hipotético. Serve para você decidir o rótulo na Call 2. Ela nunca vê.",
+    exemplo: "Mediar conflitos: ativo. Organizar processos: habilidade. Gestores de primeira viagem: ativo hipotético.",
+  },
 ];
 
 // Seção do M2 na página da mentorada, vista pela mentora: seis passos em ordem.
