@@ -77,7 +77,7 @@ function passoM2(d: DadosJornada): Passo {
   if (decisao && curta && !(decisao.conteudo as { porque?: string }).porque)
     return {
       titulo: "Em uma frase: por que esses?",
-      porque: "A decisão da Call 2 está registrada. Falta só o seu porquê para seguir para o M3.",
+      porque: "A decisão da Call 2 está registrada. Falta só o seu porquê para seguir para o próximo movimento.",
       acao: { rotulo: "Escrever", para: "/jornada/2" },
     };
   if (c2?.estado === "realizado") {
@@ -125,7 +125,7 @@ function passoM2(d: DadosJornada): Passo {
 }
 
 function passoM3(): Passo {
-  return { titulo: "Formular hipóteses: para quem isso pode valer?", porque: "A tela do M3 entra aqui em breve." };
+  return { titulo: "Formular hipóteses: para quem isso pode valer?", porque: "A tela deste movimento entra aqui em breve." };
 }
 
 export default function Agora() {
@@ -162,11 +162,10 @@ export default function Agora() {
     <>
       <span className="mem-label mem-muted">
         Agora
-        {atual && leituraCall1
-          ? ` · ${pilarDe(atual).nome} · movimento ${atual - pilarDe(atual).de + 1} de 5`
-          : ""}
+        {atual && leituraCall1 ? ` · ${pilarDe(atual).nome}` : ""}
+        {atual ? ` · Movimento ${atual} de 10` : ""}
       </span>
-      <h1 className="mem-h1">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Sua jornada"}</h1>
+      <h1 className="mem-h1">{atual ? MOVIMENTOS[atual] : "Sua jornada"}</h1>
 
       {primeiroAcesso && mensagem && (
         <section className="mem-mentor ws-measure">

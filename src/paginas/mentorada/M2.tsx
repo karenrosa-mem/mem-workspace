@@ -52,7 +52,7 @@ export default function M2() {
 
   return (
     <>
-      <span className="mem-label mem-muted">M2 · Enxergar seus ativos</span>
+      <span className="mem-label mem-muted">Movimento 2 · Enxergar seus ativos</span>
       <h1 className="mem-h1">O que se repete na sua história</h1>
 
       {decisao && curta && <Decisao dados={dados} decisao={decisao} leituraCurta={curta} aoSalvar={recarregar} />}
@@ -562,7 +562,7 @@ function Decisao({
             )}
             <div>
               <button type="button" className="mem-btn mem-btn--primary" disabled={!porque.trim()} onClick={registrar}>
-                Registrar e seguir para o M3
+                Registrar e seguir para o próximo movimento
               </button>
             </div>
           </div>

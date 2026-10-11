@@ -39,6 +39,7 @@ export default function Jornada() {
         movimentos={dados.movimentos}
         ligar={(n) => `/jornada/${n}`}
         mostrarPilares={!!leitura(dados, "call_1")}
+        paraMentorada
       />
     </>
   );
@@ -50,10 +51,13 @@ export function Trilha({
   movimentos,
   ligar,
   mostrarPilares = true,
+  paraMentorada = false,
 }: {
   movimentos: Movimento[];
   ligar: (n: number) => string;
   mostrarPilares?: boolean;
+  // Para a mentorada: "Movimento 1" por extenso; "M1" fica só nas telas da mentora.
+  paraMentorada?: boolean;
 }) {
   const atual = movimentos.find((m) => m.estado === "aberto")?.codigo ?? 0;
   return (
@@ -83,7 +87,7 @@ export function Trilha({
             const ultimoDaLinha = j === linha.length - 1;
             const caminho = m.estado === "fechado" ? "mem-path" : "mem-path mem-path--future";
             const clicavel = m.estado !== "nao_iniciado";
-            const nome = `M${m.codigo} · ${MOVIMENTOS[m.codigo]}`;
+            const nome = paraMentorada ? MOVIMENTOS[m.codigo] : `M${m.codigo} · ${MOVIMENTOS[m.codigo]}`;
             return (
               <li key={m.codigo} className={`mem-stop ${classe}`} aria-current={m.estado === "aberto" ? "step" : undefined}>
                 <div className="mem-stop__track">
@@ -95,6 +99,7 @@ export function Trilha({
                   {temDecisao && !ultimoDaLinha && <span className={caminho} />}
                 </div>
                 <span className="mem-stop__state">
+                  {paraMentorada ? `Movimento ${m.codigo} · ` : ""}
                   {estado}
                   {temDecisao && m.estado === "fechado" ? " · decidido" : ""}
                 </span>
@@ -122,7 +127,7 @@ export function Trilha({
 export function MovimentoEmConstrucao({ codigo }: { codigo: number }) {
   return (
     <>
-      <span className="mem-label mem-muted">M{codigo}</span>
+      <span className="mem-label mem-muted">Movimento {codigo}</span>
       <h1 className="mem-h1">{MOVIMENTOS[codigo]}</h1>
       <p className="mem-body ws-measure mem-muted">
         A tela deste movimento ainda está em construção.

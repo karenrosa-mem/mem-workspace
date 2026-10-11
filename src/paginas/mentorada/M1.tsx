@@ -53,7 +53,7 @@ export default function M1() {
 
   return (
     <>
-      <span className="mem-label mem-muted">M1 · Contar sua trajetória</span>
+      <span className="mem-label mem-muted">Movimento 1 · Contar sua trajetória</span>
       <h1 className="mem-h1">O que você já fez, de verdade</h1>
 
       {leituraCall1 && <LeituraKaren registro={leituraCall1} />}
