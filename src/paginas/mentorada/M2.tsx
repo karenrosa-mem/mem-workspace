@@ -84,6 +84,7 @@ export default function M2() {
       ) : (
         <>
           <LeituraKaren registro={mapa} />
+          {!decisao && (
           <section className="ws-bloco ws-como">
             <p className="mem-label mem-muted">O que fazer aqui</p>
             <ol className="ws-como__passos">
@@ -98,6 +99,7 @@ export default function M2() {
             </ol>
             <p className="mem-body-sm mem-muted ws-measure">{DEFINICAO_ATIVO}</p>
           </section>
+          )}
 
           {padroes(dados).map((p, i, todos) => (
             <BlocoPadrao key={p.id} dados={dados} padrao={p} indice={i + 1} total={todos.length} aoSalvar={recarregar} travado={!!decisao} />
@@ -494,21 +496,19 @@ function Decisao({
     escolhidos?: { padrao: string; rotulo: Rotulo }[];
     nao_seguiram?: { padrao: string; razao?: string; condicao_volta?: string }[];
   };
-  const dela = decisao.conteudo as { porque?: string; justificativa?: string };
+  const dela = decisao.conteudo as { porque?: string };
+  const naCall = (decisao.conteudo_mentora as { porque?: string }).porque ?? "";
   const escolhidos = c.escolhidos ?? [];
-  const [porque, setPorque] = useState("");
-  const [justificativa, setJustificativa] = useState("");
-  const [erro, setErro] = useState<string | null>(null);
+  const [ajustando, setAjustando] = useState(false);
+  const [porque, setPorque] = useState(dela.porque ?? naCall);
+  const [erro, setErro] = useState(false);
 
-  async function registrar() {
+  async function salvar() {
     if (!supabase) return;
-    setErro(null);
-    const r = await supabase.rpc("escrever_porque_m2", {
-      p_decisao: decisao.id,
-      p_porque: porque,
-      p_justificativa: justificativa || null,
-    });
-    if (r.error) return setErro(r.error.message);
+    setErro(false);
+    const r = await supabase.from("registro").update({ conteudo: { ...dela, porque: porque.trim() } }).eq("id", decisao.id);
+    if (r.error) return setErro(true);
+    setAjustando(false);
     await aoSalvar();
   }
 
@@ -534,42 +534,39 @@ function Decisao({
             ))}
           </ul>
         )}
-        {dela.porque ? (
-          <p className="mem-body">
-            Seu porquê: <em>{dela.porque}</em>
-          </p>
-        ) : (
-          <div className="ws-form">
-            <div className="mem-field">
-              <label className="mem-field__label mem-h3" htmlFor="porque">
-                Em uma frase: por que esses?
-              </label>
-              <input id="porque" className="mem-input" value={porque} onChange={(e) => setPorque(e.target.value)} />
-              <Colinha
-                serve="Nas suas palavras, por que esses e não os outros. É a frase que você vai precisar repetir sozinha lá no fim."
-                exemplo="São o que eu faria mesmo sem ser paga, e as pessoas já me procuram para isso."
-              />
-            </div>
-            {escolhidos.length > 3 && (
-              <div className="mem-field">
-                <label className="mem-field__label" htmlFor="justificativa">
-                  Por que mais de três?
-                </label>
-                <input id="justificativa" className="mem-input" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
+        <div className="ws-porque">
+          <p className="mem-label mem-muted">{dela.porque ? "Por que você escolheu · ajustado por você" : "Por que você escolheu · suas palavras na call"}</p>
+          {ajustando ? (
+            <div className="ws-form">
+              <input className="mem-input" aria-label="Por que você escolheu" value={porque} onChange={(e) => setPorque(e.target.value)} />
+              <Colinha serve="Se a frase registrada na call não ficou do seu jeito, ajuste aqui. Não muda a decisão: só deixa o porquê com as suas palavras." />
+              {erro && (
+                <Aviso variante="danger" titulo="Não foi possível salvar">
+                  Tente de novo.
+                </Aviso>
+              )}
+              <div className="ws-acoes">
+                <button type="button" className="mem-btn mem-btn--primary" disabled={!porque.trim()} onClick={salvar}>
+                  Salvar
+                </button>
+                <button type="button" className="mem-btn mem-btn--quiet" onClick={() => setAjustando(false)}>
+                  Cancelar
+                </button>
               </div>
-            )}
-            {erro && (
-              <Aviso variante="danger" titulo="Não registrado">
-                {erro}
-              </Aviso>
-            )}
-            <div>
-              <button type="button" className="mem-btn mem-btn--primary" disabled={!porque.trim()} onClick={registrar}>
-                Registrar e seguir para o próximo movimento
-              </button>
             </div>
-          </div>
-        )}
+          ) : (
+            <>
+              <p className="mem-body-lg ws-serif">“{dela.porque || naCall}”</p>
+              {decisao.estado_edicao === "aberto" && (
+                <div>
+                  <button type="button" className="mem-btn mem-btn--quiet" onClick={() => setAjustando(true)}>
+                    Ajustar com as minhas palavras
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </section>
     </>
   );

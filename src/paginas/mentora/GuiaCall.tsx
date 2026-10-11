@@ -387,7 +387,12 @@ function GuiaCall2({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
     { id: "dec-comparar", texto: "Se ela não decide, compare os possíveis ativos dois a dois até surgir uma ordem que ela reconheça como dela." },
     { id: "dec-decisao", texto: "A decisão é dela: de 1 a 3 seguem para o mercado.", detalhe: "Mais de 3 só com justificativa." },
     { id: "dec-nao", texto: "Para cada um que não segue: a razão e em que condição pode voltar." },
-    { id: "dec-proximo", texto: "Diga o que vem: a decisão e a leitura curta em até 48 h; ela escreve o porquê em uma frase." },
+    {
+      id: "dec-porque",
+      texto: "Pergunte: “em uma frase, por que esses?”",
+      detalhe: "Anote literal, sem melhorar. Vai no formulário da decisão (passo 4 da página dela).",
+    },
+    { id: "dec-proximo", texto: "Diga o que vem: você publica a decisão em até 48 h e o próximo movimento abre na hora." },
   ];
 
   const todos = [...divergencias, ...aprofundar, ...tensoes, ...decidir];
@@ -397,7 +402,7 @@ function GuiaCall2({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
     <>
       <Objetivo
         objetivo="Ela decide quais possíveis ativos seguem para o mercado — de 1 a 3."
-        sai={["A decisão dela sobre cada possível ativo, com o rótulo final", "A razão de cada um que não segue", "Material para a leitura curta em até 48 h"]}
+        sai={["A decisão dela sobre cada possível ativo, com o rótulo final", "A razão de cada um que não segue", "O porquê dela, em uma frase, com as palavras dela", "Material para a leitura curta em até 48 h"]}
       />
       <Progresso total={todos.length} feitos={feitos} />
       <Bloco

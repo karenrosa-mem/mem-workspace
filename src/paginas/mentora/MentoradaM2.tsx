@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useSessao } from "../../lib/sessao";
@@ -93,7 +93,9 @@ export default function SecaoM2({
   const call2Feita = c2?.estado === "realizado";
   const fechado = m2?.estado === "fechado";
   const publicada = !!(decisao && curta);
-  const porque = decisao ? String((decisao.conteudo as { porque?: string }).porque ?? "") : "";
+  const porque = decisao
+    ? String((decisao.conteudo as { porque?: string }).porque ?? (decisao.conteudo_mentora as { porque?: string }).porque ?? "")
+    : "";
 
   const passos: Passo[] = [
     {
@@ -129,14 +131,7 @@ export default function SecaoM2({
       titulo: "Publicar a decisão e a leitura curta",
       quem: "Você",
       estado: publicada ? "feito" : mapa && call2Feita ? "agora" : "depois",
-      nota: publicada ? undefined : "até 48 h depois da call",
-    },
-    {
-      id: "m2-porque",
-      titulo: "Escrever o porquê em uma frase",
-      quem: "Ela",
-      estado: fechado ? "feito" : publicada ? "esperando" : "depois",
-      nota: fechado ? "o M3 abriu" : undefined,
+      nota: publicada ? "o M3 abriu" : "até 48 h depois da call · abre o M3",
     },
   ];
 
@@ -215,21 +210,11 @@ export default function SecaoM2({
         </>
       )}
 
-      <Etapa
-        n={6}
-        passo={passos[5]}
-        porque="Quando ela escreve por que escolheu o que escolheu, o M2 fecha e o M3 abre."
-      >
-        {fechado ? (
-          <Aviso variante="done" titulo="M2 concluído">
-            Ela escreveu: “{porque}”.
-          </Aviso>
-        ) : publicada ? (
-          <p className="mem-body">A decisão está publicada. Falta só ela escrever o porquê.</p>
-        ) : (
-          <p className="mem-body mem-muted">Abre depois que você publicar a decisão.</p>
-        )}
-      </Etapa>
+      {fechado && (
+        <Aviso variante="done" titulo="M2 concluído">
+          O porquê dela: “{porque}”.
+        </Aviso>
+      )}
     </section>
   );
 }
@@ -522,6 +507,7 @@ function PublicarLeitura({
   bloqueio,
   aoPublicar,
   antesDePublicar,
+  publicarCom,
   exemplo,
 }: {
   mentoriaId: string;
@@ -534,6 +520,7 @@ function PublicarLeitura({
   bloqueio: string | null;
   aoPublicar: () => Promise<void>;
   antesDePublicar?: () => Promise<boolean>;
+  publicarCom?: (rascunhoId: string) => Promise<string | null>; // devolve a mensagem de erro, se houver
 }) {
   const chave = tipo === "call_2" ? "o_que_decidimos" : "texto";
   const [rascunhoId, setRascunhoId] = useState<string | null>(null);
@@ -587,8 +574,13 @@ function PublicarLeitura({
     if (antesDePublicar && !(await antesDePublicar())) return;
     const id = await salvar();
     if (!id) return;
-    const r = await supabase.rpc("publicar_leitura", { p_rascunho: id, p_fecha_movimento: false });
-    if (r.error) return setErro(r.error.message);
+    if (publicarCom) {
+      const falha = await publicarCom(id);
+      if (falha) return setErro(falha);
+    } else {
+      const r = await supabase.rpc("publicar_leitura", { p_rascunho: id, p_fecha_movimento: false });
+      if (r.error) return setErro(r.error.message);
+    }
     await aoPublicar();
   }
 
@@ -800,6 +792,12 @@ function RegistrarDecisao({
     ),
   );
   const escolhidos = Object.entries(linhas).filter(([, l]) => l.segue === true);
+  const existente = decisaoM2(dados);
+  const salvo = (existente?.conteudo_mentora ?? {}) as { porque?: string; justificativa?: string };
+  const [porque, setPorque] = useState(salvo.porque ?? "");
+  const [justificativa, setJustificativa] = useState(salvo.justificativa ?? "");
+  const [decisaoId, setDecisaoId] = useState<string | null>(existente?.id ?? null);
+  const idDecisao = useRef<string | null>(existente?.id ?? null);
 
   async function marcarRealizada() {
     if (!supabase || !c2) return;
@@ -815,10 +813,11 @@ function RegistrarDecisao({
       nao_seguiram: Object.entries(linhas)
         .filter(([, l]) => l.segue === false)
         .map(([id, l]) => ({ padrao: id, razao: l.razao.trim(), condicao_volta: l.condicao.trim() })),
+      porque: porque.trim(),
+      ...(justificativa.trim() ? { justificativa: justificativa.trim() } : {}),
     };
-    const existente = decisaoM2(dados);
-    const d = existente
-      ? await supabase.from("registro").update({ conteudo_mentora }).eq("id", existente.id)
+    const d = decisaoId
+      ? await supabase.from("registro").update({ conteudo_mentora }).eq("id", decisaoId).select("id").single()
       : await supabase.from("registro").insert({
           conta_id: dados.jornada.conta_id,
           jornada_id: dados.jornada.id,
@@ -828,8 +827,10 @@ function RegistrarDecisao({
           autora_papel: "mentora",
           autora_id: pessoa.id,
           pendente_publicacao: true,
-        });
-    if (d.error) return false;
+        }).select("id").single();
+    if (d.error || !d.data) return false;
+    setDecisaoId(d.data.id as string);
+    idDecisao.current = d.data.id as string;
     const marcas = Object.entries(linhas).map(([id, l]) => ({
       registro_id: id,
       jornada_id: dados.jornada.id,
@@ -850,6 +851,8 @@ function RegistrarDecisao({
     semDecisao.length > 0 && `decidir se segue: ${semDecisao.join("; ")}`,
     semDecisao.length === 0 && escolhidos.length === 0 && "pelo menos um possível ativo precisa seguir",
     semRazao.length > 0 && `escrever por que não segue: ${semRazao.join("; ")}`,
+    !porque.trim() && "registrar o porquê nas palavras dela",
+    escolhidos.length > 3 && !justificativa.trim() && "justificar por que mais de três seguem",
   ].filter(Boolean) as string[];
 
   return (
@@ -908,28 +911,46 @@ function RegistrarDecisao({
             </article>
           );
         })}
-        {escolhidos.length > 3 && (
-          <Aviso variante="warn" titulo={`${escolhidos.length} possíveis ativos seguem`}>
-            Mais de três: ela vai precisar justificar ao escrever o porquê.
-          </Aviso>
+        {c2?.estado === "realizado" && (
+          <article className="mem-card ws-padrao">
+            <span className="mem-label mem-muted">Para fechar a decisão</span>
+            <Pergunta n={1} feita={!!porque.trim()} titulo="Em uma frase: por que esses? (nas palavras dela)">
+              <input className="mem-input" aria-label="O porquê, nas palavras dela" value={porque} onChange={(e) => setPorque(e.target.value)} />
+              <Colinha
+                serve="Pergunte a ela na call e anote a resposta literal, sem melhorar. É a frase que ela vai reler lá no fim da jornada. Ela vê junto da decisão e pode ajustar depois, se quiser."
+                exemplo="São o que eu faria mesmo sem ser paga, e as pessoas já me procuram para isso."
+              />
+            </Pergunta>
+            {escolhidos.length > 3 && (
+              <Pergunta n={2} feita={!!justificativa.trim()} titulo={`Por que mais de três? (${escolhidos.length} seguem)`}>
+                <input className="mem-input" aria-label="Por que mais de três" value={justificativa} onChange={(e) => setJustificativa(e.target.value)} />
+                <Colinha serve="O método pede de 1 a 3. Se seguirem mais, registre o motivo que vocês combinaram." />
+              </Pergunta>
+            )}
+          </article>
         )}
       </Etapa>
 
       <Etapa
         n={5}
         passo={passoLeitura}
-        porque="Ao publicar, ela vê a decisão sobre cada possível ativo e esta leitura, e escreve o porquê em uma frase."
+        porque="Ao publicar, ela vê a decisão sobre cada possível ativo, o porquê que disse na call e esta leitura. O M2 fecha e o M3 abre na hora."
       >
         <PublicarLeitura
           mentoriaId={mentoriaId}
           tipo="call_2"
           rotuloCampo="Leitura curta · o que decidimos"
-          ajuda="Resuma o que vocês decidiram juntas: o que segue e com qual rótulo, o que não segue e por quê. A decisão é dela: escreva como registro do que ela escolheu."
+          ajuda="Resuma o que vocês decidiram juntas: o que segue e com qual rótulo, o que não segue e por quê. A decisão é dela: escreva como registro do que ela escolheu. O porquê dela já vai junto; não precisa repetir."
           exemplo="Você decidiu levar ao mercado a mediação de conflitos (ativo) e a preparação de gestores de primeira viagem (ativo a confirmar: a base ainda é só a sua percepção, e o mercado vai nos dizer). Desligamentos e processos ficam guardados: há prova, mas pouca vontade."
           rotuloBotao="Publicar decisão e leitura"
           aviso={null}
           bloqueio={faltando.length ? `Para publicar, falta: ${faltando.join("; ")}.` : null}
           antesDePublicar={gravarDecisao}
+          publicarCom={async (rascunho) => {
+            if (!supabase || !idDecisao.current) return "Não foi possível gravar a decisão.";
+            const r = await supabase.rpc("publicar_decisao_m2", { p_rascunho: rascunho, p_decisao: idDecisao.current });
+            return r.error ? r.error.message : null;
+          }}
           aoPublicar={recarregar}
         />
       </Etapa>

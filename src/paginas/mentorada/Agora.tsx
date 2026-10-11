@@ -75,12 +75,6 @@ function passoM2(d: DadosJornada): Passo {
   const curta = leitura(d, "call_2");
   const decisao = decisaoM2(d);
 
-  if (decisao && curta && !(decisao.conteudo as { porque?: string }).porque)
-    return {
-      titulo: "Em uma frase: por que esses?",
-      porque: "A decisão da Call 2 está registrada. Falta só o seu porquê para seguir para o próximo movimento.",
-      acao: { rotulo: "Escrever", para: "/jornada/2" },
-    };
   if (c2?.estado === "realizado") {
     const prazo = somarHoras(c2.data_realizada ?? c2.data_atual, 48);
     return { titulo: `Aguardando a leitura da Karen, até ${dataHora(prazo)}.`, porque: "Nada a fazer até lá." };
@@ -155,7 +149,12 @@ export default function Agora() {
   const mensagem = leitura(dados, "mensagem_abertura");
   const leituraCall1 = leitura(dados, "call_1");
   const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3() : null;
-  const ultimaLeitura = atual === 2 ? leitura(dados, "call_2") ?? leitura(dados, "mapa_ativos") ?? leituraCall1 : undefined;
+  const ultimaLeitura =
+    atual === 2
+      ? leitura(dados, "mapa_ativos") ?? leituraCall1
+      : atual === 3
+        ? leitura(dados, "call_2")
+        : undefined;
   const primeiroAcesso = atual === 1 && !dados.registros.some((r) => r.autora_papel === "mentorada");
   const proxima = dados.encontros.find((e) => e.tipo === "call" && e.estado === "marcado");
 

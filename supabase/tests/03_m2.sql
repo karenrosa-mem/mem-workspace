@@ -126,32 +126,35 @@ insert into public.campo_mentora_rascunho (registro_id, jornada_id, campos)
   values (:'p2', :'jornada_id', '{"status":"nao_seguiu","rotulo_final":"outra_experiencia"}');
 
 set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
-select public.t_ok((select count(*) from public.registro where tipo = 'decisao_m2') = 0, 'Ana NÃO vê a decisão antes da leitura curta');
-select public.t_erro(format($$select public.escrever_porque_m2(%L, 'porque sim')$$, :'decisao'), 'porquê antes da publicação é recusado');
+select public.t_ok((select count(*) from public.registro where tipo = 'decisao_m2') = 0, 'Ana NÃO vê a decisão antes da publicação');
 
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 insert into public.leitura_rascunho (mentoria_id, movimento_codigo, tipo_leitura, campos)
   select id, 2, 'call_2', '{"o_que_decidimos":"Seguem mediação e gestores."}' from public.mentoria returning id as curta \gset
-select public.publicar_leitura(:'curta', false);
-
-set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
-select public.t_ok((select count(*) from public.registro where tipo = 'decisao_m2') = 1, 'Ana vê a decisão depois da leitura curta');
-select public.t_ok((select conteudo_mentora->>'status' from public.registro where id = :'p2') = 'nao_seguiu', 'padrão não seguido continua visível, marcado');
-select public.t_erro(format($$select public.escrever_porque_m2(%L, '  ')$$, :'decisao'), 'porquê vazio é recusado');
-select public.t_erro(format($$select public.escrever_porque_m2(%L, 'são o que eu faria')$$, :'decisao'), 'mais de 3 escolhidos sem justificativa: não passa');
-
-set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+select public.t_erro(format($$select public.publicar_decisao_m2(%L, %L)$$, :'curta', :'decisao'), 'sem o porquê dela, a decisão não é publicada');
+update public.registro set conteudo_mentora = conteudo_mentora || '{"porque":"são o que eu faria mesmo sem ser paga"}' where id = :'decisao';
+select public.t_erro(format($$select public.publicar_decisao_m2(%L, %L)$$, :'curta', :'decisao'), 'mais de 3 seguindo sem justificativa: não publica');
 update public.registro set conteudo_mentora = jsonb_set(conteudo_mentora, '{escolhidos}',
   jsonb_build_array(jsonb_build_object('padrao', :'p1', 'rotulo', 'ativo'), jsonb_build_object('padrao', :'p3', 'rotulo', 'ativo_a_confirmar')))
   where id = :'decisao';
 
 set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
-select public.escrever_porque_m2(:'decisao', 'são o que eu faria mesmo sem ser paga');
+select public.t_erro(format($$select public.publicar_decisao_m2(%L, %L)$$, :'curta', :'decisao'), 'Ana não publica a decisão');
+
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+select public.publicar_decisao_m2(:'curta', :'decisao');
 select public.t_ok((select estado from public.movimento where codigo = 2) = 'fechado'
-               and (select estado from public.movimento where codigo = 3) = 'aberto', 'porquê escrito: M2 fecha e M3 abre');
+               and (select estado from public.movimento where codigo = 3) = 'aberto', 'decisão publicada: M2 fecha e M3 abre, sem esperar por ela');
 select public.t_ok((select count(*) from public.gate_registro where identificacao = 'gate_1' and resultado = 'passou') = 1, 'Gate 1 registrado como passou');
+select public.t_erro(format($$select public.publicar_decisao_m2(%L, %L)$$, :'curta', :'decisao'), 'decisão publicada não é publicada de novo');
+
+set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+select public.t_ok((select count(*) from public.registro where tipo = 'decisao_m2') = 1, 'Ana vê a decisão');
+select public.t_ok((select conteudo_mentora->>'porque' from public.registro where id = :'decisao') is not null, 'Ana vê o porquê que disse na call');
+select public.t_ok((select conteudo_mentora->>'status' from public.registro where id = :'p2') = 'nao_seguiu', 'padrão não seguido continua visível, marcado');
 select public.t_ok((select bool_and(estado_edicao = 'fechado') from public.registro where tipo = 'situacao'), 'situações deixam de ser editáveis');
-select public.t_ok((select conteudo->>'porque' from public.registro where id = :'decisao') is not null, 'o porquê fica na decisão, como dela');
-select public.t_erro(format($$select public.escrever_porque_m2(%L, 'de novo')$$, :'decisao'), 'decisão concluída não reabre');
+update public.registro set conteudo = '{"porque":"é o que eu faço quando ninguém está olhando"}' where id = :'decisao';
+select public.t_ok((select conteudo->>'porque' from public.registro where id = :'decisao') is not null, 'Ana pode ajustar o porquê com as palavras dela');
+select public.t_erro(format($$update public.registro set conteudo_mentora = '{}' where id = %L$$, :'decisao'), 'Ana não mexe na decisão registrada pela Karen');
 reset role;
 \echo TODOS OS TESTES DO M2 PASSARAM
