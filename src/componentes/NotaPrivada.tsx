@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useSessao } from "../lib/sessao";
+import type { ReactNode } from "react";
 import Colinha from "./Colinha";
 
-export type CampoNota = { chave: string; rotulo: string; ajuda?: string; exemplo?: string };
+export type CampoNota = { chave: string; rotulo: string; ajuda?: string; exemplo?: string; referencia?: ReactNode };
 
 // Nota privada com estrutura fixa por movimento. Só a mentora vê (regra do banco).
 export default function NotaPrivada({
@@ -77,6 +78,7 @@ export default function NotaPrivada({
               }}
             />
             {c.ajuda && <Colinha serve={c.ajuda} exemplo={c.exemplo} />}
+            {c.referencia}
           </div>
         ))}
         <div className="ws-acoes">

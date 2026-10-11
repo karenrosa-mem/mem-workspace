@@ -1025,3 +1025,55 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-pilar--compacta {
   margin-bottom: var(--space-4);
 }
+
+/* Referências da mentora (famílias de ativo, teste de classificação) */
+.ws-referencia {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+}
+
+.ws-referencia > summary {
+  cursor: pointer;
+  color: var(--brand);
+}
+
+.ws-referencia[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ws-referencia > p {
+  margin: 0;
+}
+
+.ws-referencia__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+.ws-referencia__lista li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+
+.ws-referencia__nome {
+  font-weight: 700;
+}
+
+.ws-referencia__teste {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}

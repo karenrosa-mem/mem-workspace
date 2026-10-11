@@ -22,6 +22,7 @@ import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import Colinha from "../../componentes/Colinha";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
+import { FamiliasAtivo } from "../../componentes/Referencias";
 import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
 
@@ -443,6 +444,7 @@ function MaterialDela({
           exemplo="Situação de 2021, “conversei com cada gestor e evitei a saída de metade do time” → pista de ativo, nome provisório: mediação que retém pessoas."
         />
       )}
+      {editavel && <FamiliasAtivo />}
       {lista.length === 0 && <p className="mem-body mem-muted">Ela ainda não contou nenhuma situação.</p>}
       <ol className="ws-situacoes">
         {lista.map((r) => (

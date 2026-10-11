@@ -33,6 +33,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 import Colinha from "../../componentes/Colinha";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
+import { FamiliasAtivo, TesteClassificacao } from "../../componentes/Referencias";
 
 const NOTA_M2 = [
   {
@@ -61,6 +62,7 @@ const NOTA_M2 = [
     ajuda:
       "Para cada padrão, a sua classificação técnica: experiência, conhecimento, habilidade, ativo ou ativo hipotético. Serve para você decidir o rótulo na Call 2. Ela nunca vê.",
     exemplo: "Mediar conflitos: ativo. Organizar processos: habilidade. Gestores de primeira viagem: ativo hipotético.",
+    referencia: <TesteClassificacao />,
   },
 ];
 
@@ -396,6 +398,7 @@ function EditorPadrao({
           serve="O que ela faz e o efeito, num nome que ela possa reconhecer como dela. Verbo + o quê + resultado. Evite rótulos genéricos como “liderança” ou “comunicação”."
           exemplo="Organizar processos que ninguém entende."
         />
+        <FamiliasAtivo />
       </div>
       <div className="mem-field">
         <label className="mem-field__label" htmlFor="padrao-quem">
