@@ -3,6 +3,7 @@ import { dataCurta } from "../lib/datas";
 
 // MentorNote do kit: a voz da mentora em serif, com assinatura.
 const SECOES: [string, string][] = [
+  ["o_que_decidimos", "O que decidimos"],
   ["o_que_investigamos", "O que investigamos"],
   ["o_que_e_ativo", "O que é um ativo"],
   ["o_que_fazer_agora", "O que fazer agora"],
@@ -11,6 +12,8 @@ const SECOES: [string, string][] = [
 const TITULOS: Record<string, string> = {
   call_1: "Leitura da Call 1",
   mensagem_abertura: "Mensagem da Karen",
+  mapa_ativos: "Leitura com os seus padrões",
+  call_2: "Leitura da Call 2",
 };
 
 export default function LeituraKaren({ registro }: { registro: Registro }) {

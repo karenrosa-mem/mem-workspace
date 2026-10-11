@@ -4,6 +4,7 @@ import { MOVIMENTOS, SEMANAS_DA_JORNADA, pilarDe } from "../../lib/metodo";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, somarHoras } from "../../lib/datas";
+import { decisaoM2, escolhaDois, padroes, padroesFaltando, precisaEscolherDois } from "../../lib/m2";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 
@@ -64,16 +65,67 @@ function passoM1(d: DadosJornada): Passo {
   };
 }
 
-// Primeiro passo do M2 (decisão de 09/10): completar as situações da Call 1.
+// Agora no M2 (Modelo por movimento, M2.2 — "O Agora no M2").
 function passoM2(d: DadosJornada): Passo {
   const aCompletar = situacoes(d).filter((r) => !situacaoCompleta(r)).length;
+  const c2 = call(d, 2);
+  const dia = c2 ? diaDaSemana(c2.data_atual) : "a Call 2";
+  const mapa = leitura(d, "mapa_ativos");
+  const curta = leitura(d, "call_2");
+  const decisao = decisaoM2(d);
+
+  if (decisao && curta && !(decisao.conteudo as { porque?: string }).porque)
+    return {
+      titulo: "Em uma frase: por que esses?",
+      porque: "A decisão da Call 2 está registrada. Falta só o seu porquê para seguir para o M3.",
+      acao: { rotulo: "Escrever", para: "/jornada/2" },
+    };
+  if (c2?.estado === "realizado") {
+    const prazo = somarHoras(c2.data_realizada ?? c2.data_atual, 48);
+    return { titulo: `Aguardando a leitura da Karen, até ${dataHora(prazo)}.`, porque: "Nada a fazer até lá." };
+  }
   if (aCompletar > 0)
     return {
       titulo: `Complete ${aCompletar === 1 ? "a situação" : `as ${aCompletar} situações`} que você contou na call.`,
       porque: "Os títulos já estão lá, anotados pela Karen.",
       acao: { rotulo: "Completar", para: "/jornada/1#situacoes" },
     };
-  return { titulo: "O próximo passo deste movimento entra aqui em breve." };
+  if (!mapa) {
+    const prazo = leitura(d, "call_1")?.conteudo_mentora.prazo_padroes as string | undefined;
+    return {
+      titulo: `Aguardando a Karen organizar suas candidatas${prazo ? `, até ${dataCurta(prazo)}` : ""}.`,
+      porque: "Nada a fazer até lá.",
+    };
+  }
+  const total = padroes(d).length;
+  const faltam = padroesFaltando(d);
+  const perto = c2 && horasAte(c2.data_atual) <= 24;
+  if (faltam > 0 && perto)
+    return {
+      titulo: `Para ${dia}, o essencial é dizer se reconhece cada padrão.`,
+      acao: { rotulo: "Responder", para: "/jornada/2" },
+    };
+  if (faltam === total)
+    return {
+      titulo: `Diga se reconhece cada padrão · ${total} padrões · ~20 min`,
+      porque: `Na ${dia}, vocês decidem quais você leva ao mercado.`,
+      acao: { rotulo: "Começar", para: "/jornada/2" },
+    };
+  if (faltam > 0)
+    return {
+      titulo: faltam === 1 ? "Falta 1 padrão." : `Faltam ${faltam} padrões.`,
+      acao: { rotulo: "Continuar", para: "/jornada/2" },
+    };
+  if (precisaEscolherDois(d) && !escolhaDois(d))
+    return {
+      titulo: "Última coisa: se só pudesse levar dois, quais?",
+      acao: { rotulo: "Escolher", para: "/jornada/2#escolha" },
+    };
+  return { titulo: `Pronta para ${dia}. Vamos decidir quais ativos você vai investigar no mercado.` };
+}
+
+function passoM3(): Passo {
+  return { titulo: "Formular hipóteses: para quem isso pode valer?", porque: "A tela do M3 entra aqui em breve." };
 }
 
 export default function Agora() {
@@ -101,7 +153,8 @@ export default function Agora() {
   const atual = movimentoAtual(dados);
   const mensagem = leitura(dados, "mensagem_abertura");
   const leituraCall1 = leitura(dados, "call_1");
-  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : null;
+  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3() : null;
+  const ultimaLeitura = atual === 2 ? leitura(dados, "call_2") ?? leitura(dados, "mapa_ativos") ?? leituraCall1 : undefined;
   const primeiroAcesso = atual === 1 && !dados.registros.some((r) => r.autora_papel === "mentorada");
   const proxima = dados.encontros.find((e) => e.tipo === "call" && e.estado === "marcado");
 
@@ -123,7 +176,7 @@ export default function Agora() {
         </section>
       )}
 
-      {atual === 2 && leituraCall1 && <LeituraKaren registro={leituraCall1} />}
+      {ultimaLeitura && <LeituraKaren registro={ultimaLeitura} />}
 
       {passo && (
         <section className="ws-bloco ws-passo">

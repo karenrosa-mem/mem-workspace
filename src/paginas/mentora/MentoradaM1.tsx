@@ -20,6 +20,7 @@ import { dataHora } from "../../lib/datas";
 import { Trilha } from "../mentorada/Jornada";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
+import SecaoM2 from "./MentoradaM2";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
 type Nota = {
@@ -29,7 +30,7 @@ type Nota = {
   naturalizacao?: string;
   sinais?: string;
 };
-type CamposLeitura = { o_que_investigamos?: string; o_que_e_ativo?: string; o_que_fazer_agora?: string };
+type CamposLeitura = { o_que_investigamos?: string; o_que_e_ativo?: string; o_que_fazer_agora?: string; prazo_padroes?: string };
 
 // Página de uma mentorada, vista pela mentora. No M1: material dela,
 // nota privada, candidatas, situações novas e leitura da Call 1.
@@ -86,11 +87,12 @@ export default function MentoradaM1() {
 
       {leituraCall1 ? (
         <>
-          <Aviso variante="done" titulo="Leitura da Call 1 publicada">
-            O M1 está fechado e o M2 aberto. As telas do M2 entram na próxima etapa da construção.
-          </Aviso>
-          <LeituraKaren registro={leituraCall1} />
-          <MaterialDela dados={dados} marcas={{}} editavel={false} aoMudar={recarregar} />
+          {mentoriaId && <SecaoM2 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />}
+          <details className="ws-bloco">
+            <summary className="mem-label">M1 · leitura da Call 1 e material dela</summary>
+            <LeituraKaren registro={leituraCall1} />
+            <MaterialDela dados={dados} marcas={{}} editavel={false} aoMudar={recarregar} />
+          </details>
         </>
       ) : (
         mentoriaId && (
@@ -580,6 +582,24 @@ function LeituraCall1({
         {campo("o_que_investigamos", "O que investigamos", "Ela lê isto primeiro, antes das candidatas.")}
         {campo("o_que_e_ativo", "O que é um ativo", "Primeira vez que ela encontra a palavra. Uma frase basta.")}
         {campo("o_que_fazer_agora", "O que fazer agora", "O próximo passo dela no M2.")}
+        <div className="mem-field">
+          <label className="mem-field__label" htmlFor="leitura-prazo">
+            Até quando você publica os padrões
+          </label>
+          <input
+            id="leitura-prazo"
+            type="date"
+            className="mem-input ws-input-curto"
+            value={campos.prazo_padroes ?? ""}
+            onChange={(e) => {
+              setCampos({ ...campos, prazo_padroes: e.target.value });
+              setEstado("");
+            }}
+          />
+          <span className="mem-field__help">
+            Ela vê “aguardando a Karen organizar suas candidatas, até [data]”.
+          </span>
+        </div>
         <p className="mem-body-sm mem-muted">
           As candidatas aparecem para ela sobre as próprias situações, com o nome provisório que você
           deu. As situações novas aparecem só com o título.

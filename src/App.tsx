@@ -7,6 +7,7 @@ import IniciarJornada from "./paginas/mentora/IniciarJornada";
 import MentoradaM1 from "./paginas/mentora/MentoradaM1";
 import Jornada, { MovimentoEmConstrucao, MOVIMENTOS_PRONTOS } from "./paginas/mentorada/Jornada";
 import M1 from "./paginas/mentorada/M1";
+import M2 from "./paginas/mentorada/M2";
 import { useParams } from "react-router-dom";
 import Aviso from "./componentes/Aviso";
 import { useSessao } from "./lib/sessao";
@@ -53,6 +54,7 @@ export default function App() {
 function PaginaMovimento() {
   const n = Number(useParams().n);
   if (n === 1) return <M1 />;
+  if (n === 2) return <M2 />;
   if (!MOVIMENTOS_PRONTOS.has(n) && n >= 1 && n <= 10) return <MovimentoEmConstrucao codigo={n} />;
   return <Navigate to="/jornada" replace />;
 }
