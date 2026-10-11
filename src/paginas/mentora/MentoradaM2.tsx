@@ -26,6 +26,7 @@ import { dataCurta, dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import NotaPrivada from "../../componentes/NotaPrivada";
+import Colinha from "../../componentes/Colinha";
 
 const NOTA_M2 = [
   { chave: "tensoes", rotulo: "Tensões entre prova e vontade", ajuda: "Ex.: prova forte com pouca vontade; muita vontade com pouca prova." },
@@ -153,7 +154,8 @@ function Agrupamento({ dados, mentoriaId, recarregar }: { dados: DadosJornada; m
         mentoriaId={mentoriaId}
         tipo="mapa_ativos"
         rotuloCampo="Sua leitura dos padrões"
-        ajuda="Ela lê isto antes dos padrões. O que você enxergou e o que ela deve olhar com atenção."
+        ajuda="Ela lê isto antes dos padrões. Conte quantos padrões você enxergou, qual parece mais forte e por quê, e o que ela deve olhar com atenção ao responder. Não diga ainda o que é ativo: isso se decide na Call 2."
+        exemplo="Enxerguei quatro padrões na sua história. O que mais aparece é a mediação: está em três empresas diferentes, de 2016 a 2023. Ao responder, repare se você reconhece cada um como seu ou só como algo que fez por obrigação — as duas respostas valem."
         rotuloBotao="Publicar os padrões"
         aviso={lista.length < 3 || lista.length > 5 ? `${lista.length} padrões. A referência do método é de 3 a 5.` : null}
         bloqueio={lista.length === 0 ? "Crie pelo menos um padrão antes de publicar." : null}
@@ -341,11 +343,13 @@ function PublicarLeitura({
   bloqueio,
   aoPublicar,
   antesDePublicar,
+  exemplo,
 }: {
   mentoriaId: string;
   tipo: string;
   rotuloCampo: string;
   ajuda: string;
+  exemplo?: string;
   rotuloBotao: string;
   aviso: string | null;
   bloqueio: string | null;
@@ -425,7 +429,7 @@ function PublicarLeitura({
             setEstado("");
           }}
         />
-        <span className="mem-field__help">{ajuda}</span>
+        <Colinha serve={ajuda} exemplo={exemplo} />
       </div>
       {aviso && (
         <Aviso variante="warn" titulo="Fora da referência">
@@ -652,7 +656,8 @@ function RegistrarDecisao({ dados, mentoriaId, recarregar }: { dados: DadosJorna
         mentoriaId={mentoriaId}
         tipo="call_2"
         rotuloCampo="Leitura curta · o que decidimos"
-        ajuda="Publique em até 48 h. Ao publicar, ela vê a decisão e escreve o porquê em uma frase."
+        ajuda="Publique em até 48 h. Resuma o que vocês decidiram juntas: o que segue e com qual rótulo, o que não segue e por quê. A decisão é dela: escreva como registro do que ela escolheu. Ao publicar, ela vê a decisão e escreve o porquê em uma frase."
+        exemplo="Você decidiu levar ao mercado a mediação de conflitos (ativo) e a preparação de gestores de primeira viagem (ativo a confirmar: a base ainda é só a sua percepção, e o mercado vai nos dizer). Desligamentos e processos ficam guardados: há prova, mas pouca vontade."
         rotuloBotao="Publicar decisão e leitura"
         aviso={null}
         bloqueio={bloqueio}

@@ -20,6 +20,7 @@ import { dataHora } from "../../lib/datas";
 import { Trilha } from "../mentorada/Jornada";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
+import Colinha from "../../componentes/Colinha";
 import SecaoM2 from "./MentoradaM2";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
@@ -568,7 +569,7 @@ function LeituraCall1({
     await aoPublicar();
   }
 
-  const campo = (chave: keyof CamposLeitura, rotulo: string, ajuda: string) => (
+  const campo = (chave: keyof CamposLeitura, rotulo: string, ajuda: string, exemplo?: string) => (
     <div className="mem-field">
       <label className="mem-field__label" htmlFor={`leitura-${chave}`}>
         {rotulo}
@@ -583,7 +584,7 @@ function LeituraCall1({
           setEstado("");
         }}
       />
-      <span className="mem-field__help">{ajuda}</span>
+      <Colinha serve={ajuda} exemplo={exemplo} />
     </div>
   );
 
@@ -598,9 +599,24 @@ function LeituraCall1({
     <section className="ws-bloco">
       <span className="mem-label mem-muted">Leitura da Call 1 · você publica em até 48 h</span>
       <div className="ws-form">
-        {campo("o_que_investigamos", "O que investigamos", "Ela lê isto primeiro, antes das candidatas.")}
-        {campo("o_que_e_ativo", "O que é um ativo", "Primeira vez que ela encontra a palavra. Uma frase basta.")}
-        {campo("o_que_fazer_agora", "O que fazer agora", "O próximo passo dela no M2.")}
+        {campo(
+          "o_que_investigamos",
+          "O que investigamos",
+          "O que você enxergou nas situações dela e na conversa: o que se repete, em que anos e em que contextos, e o que ela mesma percebeu. Fale com ela (“você”). É o primeiro texto que ela lê depois da call, antes de ver as marcas nas situações.",
+          "Você contou três situações, em anos bem diferentes (2016, 2021 e 2023), em que entrou num conflito entre gestor e time e as pessoas ficaram. Na call, você mesma percebeu que chama isso de “só conversar com as pessoas”, mas o que você descreveu tem método: ouvir os dois lados antes de alguém decidir.",
+        )}
+        {campo(
+          "o_que_e_ativo",
+          "O que é um ativo",
+          "A primeira vez que ela encontra a palavra. Uma ou duas frases, ligando a definição ao material dela.",
+          "Um ativo é algo que você sabe fazer, já fez mais de uma vez, gera resultado e resolve o problema de alguém. As situações que marquei são as que podem esconder um ativo; na próxima etapa, a gente vê quais se sustentam.",
+        )}
+        {campo(
+          "o_que_fazer_agora",
+          "O que fazer agora",
+          "O próximo passo dela, concreto. Em geral: completar as situações que surgiram na call e esperar você organizar as candidatas em padrões.",
+          "Complete as duas situações que você contou na call — os títulos já estão lá. Até segunda, eu organizo suas candidatas em padrões e te mostro aqui.",
+        )}
         <div className="mem-field">
           <label className="mem-field__label" htmlFor="leitura-prazo">
             Até quando você publica os padrões
