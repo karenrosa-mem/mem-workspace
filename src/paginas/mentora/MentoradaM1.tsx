@@ -25,6 +25,7 @@ import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { FamiliasAtivo } from "../../componentes/Referencias";
 import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
+import SecaoM3 from "./MentoradaM3";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
 type Nota = {
@@ -86,7 +87,7 @@ export default function MentoradaM1() {
       </span>
       <h1 className="mem-h1">{nome || "Mentorada"}</h1>
       <p className="mem-body-lg">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Jornada"}</p>
-      {atual && atual <= 2 && call(dados, atual) && (
+      {atual && atual <= 3 && call(dados, atual) && (
         <Link className="ws-guia-atalho" to={`/mentoradas/${dados.jornada.id}/call/${atual}`}>
           <span className="mem-label">Guia da Call {atual}</span>
           <span className="mem-body">
@@ -99,7 +100,16 @@ export default function MentoradaM1() {
 
       {leituraCall1 ? (
         <>
-          {mentoriaId && <SecaoM2 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />}
+          {mentoriaId && <SecaoM3 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />}
+          {mentoriaId &&
+            (dados.movimentos.find((m) => m.codigo === 3)?.estado === "nao_iniciado" ? (
+              <SecaoM2 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
+            ) : (
+              <details className="ws-bloco">
+                <summary className="mem-label">M2 · padrões, respostas dela e decisão</summary>
+                <SecaoM2 dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
+              </details>
+            ))}
           <details className="ws-bloco">
             <summary className="mem-label">M1 · leitura da Call 1 e material dela</summary>
             <LeituraKaren registro={leituraCall1} />

@@ -60,3 +60,8 @@ export function somarHoras(valor: string, horas: number): string {
 export function horasAte(valor: string): number {
   return (new Date(valor).getTime() - Date.now()) / 3_600_000;
 }
+
+// Dia (AAAA-MM-DD) de um instante, no horário de Brasília.
+export function diaBrasilia(valor: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: FUSO }).format(new Date(valor));
+}

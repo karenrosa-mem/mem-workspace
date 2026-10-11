@@ -497,7 +497,7 @@ function OutraExperiencia({ situacao, jornadaId }: { situacao: Registro; jornada
 }
 
 // ---------------------------------------------------------------------
-function PublicarLeitura({
+export function PublicarLeitura({
   mentoriaId,
   tipo,
   rotuloCampo,
@@ -509,6 +509,7 @@ function PublicarLeitura({
   antesDePublicar,
   publicarCom,
   exemplo,
+  movimento = 2,
 }: {
   mentoriaId: string;
   tipo: string;
@@ -521,6 +522,7 @@ function PublicarLeitura({
   aoPublicar: () => Promise<void>;
   antesDePublicar?: () => Promise<boolean>;
   publicarCom?: (rascunhoId: string) => Promise<string | null>; // devolve a mensagem de erro, se houver
+  movimento?: number;
 }) {
   const chave = tipo === "call_2" ? "o_que_decidimos" : "texto";
   const [rascunhoId, setRascunhoId] = useState<string | null>(null);
@@ -534,7 +536,7 @@ function PublicarLeitura({
       .from("leitura_rascunho")
       .select("id, campos")
       .eq("mentoria_id", mentoriaId)
-      .eq("movimento_codigo", 2)
+      .eq("movimento_codigo", movimento)
       .eq("tipo_leitura", tipo)
       .limit(1)
       .maybeSingle()
@@ -543,7 +545,7 @@ function PublicarLeitura({
         setRascunhoId(data.id as string);
         setTexto(String((data.campos as Record<string, string>)[chave] ?? ""));
       });
-  }, [mentoriaId, tipo, chave]);
+  }, [mentoriaId, tipo, chave, movimento]);
 
   async function salvar(): Promise<string | null> {
     if (!supabase) return null;
@@ -556,7 +558,7 @@ function PublicarLeitura({
     }
     const r = await supabase
       .from("leitura_rascunho")
-      .insert({ mentoria_id: mentoriaId, movimento_codigo: 2, tipo_leitura: tipo, campos })
+      .insert({ mentoria_id: mentoriaId, movimento_codigo: movimento, tipo_leitura: tipo, campos })
       .select("id")
       .single();
     if (r.error) {

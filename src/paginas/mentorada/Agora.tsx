@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
 import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
 import FaixaPilar from "../../componentes/FaixaPilar";
+import { ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, somarHoras } from "../../lib/datas";
@@ -119,8 +120,44 @@ function passoM2(d: DadosJornada): Passo {
   return { titulo: `Pronta para ${dia}. Vamos decidir quais ativos você vai investigar no mercado.` };
 }
 
-function passoM3(): Passo {
-  return { titulo: "Formular hipóteses: para quem isso pode valer?", porque: "A tela deste movimento entra aqui em breve." };
+function passoM3(d: DadosJornada): Passo {
+  const c3 = call(d, 3);
+  const dia = c3 ? diaDaSemana(c3.data_atual) : "a Call 3";
+  const ativos = ativosEscolhidos(d);
+  const semQuemMais = ativos.find((a) => !quemMaisRespondido(d, a.id));
+  const total = hipoteses(d).length;
+  const completas = hipotesesCompletas(d);
+  const perto = c3 && horasAte(c3.data_atual) <= 24;
+
+  if (semQuemMais)
+    return {
+      titulo: `Quem mais passa por isso? · 2 perguntas sobre ${semQuemMais.nome} · ~5 min`,
+      porque: "Uma hipótese é uma ideia de para quem isso vale, que ainda vai ser testada com pessoas reais. Começa por quem mais tem esse problema.",
+      acao: { rotulo: "Responder", para: "/jornada/3#quem-mais" },
+    };
+  if (completas < 3 && perto)
+    return { titulo: `Para ${dia}, o essencial são 3 hipóteses completas.`, acao: { rotulo: "Continuar", para: "/jornada/3#hipoteses" } };
+  if (total === 0)
+    return {
+      titulo: "Monte sua primeira hipótese · ~10 min",
+      porque: `Na ${dia}, vocês decidem quais você leva para conversar com pessoas reais.`,
+      acao: { rotulo: "Começar", para: "/jornada/3#hipoteses" },
+    };
+  if (completas < 3)
+    return {
+      titulo: 3 - completas === 1 ? "Falta 1 hipótese completa para o mínimo de 3." : `Faltam ${3 - completas} hipóteses completas para o mínimo de 3.`,
+      acao: { rotulo: "Continuar", para: "/jornada/3#hipoteses" },
+    };
+  const sem = ativosSemHipotese(d)[0];
+  if (sem)
+    return {
+      titulo: `${sem.nome} ainda não tem hipótese.`,
+      porque: "Não é obrigatório: se nenhuma fizer sentido, diga o motivo em uma frase.",
+      acao: { rotulo: "Responder", para: "/jornada/3#hipoteses" },
+    };
+  if (total > 5)
+    return { titulo: `Você tem ${total}. Na ${dia}, vocês escolhem até 5.`, porque: "Nada é bloqueado.", acao: { rotulo: "Ver", para: "/jornada/3#hipoteses" } };
+  return { titulo: `Pronta para ${dia}.`, porque: "Vocês vão decidir quais hipóteses vão a campo.", acao: { rotulo: "Rever", para: "/jornada/3#hipoteses" } };
 }
 
 export default function Agora() {
@@ -148,7 +185,7 @@ export default function Agora() {
   const atual = movimentoAtual(dados);
   const mensagem = leitura(dados, "mensagem_abertura");
   const leituraCall1 = leitura(dados, "call_1");
-  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3() : null;
+  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3(dados) : null;
   const ultimaLeitura =
     atual === 2
       ? leitura(dados, "mapa_ativos") ?? leituraCall1

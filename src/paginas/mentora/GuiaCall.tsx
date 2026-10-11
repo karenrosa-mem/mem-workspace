@@ -17,6 +17,7 @@ import {
   textoComoSabe,
   type Reacao,
 } from "../../lib/m2";
+import { LASTRO, dadosHipotese, disputaPublico, fraseTexto, hipoteses } from "../../lib/m3";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -26,7 +27,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2]);
+const GUIAS_PRONTOS = new Set([1, 2, 3]);
 
 export default function GuiaCall() {
   const { id, n } = useParams();
@@ -105,8 +106,10 @@ export default function GuiaCall() {
         </Aviso>
       ) : numero === 1 ? (
         <GuiaCall1 dados={dados} nota={nota} chave={`${id}:1`} />
-      ) : (
+      ) : numero === 2 ? (
         <GuiaCall2 dados={dados} nota={nota} chave={`${id}:2`} />
+      ) : (
+        <GuiaCall3 dados={dados} nota={nota} chave={`${id}:3`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -433,6 +436,83 @@ function GuiaCall2({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
         vazio="Nenhuma tensão ou concordância anotada na nota privada."
       />
       <Bloco n={4} titulo="Decidir" itens={decidir} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 3 · primeira metade: Formular hipóteses
+// ---------------------------------------------------------------------
+function GuiaCall3({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const lista = hipoteses(dados);
+
+  const abrir: Item[] = [
+    { id: "abre-ler", texto: "Abra lendo as hipóteses dela, uma a uma.", detalhe: "Nada aqui é bom ou ruim ainda: tudo é hipótese." },
+  ];
+  const confrontar: Item[] = lista.flatMap((h, i) => {
+    const x = dadosHipotese(h);
+    const grupo = `Hipótese ${i + 1}`;
+    const itens: Item[] = [
+      { grupo, id: `voz-${h.id}`, texto: "Leia em voz alta e pergunte: “isso serve para quem mais?”", detalhe: fraseTexto(dados, x) },
+      { grupo, id: `ativo-${h.id}`, texto: "O ativo aparece no problema e na transformação, ou só no fim da frase?" },
+    ];
+    if (x.lastro === "imagino")
+      itens.push({ grupo, id: `imag-${h.id}`, texto: "Imaginada: “pode ir, sabendo que você vai precisar encontrar pessoas que nunca viu”." });
+    if (disputaPublico(dados, h) > 0)
+      itens.push({ grupo, id: `disp-${h.id}`, texto: "Mesmo público de outra hipótese: padrão mais forte ou só repetição?" });
+    const lastro = LASTRO.find((l) => l.valor === x.lastro);
+    if (lastro) itens[0].detalhe = `${fraseTexto(dados, x)} · ${lastro.rotulo}`;
+    return itens;
+  });
+  const daNota: Item[] = [
+    ...linhas(nota.genericas).map((t, i) => ({ id: `gen-${i}`, texto: t, detalhe: "Genérica" })),
+    ...linhas(nota.imaginadas).map((t, i) => ({ id: `ima-${i}`, texto: t, detalhe: "Imaginada" })),
+    ...linhas(nota.ativo_usado).map((t, i) => ({ id: `atv-${i}`, texto: t, detalhe: "Ativo usado ou só citado" })),
+    ...linhas(nota.disputa).map((t, i) => ({ id: `dis-${i}`, texto: t, detalhe: "Disputa de público" })),
+    ...linhas(nota.ideia_entrada).map((t, i) => ({ id: `ide-${i}`, texto: t, detalhe: "Ideia de entrada (ela não vê esta ligação)" })),
+  ];
+  const decidir: Item[] = [
+    { id: "dec-reescrever", texto: "Se uma frase mudar, ela reescreve na tela dela; a versão anterior fica guardada." },
+    { id: "dec-coerentes", texto: "Entre as coerentes, a escolha é dela. Incoerente não vai só porque ela quer.", detalhe: "Normalmente de 3 a 5 vão a campo." },
+    { id: "dec-guardadas", texto: "Para cada uma que fica guardada: a razão e em que condição pode voltar." },
+    { id: "dec-porque", texto: "Pergunte: “em uma frase, por que essas?”", detalhe: "Anote literal, no passo 4 da página dela." },
+    { id: "dec-registrar", texto: "Registre a decisão: o M4 abre e vocês seguem para a segunda metade da call." },
+  ];
+
+  const todos = [...abrir, ...confrontar, ...daNota, ...decidir];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+
+  return (
+    <>
+      <Objetivo
+        objetivo="Primeira metade: decidir quais hipóteses vão a campo. Segunda metade: preparar as conversas com pessoas reais."
+        sai={["As hipóteses que vão a campo e as guardadas, com a razão", "O porquê dela, em uma frase", "O M4 aberto, para preparar as conversas"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="Abrir" itens={abrir} marcados={marcados} alternar={alternar} />
+      <Bloco
+        n={2}
+        titulo="Confrontar cada hipótese"
+        porque="Genérica, ativo de verdade, imaginada, disputa de público. Sem desqualificar: apontar."
+        itens={confrontar}
+        marcados={marcados}
+        alternar={alternar}
+        vazio="Ela ainda não montou hipóteses."
+      />
+      <Bloco
+        n={3}
+        titulo="Da sua nota privada"
+        porque="O que você anotou na véspera, um item por linha."
+        itens={daNota}
+        marcados={marcados}
+        alternar={alternar}
+        vazio="Nada anotado na nota privada do M3 (passo 3 da página dela)."
+      />
+      <Bloco n={4} titulo="Decidir" itens={decidir} marcados={marcados} alternar={alternar} />
+      <Aviso variante="warn" titulo="Segunda metade da call">
+        A preparação das conversas (M4) ganha guia quando o M4 for construído.
+      </Aviso>
     </>
   );
 }

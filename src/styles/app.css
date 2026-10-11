@@ -781,6 +781,7 @@ body {
 
 .ws-resumo dd {
   margin: 0;
+  white-space: pre-line;
 }
 
 @media (max-width: 640px) {
@@ -1228,5 +1229,51 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 }
 
 .ws-porque > p {
+  margin: 0;
+}
+
+/* M3 · hipóteses */
+.ws-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ws-chip {
+  font-size: 0.875rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+
+.ws-frase {
+  margin: 0;
+}
+
+.ws-frase__lacuna {
+  color: var(--ink-muted);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-1);
+  padding: 0 0.25em;
+}
+
+.ws-frase-viva {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--brand-tint);
+  border-left: 2px solid var(--brand);
+  border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ws-frase-viva > p {
   margin: 0;
 }
