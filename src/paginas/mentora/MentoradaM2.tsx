@@ -234,7 +234,7 @@ function EditorPadrao({
       </fieldset>
       <div className="mem-field">
         <label className="mem-field__label" htmlFor="padrao-quem">
-          Quem tinha o problema
+          Quem tinha o problema · sua sugestão para ela
         </label>
         <input
           id="padrao-quem"
@@ -242,7 +242,10 @@ function EditorPadrao({
           value={p.quem_tinha_o_problema ?? ""}
           onChange={(e) => setP({ ...p, quem_tinha_o_problema: e.target.value })}
         />
-        <span className="mem-field__help">Vem pré-preenchido para ela, que confirma ou corrige.</span>
+        <Colinha
+          serve="Quem você leu, nas situações dela, que estava do outro lado com o problema que ela resolvia. É você quem escreve: ela recebe já preenchido e confirma ou corrige. Seja específica (quem, em que momento), não genérica (“empresas”, “pessoas”)."
+          exemplo="Gestores prestes a perder pessoas-chave do time."
+        />
       </div>
       <label className="ws-marca__check mem-body-sm">
         <input type="checkbox" checked={!!p.sabe_fazer} onChange={(e) => setP({ ...p, sabe_fazer: e.target.checked })} />
