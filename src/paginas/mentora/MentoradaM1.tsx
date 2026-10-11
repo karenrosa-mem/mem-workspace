@@ -195,6 +195,17 @@ function PreparacaoM1({
   );
 }
 
+// Quais campos da situação ela ainda não preencheu.
+function camposFaltando(s: Situacao): string {
+  const f = [
+    !s.ano && "ano",
+    !s.contexto?.trim() && "onde estava",
+    !s.o_que_fez?.trim() && "o que fez",
+    !s.o_que_mudou?.trim() && "o que mudou",
+  ].filter(Boolean);
+  return f.join(", ");
+}
+
 function materialFaltando(d: DadosJornada): string {
   const p = perguntasFaltando(d);
   const s = Math.max(0, 5 - situacoesCompletas(d));
@@ -343,7 +354,7 @@ function MaterialDela({
       {editavel && (
         <p className="mem-body-sm mem-muted ws-measure">
           Na Call 1 ou logo depois, marque as situações que podem esconder um ativo e dê a cada uma um
-          nome provisório. Elas viram a coleção “Seus ativos” no M2. Referência do método: de 8 a 15.
+          nome provisório. Elas viram a matéria-prima do M2. Situações incompletas não impedem a publicação.
           Ela só vê as marcas depois que você publicar a leitura.
         </p>
       )}
@@ -395,7 +406,11 @@ function SituacaoDaMentora({
         <span className="mem-data">{s.ano ?? "—"}</span>
         {registro.conteudo_mentora.origem === "call_1" && <span className="mem-label mem-muted">Surgiu na Call 1</span>}
         {registro.pendente_publicacao && <span className="mem-label mem-muted">Ela vê depois da leitura</span>}
-        {!situacaoCompleta(registro) && <span className="mem-tag mem-tag--pendencia">Pendência · incompleta</span>}
+        {!situacaoCompleta(registro) && (
+          <span className="mem-tag mem-tag--pendencia">
+            {registro.conteudo_mentora.origem === "call_1" ? "Pendência · ela completa no M2" : `Pendência · falta ${camposFaltando(s)}`}
+          </span>
+        )}
       </div>
       <p className="mem-body ws-situacao__titulo">{tituloDaSituacao(registro)}</p>
       {s.contexto && (
@@ -572,8 +587,12 @@ function LeituraCall1({
     </div>
   );
 
-  const completa = !!(campos.o_que_investigamos?.trim() && campos.o_que_fazer_agora?.trim());
-  const foraDaFaixa = candidatas < 8 || candidatas > 15;
+  // O que falta para publicar, dito com todas as letras (kit: botão desativado diz por quê).
+  const faltando = [
+    !call1Realizada && "marcar a Call 1 como realizada (botão no topo da página)",
+    !campos.o_que_investigamos?.trim() && "preencher “O que investigamos”",
+    !campos.o_que_fazer_agora?.trim() && "preencher “O que fazer agora”",
+  ].filter(Boolean) as string[];
 
   return (
     <section className="ws-bloco">
@@ -604,14 +623,13 @@ function LeituraCall1({
           As candidatas aparecem para ela sobre as próprias situações, com o nome provisório que você
           deu. As situações novas aparecem só com o título.
         </p>
-        {call1Realizada && foraDaFaixa && (
-          <Aviso variante="warn" titulo={candidatas === 1 ? "1 candidata" : `${candidatas} candidatas`}>
-            A referência do método é de 8 a 15. Você pode publicar assim mesmo, se o material pedir.
-          </Aviso>
-        )}
-        {!call1Realizada && (
-          <Aviso variante="warn" titulo="Call 1 ainda não marcada">
-            Para publicar, marque a Call 1 como realizada no topo da página.
+        <p className="mem-body-sm">
+          {candidatas === 1 ? "1 situação marcada" : `${candidatas} situações marcadas`} como podendo esconder um ativo.
+          A quantidade não impede a publicação.
+        </p>
+        {faltando.length > 0 && (
+          <Aviso variante="warn" titulo="Para publicar, falta">
+            {faltando.join("; ")}.
           </Aviso>
         )}
         {erro && (
@@ -623,7 +641,7 @@ function LeituraCall1({
           <button
             type="button"
             className="mem-btn mem-btn--primary"
-            disabled={!call1Realizada || !completa || estado === "salvando"}
+            disabled={faltando.length > 0 || estado === "salvando"}
             onClick={publicar}
           >
             Publicar leitura e abrir o M2
