@@ -4,7 +4,7 @@ import { useSessao } from "../../lib/sessao";
 import { call, leitura, type DadosJornada, type Registro } from "../../lib/jornada";
 import { situacaoCompleta, situacoes, tituloDaSituacao, type Situacao } from "../../lib/m1";
 import {
-  COMO_SABE,
+  textoComoSabe,
   OUTRAS_VEZES,
   RECONHECE,
   ROTULOS,
@@ -492,7 +492,6 @@ function rotuloDe(lista: readonly { valor: string; rotulo: string }[], v?: strin
 }
 
 function Reacoes({ dados }: { dados: DadosJornada }) {
-  const comoSabe = COMO_SABE as readonly { valor: string; rotulo: string }[];
   const escolha = escolhaDois(dados)?.conteudo as { padroes?: string[]; linha?: string } | undefined;
   return (
     <div className="ws-bloco">
@@ -536,7 +535,7 @@ function Reacoes({ dados }: { dados: DadosJornada }) {
                     {corrigiu && <div className="mem-body-sm mem-muted">corrigiu o seu “{sugerido}”</div>}
                   </td>
                   <td>
-                    {rotuloDe(comoSabe, r?.como_sabe)}
+                    {textoComoSabe(r)}
                     {r?.outras_vezes && <div className="mem-body-sm mem-muted">{rotuloDe(OUTRAS_VEZES, r.outras_vezes)}</div>}
                   </td>
                   <td>{rotuloDe(VONTADE, r?.vontade)}</td>

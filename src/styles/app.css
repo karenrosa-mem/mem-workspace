@@ -793,3 +793,7 @@ body {
     margin-bottom: var(--space-2);
   }
 }
+
+.ws-pergunta-bloco__nota {
+  margin: -0.5rem 0 0;
+}

@@ -8,6 +8,9 @@ import { situacaoCompleta, situacoes, type Situacao } from "../../lib/m1";
 import {
   COMO_SABE,
   DEFINICAO_ATIVO,
+  alternarComoSabe,
+  listaComoSabe,
+  textoComoSabe,
   OUTRAS_VEZES,
   RECONHECE,
   ROTULOS,
@@ -219,7 +222,7 @@ function ResumoReacao({ reacao, podeEditar, aoEditar }: { reacao?: Reacao; podeE
   const linhas: [string, string][] = [
     ["Você se vê nisso?", `${rotuloDe(RECONHECE, reacao.reconhece)}${reacao.frase ? ` — ${reacao.frase}` : ""}`],
     ["Quem tinha o problema", reacao.quem_tinha ?? "—"],
-    ["Sinal de que deu resultado", rotuloDe(COMO_SABE, reacao.como_sabe)],
+    ["Sinais de que deu resultado", textoComoSabe(reacao)],
     ["Vontade nos próximos 5 a 10 anos", rotuloDe(VONTADE, reacao.vontade)],
   ];
   if (reacao.outras_vezes) linhas.push(["Outras vezes", rotuloDe(OUTRAS_VEZES, reacao.outras_vezes)]);
@@ -249,22 +252,26 @@ function Opcoes({
   rotulo,
   opcoes,
   valor,
+  marcados,
   aoEscolher,
 }: {
   rotulo: string;
   opcoes: readonly { valor: string; rotulo: string; detalhe?: string }[];
   valor?: string;
+  marcados?: string[]; // quando vem, a pergunta aceita mais de uma resposta
   aoEscolher: (v: string) => void;
 }) {
+  const varias = !!marcados;
+  const marcado = (v: string) => (varias ? marcados.includes(v) : valor === v);
   return (
-    <div className={`ws-opcoes ${opcoes.some((o) => o.detalhe) ? "ws-opcoes--grade" : ""}`} role="radiogroup" aria-label={rotulo}>
+    <div className={`ws-opcoes ${opcoes.some((o) => o.detalhe) ? "ws-opcoes--grade" : ""}`} role={varias ? "group" : "radiogroup"} aria-label={rotulo}>
       {opcoes.map((o) => (
         <button
           key={o.valor}
           type="button"
-          role="radio"
-          aria-checked={valor === o.valor}
-          className={`ws-opcao ${valor === o.valor ? "ws-opcao--marcada" : ""}`}
+          role={varias ? "checkbox" : "radio"}
+          aria-checked={marcado(o.valor)}
+          className={`ws-opcao ${marcado(o.valor) ? "ws-opcao--marcada" : ""}`}
           onClick={() => aoEscolher(o.valor)}
         >
           <span className="ws-opcao__rotulo">{o.rotulo}</span>
@@ -342,7 +349,8 @@ function FormReacao({
       : r.reconhece === "em_parte"
         ? "O que combina com você e o que não combina?"
         : "O que mais combina com você aqui?";
-  const algo = !!(r.reconhece || r.frase || r.como_sabe || r.vontade);
+  const sinaisMarcados = listaComoSabe(r);
+  const algo = !!(r.reconhece || r.frase || sinaisMarcados.length || r.vontade);
   let n = 0;
 
   return (
@@ -386,8 +394,14 @@ function FormReacao({
         />
       </Pergunta>
 
-      <Pergunta n={++n} feita={!!r.como_sabe} titulo={`Que sinal você tem de que “${nome}” deu resultado?`}>
-        <Opcoes rotulo="Sinal de resultado" opcoes={COMO_SABE} valor={r.como_sabe} aoEscolher={(v) => setR({ ...r, como_sabe: v })} />
+      <Pergunta n={++n} feita={sinaisMarcados.length > 0} titulo={`Que sinais você tem de que “${nome}” deu resultado?`}>
+        <p className="mem-body-sm mem-muted ws-pergunta-bloco__nota">Marque todos que valem.</p>
+        <Opcoes
+          rotulo="Sinais de resultado"
+          opcoes={COMO_SABE}
+          marcados={sinaisMarcados}
+          aoEscolher={(v) => setR({ ...r, como_sabe: alternarComoSabe(sinaisMarcados, v) })}
+        />
       </Pergunta>
 
       <Pergunta n={++n} feita={!!r.vontade} titulo="Quanta vontade você tem de trabalhar com isso nos próximos 5 a 10 anos?">

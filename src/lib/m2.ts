@@ -37,6 +37,23 @@ export const COMO_SABE = [
   { valor: "ainda_nao_sei", rotulo: "Ainda não sei", detalhe: "vira pergunta para a call" },
 ] as const;
 
+// Pode marcar mais de um sinal; "Ainda não sei" exclui os outros.
+export function listaComoSabe(r?: Reacao): string[] {
+  const v = r?.como_sabe;
+  return Array.isArray(v) ? v : v ? [v] : [];
+}
+
+export function alternarComoSabe(atual: string[], valor: string): string[] {
+  if (atual.includes(valor)) return atual.filter((x) => x !== valor);
+  if (valor === "ainda_nao_sei") return [valor];
+  return [...atual.filter((x) => x !== "ainda_nao_sei"), valor];
+}
+
+export function textoComoSabe(r?: Reacao): string {
+  const l = listaComoSabe(r).map((v) => COMO_SABE.find((o) => o.valor === v)?.rotulo ?? v);
+  return l.length ? l.join(" · ") : "—";
+}
+
 export const VONTADE = [
   { valor: "muita", rotulo: "Muita" },
   { valor: "alguma", rotulo: "Alguma" },
@@ -55,7 +72,7 @@ export type Reacao = {
   quem_tinha?: string;
   quem_tinha_confirmado?: boolean;
   quem_tinha_veio_preenchido?: boolean;
-  como_sabe?: string;
+  como_sabe?: string | string[]; // lista desde 11/10; respostas antigas guardam um valor só
   vontade?: string;
   outras_vezes?: string;
 };
@@ -147,7 +164,7 @@ export function reacaoCompleta(r: Reacao | undefined, umaSituacao: boolean): boo
     !!r.reconhece &&
     !!r.frase?.trim() &&
     !!r.quem_tinha_confirmado &&
-    !!r.como_sabe &&
+    listaComoSabe(r).length > 0 &&
     !!r.vontade &&
     (!umaSituacao || !!r.outras_vezes)
   );
