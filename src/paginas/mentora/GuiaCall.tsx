@@ -581,7 +581,11 @@ function GuiaCall4({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
     ...linhas(nota.pagamento).map((t, i) => ({ id: `pag-${i}`, texto: t, detalhe: "Pagamento ligado à hipótese?" })),
   ];
   const decidir: Item[] = [
-    { id: "d4-criterio", texto: "Segue para comparação: 2 conversas do público com caso concreto, ou 3 relatos com caso e 1 sinal de demanda sustentada." },
+    {
+      id: "d4-criterio",
+      texto: "Pode seguir para a comparação a hipótese que tem UM destes dois:",
+      detalhe: "pelas conversas: 2 pessoas do público contaram um caso real · pela pesquisa: 3 relatos com caso real + 1 sinal de que o tema vende há meses",
+    },
     { id: "d4-trilha", texto: "Se a hipótese passou só pela pesquisa, diga: no teste comercial (M9) ela vai confirmar se este público responde a ela." },
     { id: "d4-dela", texto: "Entre as que podem seguir, a escolha é dela. Uma hipótese sem sinal não segue só porque ela gosta." },
     { id: "d4-validacao", texto: "Diga com todas as letras: seguir não é validar. É ter material para comparar." },

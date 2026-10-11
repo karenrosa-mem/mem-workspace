@@ -544,12 +544,29 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
     <Etapa
       n={5}
       passo={passo}
-      porque="No início da Call 4, hipótese por hipótese: o que apareceu, o que não apareceu, o que ainda é dúvida. A escolha é dela, dentro do critério: segue para comparação quem tem 2 conversas do público com caso concreto, ou 3 relatos com caso e 1 sinal de demanda sustentada. Seguir não é validar."
+      porque="No início da Call 4, vocês olham hipótese por hipótese: o que apareceu, o que não apareceu e o que ainda é dúvida. Depois, ela decide o que acontece com cada uma."
     >
       <div className="ws-acoes">
         <Link className="mem-btn mem-btn--primary" to={`/mentoradas/${dados.jornada.id}/call/4`}>
           Abrir guia da Call 4
         </Link>
+      </div>
+      <div className="ws-criterio">
+        <p className="mem-label">Quando uma hipótese pode seguir para a comparação (M5)</p>
+        <p className="mem-body-sm">Ela precisa ter <strong>um</strong> destes dois:</p>
+        <ul className="ws-lista-simples mem-body-sm">
+          <li>
+            <strong>Pelas conversas:</strong> 2 pessoas do público contaram uma vez em que o problema aconteceu com elas.
+          </li>
+          <li>
+            <strong>Pela pesquisa:</strong> 3 relatos encontrados contando um caso concreto + 1 sinal de que o tema vende há meses
+            (anúncio rodando há mais de 3 meses ou produto entre os mais vendidos).
+          </li>
+        </ul>
+        <p className="mem-body-sm">
+          Entre as que podem seguir, a escolha é dela. Seguir não quer dizer que está provado: quer dizer que há material
+          suficiente para comparar no M5.
+        </p>
       </div>
       {lista.map((f, i) => {
         const l = linhas[f.id] ?? { razao: "", condicao: "" };
@@ -565,6 +582,11 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
             </div>
             <p className="mem-body ws-serif ws-frase">{fraseDaFrente(dados, f)}</p>
             <p className="mem-body-sm">{resumo(dados, f)}</p>
+            <p className={`mem-body-sm ${pode ? "" : "mem-muted"}`}>
+              {pode
+                ? `✓ Pode seguir para a comparação (${[casos >= 2 && "pelas conversas", pesquisa(dados, f).suficiente && "pela pesquisa"].filter(Boolean).join(" e ")}).`
+                : "Ainda não pode seguir para a comparação: pode voltar ou ficar guardada."}
+            </p>
             <Pergunta n={++k} feita={!!l.resultado} titulo="O que acontece com esta hipótese?">
               <Opcoes
                 rotulo="Decisão"
@@ -576,12 +598,7 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
                 valor={l.resultado}
                 aoEscolher={(v) => set({ resultado: v as Linha["resultado"] })}
               />
-              {!pode && (
-                <p className="mem-body-sm mem-muted">
-                  Não pode seguir para comparação ainda: {casos === 1 ? "1 conversa" : `${casos} conversas`} do público com caso concreto (o mínimo
-                  é 2), e a pesquisa ainda não tem 3 relatos com caso e 1 sinal de demanda sustentada.
-                </p>
-              )}
+
             </Pergunta>
             <Pergunta n={++k} feita={!!l.razao.trim()} titulo="Por quê?">
               <input className="mem-input" aria-label="Razão" value={l.razao} onChange={(e) => set({ razao: e.target.value })} />
