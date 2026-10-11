@@ -20,6 +20,7 @@ import {
   decisaoM2,
   escolhaDois,
   nomePadrao,
+  porqueDaDecisao,
   outrasExperiencias,
   padroes,
   precisaEscolherDois,
@@ -497,10 +498,11 @@ function Decisao({
     nao_seguiram?: { padrao: string; razao?: string; condicao_volta?: string }[];
   };
   const dela = decisao.conteudo as { porque?: string };
-  const naCall = (decisao.conteudo_mentora as { porque?: string }).porque ?? "";
+  const { naCall } = porqueDaDecisao(decisao);
   const escolhidos = c.escolhidos ?? [];
   const [ajustando, setAjustando] = useState(false);
   const [porque, setPorque] = useState(dela.porque ?? naCall);
+  const semFrase = !dela.porque && !naCall;
   const [erro, setErro] = useState(false);
 
   async function salvar() {
@@ -535,11 +537,19 @@ function Decisao({
           </ul>
         )}
         <div className="ws-porque">
-          <p className="mem-label mem-muted">{dela.porque ? "Por que você escolheu · ajustado por você" : "Por que você escolheu · suas palavras na call"}</p>
-          {ajustando ? (
+          <p className="mem-label mem-muted">
+            {dela.porque ? "Por que você escolheu · suas palavras" : semFrase ? "Por que você escolheu" : "Por que você escolheu · suas palavras na call"}
+          </p>
+          {ajustando || semFrase ? (
             <div className="ws-form">
               <input className="mem-input" aria-label="Por que você escolheu" value={porque} onChange={(e) => setPorque(e.target.value)} />
-              <Colinha serve="Se a frase registrada na call não ficou do seu jeito, ajuste aqui. Não muda a decisão: só deixa o porquê com as suas palavras." />
+              <Colinha
+                serve={
+                  semFrase
+                    ? "Opcional. Em uma frase, com as suas palavras: por que esses e não os outros. Não muda a decisão."
+                    : "Se a frase registrada na call não ficou do seu jeito, ajuste aqui. Não muda a decisão: só deixa o porquê com as suas palavras."
+                }
+              />
               {erro && (
                 <Aviso variante="danger" titulo="Não foi possível salvar">
                   Tente de novo.
@@ -549,9 +559,11 @@ function Decisao({
                 <button type="button" className="mem-btn mem-btn--primary" disabled={!porque.trim()} onClick={salvar}>
                   Salvar
                 </button>
-                <button type="button" className="mem-btn mem-btn--quiet" onClick={() => setAjustando(false)}>
-                  Cancelar
-                </button>
+                {!semFrase && (
+                  <button type="button" className="mem-btn mem-btn--quiet" onClick={() => setAjustando(false)}>
+                    Cancelar
+                  </button>
+                )}
               </div>
             </div>
           ) : (

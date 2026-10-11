@@ -208,3 +208,13 @@ export function pautaDoPadrao(dados: DadosJornada, p: Registro, r?: Reacao): str
   return pts.length ? pts : ["Nada pede atenção especial: confirme e siga."];
 }
 
+
+// O porquê da decisão do M2: o ajuste dela, senão o que a Karen registrou na call.
+// Jornadas destravadas em 11/10 receberam um texto técnico no lugar; ele não conta como porquê.
+const SEM_PORQUE = "registrado antes da mudança de 11/10";
+export function porqueDaDecisao(decisao?: Registro): { dela: string; naCall: string; texto: string } {
+  const dela = String((decisao?.conteudo as { porque?: string } | undefined)?.porque ?? "").trim();
+  const bruto = String((decisao?.conteudo_mentora as { porque?: string } | undefined)?.porque ?? "").trim();
+  const naCall = bruto === SEM_PORQUE ? "" : bruto;
+  return { dela, naCall, texto: dela || naCall };
+}

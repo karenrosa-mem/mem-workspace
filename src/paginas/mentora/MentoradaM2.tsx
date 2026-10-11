@@ -7,6 +7,7 @@ import { situacaoCompleta, situacoes, tituloDaSituacao, type Situacao } from "..
 import {
   textoComoSabe,
   pautaDoPadrao,
+  porqueDaDecisao,
   padroesFaltando,
   precisaEscolherDois,
   reacaoCompleta,
@@ -93,9 +94,7 @@ export default function SecaoM2({
   const call2Feita = c2?.estado === "realizado";
   const fechado = m2?.estado === "fechado";
   const publicada = !!(decisao && curta);
-  const porque = decisao
-    ? String((decisao.conteudo as { porque?: string }).porque ?? (decisao.conteudo_mentora as { porque?: string }).porque ?? "")
-    : "";
+  const porque = porqueDaDecisao(decisao).texto;
 
   const passos: Passo[] = [
     {
@@ -212,7 +211,7 @@ export default function SecaoM2({
 
       {fechado && (
         <Aviso variante="done" titulo="M2 concluído">
-          O porquê dela: “{porque}”.
+          {porque ? <>O porquê dela: “{porque}”.</> : "Decisão publicada."}
         </Aviso>
       )}
     </section>

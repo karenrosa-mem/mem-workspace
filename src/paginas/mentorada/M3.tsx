@@ -4,7 +4,7 @@ import { useSessao } from "../../lib/sessao";
 import { useJornada } from "../../lib/useJornada";
 import { call, leitura, type DadosJornada, type Registro } from "../../lib/jornada";
 import { type Situacao } from "../../lib/m1";
-import { ROTULOS, decisaoM2, tituloDaSituacao } from "../../lib/m2";
+import { ROTULOS, decisaoM2, porqueDaDecisao, tituloDaSituacao } from "../../lib/m2";
 import {
   DEFINICAO_HIPOTESE,
   LASTRO,
@@ -48,11 +48,7 @@ export default function M3() {
   const decisao = decisaoM3(dados);
   const c3 = call(dados, 3);
   const ativos = ativosEscolhidos(dados);
-  const porqueM2 = (() => {
-    const d = decisaoM2(dados);
-    if (!d) return "";
-    return String((d.conteudo as { porque?: string }).porque ?? (d.conteudo_mentora as { porque?: string }).porque ?? "");
-  })();
+  const porqueM2 = porqueDaDecisao(decisaoM2(dados)).texto;
   const leituraC3 = leitura(dados, "call_3");
 
   return (
