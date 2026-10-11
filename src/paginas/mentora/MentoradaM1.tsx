@@ -102,7 +102,7 @@ export default function MentoradaM1() {
         </Link>
       )}
 
-      <Trilha movimentos={dados.movimentos} ligar={() => `/mentoradas/${dados.jornada.id}`} />
+      <Trilha movimentos={dados.movimentos} encontros={dados.encontros} ligar={() => `/mentoradas/${dados.jornada.id}`} />
 
       {leituraCall1 ? (
         <>

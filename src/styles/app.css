@@ -1474,3 +1474,9 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-guia__parte {
   margin-top: var(--space-6);
 }
+
+.ws-trilha__call,
+.ws-semanas__mov {
+  display: block;
+  font-size: 0.75rem;
+}

@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
-import { MOVIMENTOS, PILARES } from "../../lib/metodo";
+import { CALLS_DO_MOVIMENTO, MOVIMENTOS, PILARES } from "../../lib/metodo";
+import { dataCurta } from "../../lib/datas";
 import FaixaPilar from "../../componentes/FaixaPilar";
 import { leitura } from "../../lib/jornada";
-import type { Movimento } from "../../lib/jornada";
+import type { Encontro, Movimento } from "../../lib/jornada";
 import Aviso from "../../componentes/Aviso";
 
 // Movimentos que já têm tela construída.
@@ -34,10 +35,12 @@ export default function Jornada() {
       <h1 className="mem-h1">Seu caminho</h1>
       <p className="mem-body ws-measure">
         Dez movimentos, um de cada vez. O losango marca uma decisão que você toma com a Karen antes
-        de seguir.
+        de seguir. Movimento e call não são a mesma coisa: o movimento é o trabalho; a call é onde vocês
+        decidem. Às vezes uma call cobre dois movimentos.
       </p>
       <Trilha
         movimentos={dados.movimentos}
+        encontros={dados.encontros}
         ligar={(n) => `/jornada/${n}`}
         mostrarPilares={!!leitura(dados, "call_1")}
         paraMentorada
@@ -50,11 +53,13 @@ export default function Jornada() {
 // Call 1: antes disso, nenhuma palavra do método (especificação do M1, seção 14).
 export function Trilha({
   movimentos,
+  encontros = [],
   ligar,
   mostrarPilares = true,
   paraMentorada = false,
 }: {
   movimentos: Movimento[];
+  encontros?: Encontro[];
   ligar: (n: number) => string;
   mostrarPilares?: boolean;
   // Para a mentorada: "Movimento 1" por extenso; "M1" fica só nas telas da mentora.
@@ -97,6 +102,16 @@ export function Trilha({
                   {estado}
                   {temDecisao && m.estado === "fechado" ? " · decidido" : ""}
                 </span>
+                {(() => {
+                  const cm = CALLS_DO_MOVIMENTO[m.codigo];
+                  if (!cm) return null;
+                  const c = encontros.find((e) => e.tipo === "call" && e.numero === cm.decide);
+                  const quando = c ? (c.estado === "realizado" ? " ✓" : ` · ${dataCurta(c.data_atual)}`) : "";
+                  const texto = cm.comeca
+                    ? `Começa na Call ${cm.comeca} · decisão na Call ${cm.decide}${quando}`
+                    : `${temDecisao ? "Decisão na" : "Fecha na"} Call ${cm.decide}${quando}`;
+                  return <span className="mem-body-sm mem-muted ws-trilha__call">{texto}</span>;
+                })()}
                 {clicavel ? (
                   <Link className="mem-stop__name ws-trilha__link" to={ligar(m.codigo)}>
                     {nome}

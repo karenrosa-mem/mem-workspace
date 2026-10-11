@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
-import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
+import { MOVIMENTOS, SEMANAS_DA_JORNADA, movimentosDaCall } from "../../lib/metodo";
 import FaixaPilar from "../../componentes/FaixaPilar";
 import { enviadoEm } from "../../lib/envio";
 import { DEFINICAO_EVIDENCIA, frentes, prontaFrente, proximoPasso } from "../../lib/m4";
@@ -456,6 +456,15 @@ function LinhaDaJornada({ dados, primeiroAcesso }: { dados: DadosJornada; primei
               <span className={`mem-marker mem-marker--${estado}`} aria-hidden="true" />
               <span className="mem-data">S{s}</span>
               <span className="mem-body-sm mem-muted">{calls ? calls.map((n) => (n < 0 ? `Call ${-n} ✓` : `Call ${n}`)).join(" · ") : ""}</span>
+              {calls && (
+                <span className="mem-body-sm mem-muted ws-semanas__mov">
+                  {calls
+                    .map((n) => movimentosDaCall(Math.abs(n)))
+                    .filter((ms) => ms.length)
+                    .map((ms) => `Mov. ${ms.join(" e ")}`)
+                    .join(" · ")}
+                </span>
+              )}
             </li>
           );
         })}
@@ -463,7 +472,10 @@ function LinhaDaJornada({ dados, primeiroAcesso }: { dados: DadosJornada; primei
       <p className="mem-body-sm">
         Termina em <strong>{dataCurta(jornada.data_limite)}</strong> · Folga: <strong>{folgaRestante} dias</strong>
       </p>
-      <p className="mem-body-sm mem-muted">A linha conta as semanas do calendário. O seu avanço nos movimentos aparece em Jornada.</p>
+      <p className="mem-body-sm mem-muted">
+        A linha conta as semanas do calendário. Embaixo de cada call, os movimentos que ela cobre. O seu avanço nos movimentos aparece em
+        Jornada.
+      </p>
       {primeiroAcesso && (
         <p className="mem-body-sm mem-muted ws-measure">
           A jornada tem até 12 semanas, com uma semana de folga para imprevistos. Adiar uma call para
