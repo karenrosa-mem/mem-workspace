@@ -140,3 +140,13 @@ export function respostaTexto(chave: string, v: unknown): string {
   }
   return String(v);
 }
+
+// O que falta para ela enviar o M1 para a Karen.
+export function faltaEnvioM1(d: DadosJornada): string[] {
+  const p = perguntasFaltando(d);
+  const s = Math.max(0, MINIMO_SITUACOES - situacoesCompletas(d));
+  return [
+    p > 0 && (p === 1 ? "1 pergunta de Onde você está" : `${p} perguntas de Onde você está`),
+    s > 0 && (s === 1 ? "1 situação completa" : `${s} situações completas`),
+  ].filter(Boolean) as string[];
+}

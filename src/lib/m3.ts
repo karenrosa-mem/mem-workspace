@@ -174,3 +174,15 @@ export type DecisaoM3 = {
   guardadas?: { hipotese: string; razao?: string; condicao_volta?: string }[];
   porque?: string;
 };
+
+// O que falta para ela enviar o M3 para a Karen.
+export function faltaEnvioM3(d: DadosJornada): string[] {
+  const semQuem = ativosEscolhidos(d).filter((a) => !quemMaisRespondido(d, a.id));
+  const c = hipotesesCompletas(d);
+  const sem = ativosSemHipotese(d);
+  return [
+    semQuem.length > 0 && `responder “Quem mais?” de ${semQuem.map((a) => a.nome).join(" e ")}`,
+    c < 3 && (3 - c === 1 ? "1 hipótese completa" : `${3 - c} hipóteses completas`),
+    c >= 3 && sem.length > 0 && `uma hipótese ou o motivo para ${sem.map((a) => a.nome).join(" e ")}`,
+  ].filter(Boolean) as string[];
+}

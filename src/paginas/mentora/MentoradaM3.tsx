@@ -32,6 +32,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 import { PublicarLeitura } from "./MentoradaM2";
+import { enviadoEm } from "../../lib/envio";
 
 const NOTA_M3 = [
   {
@@ -101,7 +102,9 @@ export default function SecaoM3({
       titulo: "Montar de 3 a 5 hipóteses",
       quem: "Ela",
       estado: registrada || (completas >= 3 && ativosSemHipotese(dados).length === 0) ? "feito" : "esperando",
-      nota: `${completas} completa${completas === 1 ? "" : "s"}${lista.length > completas ? ` · ${lista.length - completas} pela metade` : ""}`,
+      nota: enviadoEm(dados, 3)
+        ? `enviado ${dataHora(enviadoEm(dados, 3)!)}`
+        : `${completas} completa${completas === 1 ? "" : "s"}${lista.length > completas ? ` · ${lista.length - completas} pela metade` : ""}`,
     },
     { id: "m3-nota", titulo: "Ler as hipóteses e preparar a Call 3", quem: "Você", estado: registrada ? "feito" : "agora", nota: "na véspera" },
     {

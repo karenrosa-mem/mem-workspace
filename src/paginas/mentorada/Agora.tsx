@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
 import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
 import FaixaPilar from "../../componentes/FaixaPilar";
+import { enviadoEm } from "../../lib/envio";
 import { DEFINICAO_HIPOTESE, ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
@@ -60,8 +61,14 @@ function passoM1(d: DadosJornada): Passo {
           acao: { rotulo: "Contar uma situação", para: "/jornada/1?contar=1" },
         };
   }
+  if (!enviadoEm(d, 1))
+    return {
+      titulo: `Tudo pronto para ${dia}. Envie para a Karen.`,
+      porque: "Ela lê tudo antes da call. Depois de enviar, ainda dá para ajustar.",
+      acao: { rotulo: "Enviar", para: "/jornada/1#envio" },
+    };
   return {
-    titulo: `Pronta para ${dia}. A Karen está lendo seu material.`,
+    titulo: `Enviado. A Karen está lendo seu material para ${dia}.`,
     extra: "Se lembrar de mais uma situação, ela ajuda.",
     acao: { rotulo: "Contar mais uma", para: "/jornada/1?contar=1" },
   };
@@ -117,7 +124,13 @@ function passoM2(d: DadosJornada): Passo {
       titulo: "Última coisa: se só pudesse levar dois, quais?",
       acao: { rotulo: "Escolher", para: "/jornada/2#escolha" },
     };
-  return { titulo: `Pronta para ${dia}. Vamos decidir quais ativos você vai investigar no mercado.` };
+  if (!enviadoEm(d, 2))
+    return {
+      titulo: `Tudo pronto para ${dia}. Envie para a Karen.`,
+      porque: "Na call, vocês decidem quais ativos você leva ao mercado.",
+      acao: { rotulo: "Enviar", para: "/jornada/2#envio" },
+    };
+  return { titulo: `Enviado. Na ${dia}, vocês decidem quais ativos você leva ao mercado.` };
 }
 
 function passoM3(d: DadosJornada): Passo {
@@ -157,7 +170,13 @@ function passoM3(d: DadosJornada): Passo {
     };
   if (total > 5)
     return { titulo: `Você tem ${total}. Na ${dia}, vocês escolhem até 5.`, porque: "Nada é bloqueado.", acao: { rotulo: "Ver", para: "/jornada/3#hipoteses" } };
-  return { titulo: `Pronta para ${dia}.`, porque: "Vocês vão decidir quais hipóteses vão a campo.", acao: { rotulo: "Rever", para: "/jornada/3#hipoteses" } };
+  if (!enviadoEm(d, 3))
+    return {
+      titulo: `Tudo pronto para ${dia}. Envie para a Karen.`,
+      porque: "Na call, vocês decidem quais hipóteses vão a campo.",
+      acao: { rotulo: "Enviar", para: "/jornada/3#envio" },
+    };
+  return { titulo: `Enviado. Na ${dia}, vocês decidem quais hipóteses vão a campo.`, acao: { rotulo: "Rever", para: "/jornada/3#hipoteses" } };
 }
 
 export default function Agora() {
@@ -255,7 +274,7 @@ function LinhaDaJornada({ dados, primeiroAcesso }: { dados: DadosJornada; primei
     .filter((e) => e.tipo === "call")
     .forEach((e) => {
       const s = semanaDe(e.data_atual.slice(0, 10));
-      callsPorSemana.set(s, [...(callsPorSemana.get(s) ?? []), e.numero ?? 0]);
+      callsPorSemana.set(s, [...(callsPorSemana.get(s) ?? []), (e.numero ?? 0) * (e.estado === "realizado" ? -1 : 1)]);
     });
 
   return (
@@ -273,7 +292,7 @@ function LinhaDaJornada({ dados, primeiroAcesso }: { dados: DadosJornada; primei
             <li key={s} className="ws-semanas__item" aria-current={estado === "current" ? "step" : undefined}>
               <span className={`mem-marker mem-marker--${estado}`} aria-hidden="true" />
               <span className="mem-data">S{s}</span>
-              <span className="mem-body-sm mem-muted">{calls ? calls.map((n) => `Call ${n}`).join(" · ") : ""}</span>
+              <span className="mem-body-sm mem-muted">{calls ? calls.map((n) => (n < 0 ? `Call ${-n} ✓` : `Call ${n}`)).join(" · ") : ""}</span>
             </li>
           );
         })}
@@ -281,6 +300,7 @@ function LinhaDaJornada({ dados, primeiroAcesso }: { dados: DadosJornada; primei
       <p className="mem-body-sm">
         Termina em <strong>{dataCurta(jornada.data_limite)}</strong> · Folga: <strong>{folgaRestante} dias</strong>
       </p>
+      <p className="mem-body-sm mem-muted">A linha conta as semanas do calendário. O seu avanço nos movimentos aparece em Jornada.</p>
       {primeiroAcesso && (
         <p className="mem-body-sm mem-muted ws-measure">
           A jornada tem até 12 semanas, com uma semana de folga para imprevistos. Adiar uma call para

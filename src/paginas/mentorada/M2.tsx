@@ -19,6 +19,7 @@ import {
   dadosPadrao,
   decisaoM2,
   escolhaDois,
+  faltaEnvioM2,
   nomePadrao,
   porqueDaDecisao,
   outrasExperiencias,
@@ -35,6 +36,7 @@ import {
 } from "../../lib/m2";
 import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import EnviarParaKaren from "../../componentes/EnviarParaKaren";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
@@ -109,6 +111,12 @@ export default function M2() {
           <OutrasExperiencias dados={dados} />
 
           {precisaEscolherDois(dados) && !decisao && <EscolhaDois dados={dados} aoSalvar={recarregar} />}
+
+          {!decisao && (
+            <div id="envio">
+              <EnviarParaKaren dados={dados} movimento={2} numeroCall={2} falta={faltaEnvioM2(dados)} aoSalvar={recarregar} />
+            </div>
+          )}
         </>
       )}
     </>

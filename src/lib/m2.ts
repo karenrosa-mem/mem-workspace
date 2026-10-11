@@ -218,3 +218,12 @@ export function porqueDaDecisao(decisao?: Registro): { dela: string; naCall: str
   const naCall = bruto === SEM_PORQUE ? "" : bruto;
   return { dela, naCall, texto: dela || naCall };
 }
+
+// O que falta para ela enviar o M2 para a Karen.
+export function faltaEnvioM2(d: DadosJornada): string[] {
+  const f = padroesFaltando(d);
+  return [
+    f > 0 && (f === 1 ? "responder 1 possível ativo" : `responder ${f} possíveis ativos`),
+    precisaEscolherDois(d) && !escolhaDois(d) && "escolher os dois que levaria adiante",
+  ].filter(Boolean) as string[];
+}

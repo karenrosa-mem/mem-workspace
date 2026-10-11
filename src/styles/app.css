@@ -1289,3 +1289,47 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
   border-radius: var(--radius-1);
   background: var(--surface-raised);
 }
+
+/* Enviar para a Karen */
+.ws-envio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--surface-raised);
+}
+
+.ws-envio p {
+  margin: 0;
+}
+
+.ws-envio--pronta {
+  border-color: var(--brand);
+  border-left-width: 4px;
+}
+
+.ws-envio--feito {
+  justify-content: flex-start;
+  background: var(--status-done-tint);
+  border-color: var(--status-done);
+}
+
+.ws-envio__titulo {
+  margin: 0 0 var(--space-1);
+}
+
+.ws-envio__marca {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--status-done);
+  color: var(--on-brand);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex: none;
+}

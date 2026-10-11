@@ -25,6 +25,8 @@ import {
 } from "../../lib/m1";
 import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import EnviarParaKaren from "../../componentes/EnviarParaKaren";
+import { faltaEnvioM1 } from "../../lib/m1";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 
@@ -82,6 +84,12 @@ export default function M1() {
         setContando={(v) => setParametros(v ? { contar: "1" } : {})}
         depoisDaLeitura={!!leituraCall1}
       />
+
+      {!leituraCall1 && (
+        <div id="envio">
+          <EnviarParaKaren dados={dados} movimento={1} numeroCall={1} falta={faltaEnvioM1(dados)} aoSalvar={recarregar} />
+        </div>
+      )}
     </>
   );
 }

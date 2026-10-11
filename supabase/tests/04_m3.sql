@@ -33,6 +33,14 @@ select public.reformular_hipotese(:'h1', (select conteudo || '{"problema":"sóci
 select public.t_ok((select versao_atual from public.registro where id = :'h1') = 2, 'hipótese reformulada vai para a versão 2');
 select public.t_ok((select conteudo->>'problema' from public.registro_versao where registro_id = :'h1' and numero = 1) = 'conflitos', 'a versão anterior continua visível');
 
+-- Ana envia para a Karen (registro "envio"), e pode reenviar
+insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, conteudo, autora_papel, autora_id)
+  select conta_id, id, 3, 'envio', jsonb_build_object('enviado_em', now()), 'mentorada', auth.uid() from public.jornada returning id as envio \gset
+update public.registro set conteudo = jsonb_build_object('enviado_em', now()) where id = :'envio';
+set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
+select public.t_ok((select count(*) from public.registro where tipo = 'envio') = 1, 'Karen vê que ela enviou');
+set request.jwt.claim.sub = '22222222-2222-2222-2222-222222222222';
+
 -- Karen registra a decisão
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 select public.t_erro(format($$select public.reformular_hipotese(%L, '{"ativo":"x"}')$$, :'h2'), 'Karen não reescreve a hipótese dela');

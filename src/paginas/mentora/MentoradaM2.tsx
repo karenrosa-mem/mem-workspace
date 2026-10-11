@@ -35,6 +35,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 import Colinha from "../../componentes/Colinha";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
+import { enviadoEm } from "../../lib/envio";
 import { FamiliasAtivo, TesteClassificacao } from "../../componentes/Referencias";
 
 const NOTA_M2 = [
@@ -115,8 +116,12 @@ export default function SecaoM2({
       id: "m2-respostas",
       titulo: "Responder sobre cada possível ativo",
       quem: "Ela",
-      estado: !mapa ? "depois" : respondeu ? "feito" : "esperando",
-      nota: mapa ? `${lista.length - faltam} de ${lista.length} respondidos` : undefined,
+      estado: !mapa ? "depois" : respondeu || enviadoEm(dados, 2) ? "feito" : "esperando",
+      nota: mapa
+        ? enviadoEm(dados, 2)
+          ? `enviado ${dataHora(enviadoEm(dados, 2)!)}`
+          : `${lista.length - faltam} de ${lista.length} respondidos`
+        : undefined,
     },
     {
       id: "m2-call",

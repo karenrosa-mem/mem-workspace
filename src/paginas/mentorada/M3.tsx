@@ -13,6 +13,7 @@ import {
   ativosSemHipotese,
   dadosHipotese,
   decisaoM3,
+  faltaEnvioM3,
   disputaPublico,
   frase,
   fraseTexto,
@@ -30,6 +31,7 @@ import {
 } from "../../lib/m3";
 import { dataHora, diaBrasilia, hojeBrasilia } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import EnviarParaKaren from "../../componentes/EnviarParaKaren";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
@@ -115,6 +117,12 @@ export default function M3() {
       )}
 
       <Hipoteses dados={dados} travado={!!decisao} aoSalvar={recarregar} />
+
+      {!decisao && (
+        <div id="envio">
+          <EnviarParaKaren dados={dados} movimento={3} numeroCall={3} falta={faltaEnvioM3(dados)} aoSalvar={recarregar} />
+        </div>
+      )}
     </>
   );
 }

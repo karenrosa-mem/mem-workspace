@@ -23,6 +23,7 @@ import LeituraKaren from "../../componentes/LeituraKaren";
 import Colinha from "../../componentes/Colinha";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { FamiliasAtivo } from "../../componentes/Referencias";
+import { enviadoEm } from "../../lib/envio";
 import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
 import SecaoM3 from "./MentoradaM3";
@@ -181,8 +182,8 @@ function PreparacaoM1({
       id: "m1-material",
       titulo: "Contar onde está e as situações",
       quem: "Ela",
-      estado: pronta ? "feito" : call1Realizada ? "feito" : "esperando",
-      nota: pronta ? undefined : materialFaltando(dados),
+      estado: enviadoEm(dados, 1) || pronta || call1Realizada ? "feito" : "esperando",
+      nota: enviadoEm(dados, 1) ? `enviado ${dataHora(enviadoEm(dados, 1)!)}` : pronta ? "pronto, ainda não enviado" : materialFaltando(dados),
     },
     {
       id: "m1-pistas",
