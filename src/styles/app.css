@@ -484,6 +484,10 @@ body {
   color: var(--ink);
 }
 
+.ws-separador {
+  margin: var(--space-3) 0 var(--space-1);
+}
+
 /* M2 */
 .ws-secao {
   display: flex;

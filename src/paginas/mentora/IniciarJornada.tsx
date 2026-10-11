@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { dataCurta, hojeBrasilia, isoBrasilia, somarDias, diasEntre } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import Colinha from "../../componentes/Colinha";
 
 type Call = { data: string; hora: string };
 
@@ -93,9 +94,7 @@ export default function IniciarJornada() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <span className="mem-field__help">
-            O mesmo e-mail cadastrado em Authentication → Users no Supabase.
-          </span>
+          <Colinha serve="O mesmo e-mail que você cadastrou para ela em Authentication → Users, no Supabase. É com ele que ela entra." />
         </div>
 
         <div className="mem-field">
@@ -110,10 +109,9 @@ export default function IniciarJornada() {
             value={inicio}
             onChange={(e) => mudarInicio(e.target.value)}
           />
-          <span className="mem-field__help">
-            Termina no máximo em {dataCurta(limite)}. Ao mudar o início, as calls são sugeridas de
-            novo, uma por semana.
-          </span>
+          <Colinha
+            serve={`O dia em que a jornada começa a contar. Termina no máximo em ${dataCurta(limite)} (12 semanas). Ao mudar o início, as calls são sugeridas de novo, uma por semana.`}
+          />
         </div>
 
         <div className="mem-field">
@@ -127,10 +125,10 @@ export default function IniciarJornada() {
             value={mensagem}
             onChange={(e) => setMensagem(e.target.value)}
           />
-          <span className="mem-field__help">
-            É a primeira coisa que ela lê, assinada por você. Três frases bastam: o que ela vai fazer
-            aqui e que você lê tudo antes da Call 1.
-          </span>
+          <Colinha
+            serve="A primeira coisa que ela lê, assinada por você. Três frases bastam: o que ela vai fazer aqui, que você lê tudo antes da Call 1 e que não precisa escrever bonito."
+            exemplo="Aqui você vai contar o que já fez, com situações reais da sua carreira. Eu leio tudo antes da nossa primeira call. Não precisa escrever bonito: escreva como contaria para mim."
+          />
         </div>
 
         <fieldset className="ws-calls">

@@ -93,7 +93,7 @@ function passoM2(d: DadosJornada): Passo {
   if (!mapa) {
     const prazo = leitura(d, "call_1")?.conteudo_mentora.prazo_padroes as string | undefined;
     return {
-      titulo: `Aguardando a Karen organizar suas candidatas${prazo ? `, até ${dataCurta(prazo)}` : ""}.`,
+      titulo: `Aguardando a Karen organizar suas pistas de ativo${prazo ? `, até ${dataCurta(prazo)}` : ""}.`,
       porque: "Nada a fazer até lá.",
     };
   }

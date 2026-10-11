@@ -261,7 +261,7 @@ function NotaPrivada({ mentoriaId }: { mentoriaId: string }) {
     setEstado("salvo");
   }
 
-  const campo = (chave: keyof Nota, rotulo: string, ajuda?: string) => (
+  const campo = (chave: keyof Nota, rotulo: string, ajuda?: string, exemplo?: string) => (
     <div className="mem-field">
       <label className="mem-field__label" htmlFor={`nota-${chave}`}>
         {rotulo}
@@ -276,7 +276,7 @@ function NotaPrivada({ mentoriaId }: { mentoriaId: string }) {
           setEstado("");
         }}
       />
-      {ajuda && <span className="mem-field__help">{ajuda}</span>}
+      {ajuda && <Colinha serve={ajuda} exemplo={exemplo} />}
     </div>
   );
 
@@ -303,10 +303,25 @@ function NotaPrivada({ mentoriaId }: { mentoriaId: string }) {
             <option value="C">C</option>
           </select>
         </div>
-        {campo("pontos", "Pontos de investigação", "De 3 a 5, citando situações específicas.")}
-        {campo("contradicoes", "Contradições")}
-        {campo("naturalizacao", "Sinais de naturalização")}
-        {campo("sinais", "Sinais emocionais ou de contexto de vida", "Só se aparecerem.")}
+        {campo(
+          "pontos",
+          "Pontos de investigação",
+          "O que você quer investigar na Call 1, de 3 a 5 pontos, citando situações específicas.",
+          "Como ela decide o que dizer a cada lado nas mediações de 2012, 2016 e 2021.",
+        )}
+        {campo(
+          "contradicoes",
+          "Contradições",
+          "Onde o que ela escreveu não fecha: uma situação diz uma coisa, outra diz o contrário.",
+          "Diz que não gosta de conflito, mas três situações são de mediação.",
+        )}
+        {campo(
+          "naturalizacao",
+          "Sinais de naturalização",
+          "Quando ela descreve algo difícil como simples: “só”, “qualquer um faz”, “é normal”.",
+          "Chama de “só conversar com as pessoas” o que evitou a saída de metade do time.",
+        )}
+        {campo("sinais", "Sinais emocionais ou de contexto de vida", "Só se aparecerem. Descreva sem diagnóstico; serve para você conduzir a call com cuidado.")}
         <div className="ws-acoes">
           <button type="button" className="mem-btn mem-btn--secondary" onClick={salvar} disabled={estado === "salvando"}>
             Salvar nota
@@ -351,14 +366,13 @@ function MaterialDela({
 
       <p className="mem-label mem-muted">
         Situações · {lista.length} · {situacoesCompletas(dados)} completas
-        {editavel && ` · ${Object.values(marcas).filter((m) => m.candidata).length} candidatas a ativo`}
+        {editavel && ` · ${Object.values(marcas).filter((m) => m.candidata).length} pistas de ativo`}
       </p>
       {editavel && (
-        <p className="mem-body-sm mem-muted ws-measure">
-          Na Call 1 ou logo depois, marque as situações que podem esconder um ativo e dê a cada uma um
-          nome provisório. Elas viram a matéria-prima do M2. Situações incompletas não impedem a publicação.
-          Ela só vê as marcas depois que você publicar a leitura.
-        </p>
+        <Colinha
+          serve="Pista de ativo: uma situação que, pelo que ela contou e pelo que vocês conversaram na Call 1, pode esconder algo que ela sabe fazer e que alguém precisa. Marque na call ou logo depois e dê um nome provisório que descreva o que ela fez e o efeito. As pistas são a matéria-prima do M2, onde você as agrupa em padrões. Ela só vê as marcas depois que você publicar a leitura. Situações incompletas não impedem a publicação."
+          exemplo="Situação de 2021, “conversei com cada gestor e evitei a saída de metade do time” → pista de ativo, nome provisório: mediação que retém pessoas."
+        />
       )}
       {lista.length === 0 && <p className="mem-body mem-muted">Ela ainda não contou nenhuma situação.</p>}
       <ol className="ws-situacoes">
@@ -439,13 +453,13 @@ function SituacaoDaMentora({
               checked={!!marca.candidata}
               onChange={(e) => salvarMarca({ ...marca, candidata: e.target.checked, nome_provisorio: nomeProvisorio })}
             />
-            Pode esconder um ativo
+            Pista de ativo
           </label>
           {marca.candidata && (
             <input
               className="mem-input"
               aria-label="Nome provisório"
-              placeholder="Nome provisório do ativo"
+              placeholder="Nome provisório: o que ela fez e o efeito"
               value={nomeProvisorio}
               onChange={(e) => setNomeProvisorio(e.target.value)}
               onBlur={() => nomeProvisorio !== (marca.nome_provisorio ?? "") && salvarMarca({ ...marca, nome_provisorio: nomeProvisorio })}
@@ -453,7 +467,7 @@ function SituacaoDaMentora({
           )}
         </div>
       ) : (
-        marca.candidata && <p className="mem-label ws-candidata">Candidata a ativo · {marca.nome_provisorio}</p>
+        marca.candidata && <p className="mem-label ws-candidata">Pista de ativo · {marca.nome_provisorio}</p>
       )}
     </li>
   );
@@ -497,9 +511,10 @@ function SituacaoNova({ dados, aoCriar }: { dados: DadosJornada; aoCriar: () => 
           Anotar situação
         </button>
       </div>
-      <span className="mem-field__help">
-        Ela vê só o título, depois da leitura publicada, e completa no M2.
-      </span>
+      <Colinha
+        serve="Uma situação que ela contou ao vivo na call e não estava escrita. Anote só um título que ela reconheça; ela vê depois da leitura publicada e completa no M2."
+        exemplo="Mediação na fusão de 2019."
+      />
     </section>
   );
 }
@@ -616,8 +631,8 @@ function LeituraCall1({
         {campo(
           "o_que_fazer_agora",
           "O que fazer agora",
-          "O próximo passo dela, concreto. Em geral: completar as situações que surgiram na call e esperar você organizar as candidatas em padrões.",
-          "Complete as duas situações que você contou na call — os títulos já estão lá. Até segunda, eu organizo suas candidatas em padrões e te mostro aqui.",
+          "O próximo passo dela, concreto. Em geral: completar as situações que surgiram na call e esperar você organizar as pistas de ativo em padrões.",
+          "Complete as duas situações que você contou na call — os títulos já estão lá. Até segunda, eu organizo suas pistas de ativo em padrões e te mostro aqui.",
         )}
         <div className="mem-field">
           <label className="mem-field__label" htmlFor="leitura-prazo">
@@ -633,12 +648,10 @@ function LeituraCall1({
               setEstado("");
             }}
           />
-          <span className="mem-field__help">
-            Ela vê “aguardando a Karen organizar suas candidatas, até [data]”.
-          </span>
+          <Colinha serve="O prazo que você se dá para montar os padrões e publicar. Até lá, ela vê “aguardando a Karen organizar suas pistas de ativo, até [data]”." />
         </div>
         <p className="mem-body-sm mem-muted">
-          As candidatas aparecem para ela sobre as próprias situações, com o nome provisório que você
+          As pistas de ativo aparecem para ela sobre as próprias situações, com o nome provisório que você
           deu. As situações novas aparecem só com o título.
         </p>
         <p className="mem-body-sm">

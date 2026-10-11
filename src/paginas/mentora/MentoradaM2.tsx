@@ -31,7 +31,7 @@ import Colinha from "../../componentes/Colinha";
 const NOTA_M2 = [
   { chave: "tensoes", rotulo: "Tensões entre prova e vontade", ajuda: "Ex.: prova forte com pouca vontade; muita vontade com pouca prova." },
   { chave: "concordancia", rotulo: "Suspeita de concordância automática", ajuda: "Frases que só repetem o nome que você deu." },
-  { chave: "perfil", rotulo: "Perfil" },
+  { chave: "perfil", rotulo: "Perfil", ajuda: "Sua leitura do perfil dela, se mudou desde o M1." },
   { chave: "classificacao_fina", rotulo: "Classificação fina por padrão", ajuda: "Experiência, conhecimento, habilidade, ativo, ativo hipotético. Ela nunca vê." },
 ];
 
@@ -98,7 +98,7 @@ function Agrupamento({ dados, mentoriaId, recarregar }: { dados: DadosJornada; m
   return (
     <>
       <p className="mem-body ws-measure">
-        Agrupe as candidatas em 3 a 5 padrões. Para cada um: nome, as situações dela, quem tinha o
+        Agrupe as pistas de ativo em 3 a 5 padrões. Para cada um: nome, as situações dela, quem tinha o
         problema (ela confirma ou corrige) e se ela sabe fazer.
         {prazo ? ` Ela espera os padrões até ${dataCurta(prazo)}.` : ""}
       </p>
@@ -138,10 +138,11 @@ function Agrupamento({ dados, mentoriaId, recarregar }: { dados: DadosJornada; m
 
       {candidatasFora.length > 0 && (
         <div className="ws-bloco">
-          <span className="mem-label mem-muted">Candidatas fora dos padrões · outras experiências</span>
-          <p className="mem-body-sm mem-muted">
-            Para cada uma, escreva por que ficou fora. Ela vê o motivo junto com os padrões.
-          </p>
+          <span className="mem-label mem-muted">Pistas fora dos padrões · outras experiências</span>
+          <Colinha
+            serve="Pistas que não entraram em nenhum padrão. Para cada uma, escreva em uma frase por que ficou fora. Ela vê o motivo junto com os padrões, como “outras experiências”."
+            exemplo="Você fez, mas não há ninguém com um problema do outro lado."
+          />
           <ul className="ws-situacoes">
             {candidatasFora.map((s) => (
               <OutraExperiencia key={s.id} situacao={s} jornadaId={dados.jornada.id} />
@@ -206,35 +207,49 @@ function EditorPadrao({
   const marcadas = p.situacoes ?? [];
   return (
     <div className="mem-card ws-form ws-cartao">
-      <div className="mem-field">
-        <label className="mem-field__label" htmlFor="padrao-nome">
-          Nome do padrão
-        </label>
-        <input id="padrao-nome" className="mem-input" value={p.nome ?? ""} onChange={(e) => setP({ ...p, nome: e.target.value })} />
-      </div>
+      <Colinha
+        serve="Um padrão é o que se repete em várias situações dela: a mesma coisa feita em momentos ou lugares diferentes. Cada padrão reúne as situações que mostram essa mesma coisa, sob um nome. Faça um padrão de cada vez: escolha as situações, dê o nome e complete o resto."
+        exemplo="As pistas “mediação que retém pessoas” (2016), “evitei a saída de metade do time” (2021) e uma situação da call (2023) mostram a mesma coisa → um padrão: Mediar conflitos que ameaçam perder gente."
+      />
       <fieldset className="ws-calls">
-        <legend className="mem-field__label">Situações dela neste padrão</legend>
-        {sits.map((s) => (
-          <label key={s.id} className="ws-marca__check mem-body-sm">
-            <input
-              type="checkbox"
-              checked={marcadas.includes(s.id)}
-              onChange={(e) =>
-                setP({ ...p, situacoes: e.target.checked ? [...marcadas, s.id] : marcadas.filter((x) => x !== s.id) })
-              }
-            />
-            <span>
-              <span className="mem-data">{(s.conteudo as Situacao).ano ?? "—"}</span> · {tituloDaSituacao(s)}
-              {s.conteudo_mentora.candidata === true && (
-                <span className="mem-muted"> · candidata: {String(s.conteudo_mentora.nome_provisorio ?? "")}</span>
-              )}
-            </span>
-          </label>
+        <legend className="mem-field__label">1. Quais situações mostram a mesma coisa?</legend>
+        <Colinha serve="Marque todas as que entram neste padrão. As pistas de ativo vêm primeiro; as outras situações dela também podem entrar." />
+        {sits.map((s, i) => (
+          <div key={s.id}>
+            {i > 0 && sits[i - 1].conteudo_mentora.candidata === true && s.conteudo_mentora.candidata !== true && (
+              <p className="mem-label mem-muted ws-separador">Outras situações dela</p>
+            )}
+            <label className="ws-marca__check mem-body-sm">
+              <input
+                type="checkbox"
+                checked={marcadas.includes(s.id)}
+                onChange={(e) =>
+                  setP({ ...p, situacoes: e.target.checked ? [...marcadas, s.id] : marcadas.filter((x) => x !== s.id) })
+                }
+              />
+              <span>
+                <span className="mem-data">{(s.conteudo as Situacao).ano ?? "—"}</span> · {tituloDaSituacao(s)}
+                {s.conteudo_mentora.candidata === true && (
+                  <span className="mem-muted"> · pista: {String(s.conteudo_mentora.nome_provisorio ?? "")}</span>
+                )}
+              </span>
+            </label>
+          </div>
         ))}
       </fieldset>
       <div className="mem-field">
+        <label className="mem-field__label" htmlFor="padrao-nome">
+          2. Nome do padrão
+        </label>
+        <input id="padrao-nome" className="mem-input" value={p.nome ?? ""} onChange={(e) => setP({ ...p, nome: e.target.value })} />
+        <Colinha
+          serve="O que ela faz e o efeito, num nome que ela possa reconhecer como dela. Verbo + o quê + resultado. Evite rótulos genéricos como “liderança” ou “comunicação”."
+          exemplo="Organizar processos que ninguém entende."
+        />
+      </div>
+      <div className="mem-field">
         <label className="mem-field__label" htmlFor="padrao-quem">
-          Quem tinha o problema · sua sugestão para ela
+          3. Quem tinha o problema · sua sugestão para ela
         </label>
         <input
           id="padrao-quem"
@@ -247,13 +262,19 @@ function EditorPadrao({
           exemplo="Gestores prestes a perder pessoas-chave do time."
         />
       </div>
-      <label className="ws-marca__check mem-body-sm">
-        <input type="checkbox" checked={!!p.sabe_fazer} onChange={(e) => setP({ ...p, sabe_fazer: e.target.checked })} />
-        Ela sabe fazer (sinal aceso)
-      </label>
+      <div className="mem-field">
+        <span className="mem-field__label">4. Ela sabe fazer?</span>
+        <label className="ws-marca__check mem-body-sm">
+          <input type="checkbox" checked={!!p.sabe_fazer} onChange={(e) => setP({ ...p, sabe_fazer: e.target.checked })} />
+          Sim, ficou claro que ela sabe fazer
+        </label>
+        <Colinha
+          serve="Marque se, pelas situações e pela Call 1, ficou claro que foi ela quem fez (não o time) e que ela entende como fez. É um dos quatro sinais de um ativo que ela vê ao lado do padrão: marcado, o sinal “sabe fazer” aparece aceso. Os outros três o Workspace calcula sozinho. Na dúvida, deixe desmarcado: a Call 2 confirma."
+        />
+      </div>
       <div className="mem-field">
         <label className="mem-field__label" htmlFor="padrao-rotulo">
-          Rótulo provisório
+          5. Rótulo provisório
         </label>
         <select
           id="padrao-rotulo"
@@ -264,6 +285,7 @@ function EditorPadrao({
           <option value="ativo">Ativo</option>
           <option value="ativo_a_confirmar">Ativo a confirmar</option>
         </select>
+        <Colinha serve="Sua leitura de agora; o rótulo final sai da Call 2. “Ativo a confirmar” quando a base ainda é fraca (uma situação só, ou só a percepção dela)." />
       </div>
       {erro && (
         <Aviso variante="danger" titulo="Não foi possível salvar">
@@ -614,6 +636,10 @@ function RegistrarDecisao({ dados, mentoriaId, recarregar }: { dados: DadosJorna
         </div>
       )}
 
+      <Colinha
+        serve="Registre o que ela decidiu na Call 2. Para cada padrão: se segue para o mercado e com qual rótulo final. Para o que não segue, a razão e em que condição pode voltar. A decisão é dela; você registra. Nada é apagado: o que não seguiu continua visível para ela."
+        exemplo="Mediação: segue, ativo. Gestores de primeira viagem: segue, ativo a confirmar. Desligamentos: não segue — prova boa, pouca vontade; pode voltar se o mercado mostrar demanda forte por desligamento humanizado."
+      />
       <div className="ws-decisao">
         {lista.map((p) => {
           const l = linhas[p.id];

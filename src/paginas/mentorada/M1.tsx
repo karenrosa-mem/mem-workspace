@@ -25,6 +25,7 @@ import {
 } from "../../lib/m1";
 import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 
 // M1 · Contar sua trajetória — tela da mentorada.
@@ -226,7 +227,7 @@ function OndeVoceEsta({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
                 onChange={(e) => setTexto(e.target.value)}
               />
             )}
-            {p.apoio && <span className="mem-field__help">{p.apoio}</span>}
+            {p.apoio && <Colinha serve={p.apoio} exemplo={p.exemplo || undefined} />}
             {p.chave === "ideia" && ideia?.tem === false && (
               <span className="mem-field__help">{FRASE_AINDA_NAO}</span>
             )}
@@ -328,7 +329,7 @@ function Situacoes({
         </div>
         <p className="mem-body ws-situacao__titulo">{tituloDaSituacao(r)}</p>
         {depoisDaLeitura && r.conteudo_mentora.candidata === true && (
-          <p className="mem-label ws-candidata">Candidata a ativo · {String(r.conteudo_mentora.nome_provisorio ?? "")}</p>
+          <p className="mem-label ws-candidata">Pista de ativo · {String(r.conteudo_mentora.nome_provisorio ?? "")}</p>
         )}
         {aCompletarLista.includes(r) ? (
           <button type="button" className="mem-btn mem-btn--primary" onClick={() => setAbertaId(r.id)}>
@@ -497,22 +498,30 @@ function CartaoSituacao({
           Onde você estava e o que estava acontecendo
         </label>
         <textarea id="contexto" className="mem-input" rows={3} value={contexto} disabled={somenteLeitura} onChange={(e) => setContexto(e.target.value)} />
+        <Colinha
+          serve="Onde você trabalhava, que momento era e o que estava acontecendo. O suficiente para alguém de fora entender a cena."
+          exemplo="Em 2021, coordenando o RH de uma indústria, um gestor estava prestes a perder metade do time por conflito com ele."
+        />
       </div>
       <div className="mem-field">
         <label className="mem-field__label" htmlFor="fez">
           O que você fez
         </label>
         <textarea id="fez" className="mem-input" rows={3} value={fez} disabled={somenteLeitura} onChange={(e) => setFez(e.target.value)} />
-        <span className="mem-field__help">O que você fez, não o que o time fez.</span>
+        <Colinha
+          serve="O que você fez, não o que o time fez. Descreva as ações, mesmo as que parecem óbvias para você."
+          exemplo="Conversei com cada pessoa e com o gestor separadamente, entendi o que cada lado precisava e montei com eles um acordo de rotina."
+        />
       </div>
       <div className="mem-field">
         <label className="mem-field__label" htmlFor="mudou">
           O que mudou depois
         </label>
         <textarea id="mudou" className="mem-input" rows={3} value={mudou} disabled={somenteLeitura} onChange={(e) => setMudou(e.target.value)} />
-        <span className="mem-field__help">
-          Não precisa ser medido: pode ser algo que você viu, que alguém comentou ou que você percebeu.
-        </span>
+        <Colinha
+          serve="Não precisa ser medido: pode ser algo que você viu, que alguém comentou ou que você percebeu."
+          exemplo="Ninguém pediu demissão nos seis meses seguintes, e o diretor comentou que o clima da área tinha mudado."
+        />
       </div>
       <div className="mem-field">
         <label className="mem-field__label" htmlFor="titulo">
@@ -526,7 +535,7 @@ function CartaoSituacao({
           disabled={somenteLeitura}
           onChange={(e) => setTitulo(e.target.value)}
         />
-        <span className="mem-field__help">Opcional. Se deixar em branco, usamos o começo de “o que você fez”.</span>
+        <Colinha serve="Opcional. Um nome curto para você reconhecer a situação na lista. Se deixar em branco, usamos o começo de “o que você fez”." />
       </div>
       {falhou && (
         <Aviso variante="danger" titulo="Não foi possível salvar">

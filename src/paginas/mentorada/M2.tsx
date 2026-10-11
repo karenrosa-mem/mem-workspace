@@ -31,6 +31,7 @@ import {
 } from "../../lib/m2";
 import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
+import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 
 // M2 · Enxergar seus ativos — tela da mentorada.
@@ -72,7 +73,7 @@ export default function M2() {
             </>
           ) : (
             <p className="mem-body-lg">
-              A Karen está organizando suas candidatas em padrões. Quando ela publicar, eles aparecem aqui.
+              A Karen está organizando suas pistas de ativo em padrões. Quando ela publicar, eles aparecem aqui.
             </p>
           )}
         </section>
@@ -320,6 +321,7 @@ function FormReacao({
       <div className="mem-field">
         <span className="mem-field__label">Você reconhece isso como seu?</span>
         <Opcoes rotulo="Você reconhece isso como seu?" opcoes={RECONHECE} valor={r.reconhece} aoEscolher={(v) => setR({ ...r, reconhece: v })} />
+        <Colinha serve="Olhe as suas situações reunidas sob este nome. Você se vê nisso? Não existe resposta certa: se não reconhecer, isso vira conversa na call." />
       </div>
       {r.reconhece && (
         <div className="mem-field">
@@ -331,6 +333,10 @@ function FormReacao({
             className="mem-input"
             value={r.frase ?? ""}
             onChange={(e) => setR({ ...r, frase: e.target.value })}
+          />
+          <Colinha
+            serve={naoReconhece ? "O que não combina com você nesse padrão, em uma linha." : "Com as suas palavras, não com o nome que a Karen deu. Uma linha basta."}
+            exemplo={naoReconhece ? "Eu fiz isso, mas foi por obrigação, não é o que eu faço bem." : "Eu faço as duas partes se ouvirem antes de alguém decidir."}
           />
         </div>
       )}
@@ -344,9 +350,14 @@ function FormReacao({
           value={r.quem_tinha ?? ""}
           onChange={(e) => setR({ ...r, quem_tinha: e.target.value })}
         />
-        <span className="mem-field__help">
-          {preenchido ? "A Karen sugeriu isto. Se estiver certo, deixe como está; se não, corrija." : "Quem estava do outro lado."}
-        </span>
+        <Colinha
+          serve={
+            preenchido
+              ? "A Karen sugeriu isto a partir das suas situações. Se estiver certo, deixe como está; se não, corrija com as suas palavras."
+              : "Quem estava do outro lado com o problema que você resolvia. Seja específica: quem e em que momento."
+          }
+          exemplo="Gestores promovidos de dentro do time, no primeiro ano no cargo."
+        />
       </div>
       <div className="mem-field">
         <span className="mem-field__label">Como você sabe que isso funcionava?</span>
@@ -356,16 +367,18 @@ function FormReacao({
             <Opcoes rotulo={g.grupo || "Outra"} opcoes={g.opcoes} valor={r.como_sabe} aoEscolher={(v) => setR({ ...r, como_sabe: v })} />
           </div>
         ))}
-        <span className="mem-field__help">“Ainda não sei” é uma resposta válida: vira pergunta para a call.</span>
+        <Colinha serve="“Tem número ou documento”: um resultado registrado (indicador, relatório, e-mail). “Alguém reconheceu”: um chefe, cliente ou colega disse. “Eu percebi”: você notou, mas ninguém registrou. “Ainda não sei” é uma resposta válida: vira pergunta para a call." />
       </div>
       <div className="mem-field">
         <span className="mem-field__label">Quanta vontade você tem de trabalhar com isso nos próximos anos?</span>
         <Opcoes rotulo="Vontade" opcoes={VONTADE} valor={r.vontade} aoEscolher={(v) => setR({ ...r, vontade: v })} />
+        <Colinha serve="A única opinião que pedimos aqui. Seja honesta: dá para saber fazer muito bem uma coisa e não querer fazer mais." />
       </div>
       {umaSituacao && (
         <div className="mem-field">
           <span className="mem-field__label">Isso aconteceu outras vezes?</span>
           <Opcoes rotulo="Outras vezes" opcoes={OUTRAS_VEZES} valor={r.outras_vezes} aoEscolher={(v) => setR({ ...r, outras_vezes: v })} />
+          <Colinha serve="Este padrão tem uma situação só. Você fez isso outras vezes, mesmo sem ter contado aqui?" />
         </div>
       )}
       {falhou && (
@@ -435,6 +448,7 @@ function EscolhaDois({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =>
     <section className="ws-bloco" id="escolha">
       <span className="mem-label mem-muted">Última coisa</span>
       <p className="mem-h3">Se só pudesse levar dois adiante, quais?</p>
+      <Colinha serve="Escolha dois, sem pensar muito: é a sua preferência antes da conversa. A decisão de verdade vocês tomam juntas na Call 2." />
       <div className="ws-escolha">
         {padroes(dados).map((p) => {
           const marcado = escolhidos.includes(p.id);
@@ -543,9 +557,10 @@ function Decisao({
                 Em uma frase: por que esses?
               </label>
               <input id="porque" className="mem-input" value={porque} onChange={(e) => setPorque(e.target.value)} />
-              <span className="mem-field__help">
-                Nas suas palavras. É a frase que você vai precisar repetir sozinha lá no fim.
-              </span>
+              <Colinha
+                serve="Nas suas palavras, por que esses e não os outros. É a frase que você vai precisar repetir sozinha lá no fim."
+                exemplo="São o que eu faria mesmo sem ser paga, e as pessoas já me procuram para isso."
+              />
             </div>
             {escolhidos.length > 3 && (
               <div className="mem-field">

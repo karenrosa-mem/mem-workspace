@@ -6,21 +6,25 @@ export const PERGUNTAS_ONDE = [
     chave: "o_que_faz",
     pergunta: "No dia a dia, o que você faz de verdade?",
     apoio: "Não o cargo: o que ocupa seu tempo e que problemas chegam até você.",
+    exemplo: "Passo o dia resolvendo conflito entre gestores e equipes. Quase todo problema de gente da fábrica acaba chegando em mim.",
   },
   {
     chave: "por_que_agora",
     pergunta: "O que te fez buscar isso neste momento?",
-    apoio: "Marque o que vale para você. Se quiser, conte em uma frase.",
+    apoio: "Marque o que vale para você, pode ser mais de um. Se quiser, conte em uma frase.",
+    exemplo: "Cheguei num teto onde estou. — Não tenho mais para onde crescer na empresa e não quero esperar mais dez anos.",
   },
   {
     chave: "o_que_construir",
     pergunta: "Daqui a 12 semanas, o que faria você dizer que valeu a pena?",
-    apoio: "",
+    apoio: "O que você espera levar daqui. Não precisa saber o produto: é sobre o que mudaria para você.",
+    exemplo: "Saber com clareza o que eu sei fazer que alguém pagaria, e ter testado isso com gente de verdade.",
   },
   {
     chave: "ideia",
     pergunta: "Você já imagina algum produto ou serviço?",
-    apoio: "",
+    apoio: "Se já tem uma ideia, conte. Se não tem, “Ainda não” é uma resposta completa.",
+    exemplo: "",
   },
 ] as const;
 
