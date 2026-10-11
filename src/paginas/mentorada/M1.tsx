@@ -302,6 +302,45 @@ function Situacoes({
   const faltam = Math.max(0, MINIMO_SITUACOES - completas);
   const [abertaId, setAbertaId] = useState<string | null>(null);
   const podeContar = lista.every((r) => r.estado_edicao === "aberto") || lista.length === 0;
+  // Situações a completar vêm primeiro, destacadas (pedido da Karen, 11/10).
+  const aCompletarLista = lista.filter((r) => !situacaoCompleta(r) && r.estado_edicao === "aberto");
+  const completasLista = lista.filter((r) => !aCompletarLista.includes(r));
+
+  const item = (r: Registro) =>
+    abertaId === r.id ? (
+      <li key={r.id}>
+        <CartaoSituacao
+          dados={dados}
+          registro={r}
+          aoFechar={() => setAbertaId(null)}
+          aoSalvar={async () => {
+            setAbertaId(null);
+            await aoSalvar();
+          }}
+        />
+      </li>
+    ) : (
+      <li key={r.id} className={`ws-situacao ${aCompletarLista.includes(r) ? "ws-situacao--completar" : ""}`}>
+        <div className="ws-situacao__topo">
+          <span className="mem-data">{(r.conteudo as Situacao).ano ?? "—"}</span>
+          {r.conteudo_mentora.origem === "call_1" && <span className="mem-label mem-muted">Surgiu na Call 1</span>}
+          {aCompletarLista.includes(r) && <span className="mem-tag mem-tag--pendencia">Pendência · a completar</span>}
+        </div>
+        <p className="mem-body ws-situacao__titulo">{tituloDaSituacao(r)}</p>
+        {depoisDaLeitura && r.conteudo_mentora.candidata === true && (
+          <p className="mem-label ws-candidata">Candidata a ativo · {String(r.conteudo_mentora.nome_provisorio ?? "")}</p>
+        )}
+        {aCompletarLista.includes(r) ? (
+          <button type="button" className="mem-btn mem-btn--primary" onClick={() => setAbertaId(r.id)}>
+            Completar
+          </button>
+        ) : (
+          <button type="button" className="mem-btn mem-btn--quiet ws-editar" onClick={() => setAbertaId(r.id)}>
+            {r.estado_edicao === "aberto" ? "Ver e editar" : "Ver"}
+          </button>
+        )}
+      </li>
+    );
 
   return (
     <section className="ws-bloco" id="situacoes">
@@ -317,44 +356,17 @@ function Situacoes({
         </p>
       )}
 
-      {lista.length > 0 && (
-        <ol className="ws-situacoes">
-          {lista.map((r) =>
-            abertaId === r.id ? (
-              <li key={r.id}>
-                <CartaoSituacao
-                  dados={dados}
-                  registro={r}
-                  aoFechar={() => setAbertaId(null)}
-                  aoSalvar={async () => {
-                    setAbertaId(null);
-                    await aoSalvar();
-                  }}
-                />
-              </li>
-            ) : (
-              <li key={r.id} className="ws-situacao">
-                <div className="ws-situacao__topo">
-                  <span className="mem-data">{(r.conteudo as Situacao).ano ?? "—"}</span>
-                  {r.conteudo_mentora.origem === "call_1" && (
-                    <span className="mem-label mem-muted">Surgiu na Call 1</span>
-                  )}
-                  {!situacaoCompleta(r) && <span className="mem-tag mem-tag--pendencia">Pendência · a completar</span>}
-                </div>
-                <p className="mem-body ws-situacao__titulo">{tituloDaSituacao(r)}</p>
-                {depoisDaLeitura && r.conteudo_mentora.candidata === true && (
-                  <p className="mem-label ws-candidata">
-                    Candidata a ativo · {String(r.conteudo_mentora.nome_provisorio ?? "")}
-                  </p>
-                )}
-                <button type="button" className="mem-btn mem-btn--quiet ws-editar" onClick={() => setAbertaId(r.id)}>
-                  {r.estado_edicao === "aberto" ? (situacaoCompleta(r) ? "Ver e editar" : "Completar") : "Ver"}
-                </button>
-              </li>
-            ),
-          )}
-        </ol>
+      {aCompletarLista.length > 0 && (
+        <div className="ws-completar">
+          <p className="mem-label ws-completar__titulo">
+            Para completar · {aCompletarLista.length}
+            {depoisDaLeitura ? " · antes da Call 2" : ""}
+          </p>
+          <ol className="ws-situacoes">{aCompletarLista.map(item)}</ol>
+        </div>
       )}
+
+      {completasLista.length > 0 && <ol className="ws-situacoes">{completasLista.map(item)}</ol>}
 
       {contando ? (
         <CartaoSituacao
