@@ -4,6 +4,21 @@ import { MOVIMENTOS, SEMANAS_DA_JORNADA } from "../../lib/metodo";
 import FaixaPilar from "../../componentes/FaixaPilar";
 import { enviadoEm } from "../../lib/envio";
 import { DEFINICAO_EVIDENCIA, frentes, prontaFrente, proximoPasso } from "../../lib/m4";
+import {
+  comparacaoLiberada,
+  comparadas,
+  criteriosFaltando,
+  dadosComparacao,
+  decisaoM5,
+  duvidas,
+  investigacaoAberta,
+  paraVoceFaltando,
+  porqueDaAposta,
+  rotuloParaVoce,
+  soUma,
+  type DecisaoM5,
+} from "../../lib/m5";
+import { dadosHipotese, hipoteses as todasHipoteses } from "../../lib/m3";
 import { DEFINICAO_HIPOTESE, ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
@@ -203,6 +218,7 @@ function passoM4(d: DadosJornada): Passo {
   const revisadas = conversas.some((r) => !!(r.conteudo_mentora as { nota?: string }).nota?.trim());
   const naoProntas = lista.filter((f) => !prontaFrente(d, f));
   const perto = c4 && horasAte(c4.data_atual) <= 24;
+  if (perto && comparacaoLiberada(d)) return passoComparacao(d);
   if (naoProntas.length && perto)
     return {
       titulo: `Para ${dia}, o essencial é ter pelo menos 2 conversas por hipótese.`,
@@ -214,9 +230,11 @@ function passoM4(d: DadosJornada): Passo {
     return {
       titulo: proximoPasso(d, f, naDia(dia).toLowerCase()),
       porque: revisadas ? "A Karen deixou notas nas suas conversas: vale ler antes da próxima." : conversas.length <= 2 ? "A Karen vai olhar suas primeiras conversas em até 48 h. Pode seguir conversando." : undefined,
+      extra: comparacaoLiberada(d) ? "Já dá para começar a comparar as hipóteses que têm o que precisa, no Movimento 5." : undefined,
       acao: { rotulo: "Continuar", para: `/jornada/4#frente-${f.id}` },
     };
   }
+  if (comparacaoLiberada(d)) return passoComparacao(d);
   if (!enviadoEm(d, 4))
     return {
       titulo: `Tudo pronto para ${dia}. Envie para a Karen.`,
@@ -224,6 +242,87 @@ function passoM4(d: DadosJornada): Passo {
       acao: { rotulo: "Enviar", para: "/jornada/4#envio" },
     };
   return { titulo: `Enviado. ${naDia(dia)}, vocês olham o que cada hipótese mostrou.` };
+}
+
+// Agora no M5 (Modelo por movimento, M5.2). Começa antes da Call 4, com o M4 ainda aberto.
+function passoComparacao(d: DadosJornada): Passo {
+  const c4 = call(d, 4);
+  const dia = c4 ? diaDaSemana(c4.data_atual) : "a Call 4";
+  const inv = investigacaoAberta(d);
+  if (inv)
+    return {
+      titulo: `Voltamos ao campo só para entender: ${String((inv.conteudo_mentora as { texto?: string }).texto ?? "")}`,
+      porque: "Uma ou duas conversas a mais. Não é fracasso: é a pergunta que faltava antes de escolher.",
+      acao: { rotulo: "Registrar conversa", para: "/jornada/5" },
+    };
+  const faltamCriterios = criteriosFaltando(d);
+  const semResposta = paraVoceFaltando(d);
+  const nada = !soUma(d) && faltamCriterios === 5 && semResposta.length === comparadas(d).length;
+  const perto = c4 && horasAte(c4.data_atual) <= 24;
+  const duv = duvidas(d).find((x) => !x.feita);
+  const pv = dadosComparacao(d).para_voce ?? {};
+  const msgDuvida = duv
+    ? `Sobre ${duv.c.nome}, você marcou “${rotuloParaVoce(pv[duv.c.hipotese.id]).toLowerCase()}”. A gente conversa sobre isso ${naDia(dia).toLowerCase()}.`
+    : undefined;
+
+  if (soUma(d) && semResposta.length)
+    return {
+      titulo: "Uma pergunta sobre a hipótese que chegou até aqui: é para você? · ~5 min",
+      porque: `${naDia(dia)}, vocês escolhem onde apostar.`,
+      acao: { rotulo: "Responder", para: "/jornada/5#para-voce" },
+    };
+  if (nada)
+    return {
+      titulo: `Agora você compara o que ouviu · 5 perguntas e uma para cada hipótese · ~30 min`,
+      porque: `Ninguém ganha por pontos: você escolhe e explica por quê. ${naDia(dia)}, vocês escolhem onde apostar.`,
+      acao: { rotulo: "Comparar", para: "/jornada/5#comparar" },
+    };
+  if ((faltamCriterios || semResposta.length) && perto)
+    return {
+      titulo: `Para ${dia}, o essencial é responder “é para você?” em cada hipótese.`,
+      acao: { rotulo: "Responder", para: "/jornada/5#para-voce" },
+    };
+  if (faltamCriterios)
+    return {
+      titulo: faltamCriterios === 1 ? "Falta 1 pergunta da comparação." : `Faltam ${faltamCriterios} perguntas da comparação.`,
+      porque: `Você está comparando as hipóteses. ${naDia(dia)}, vocês escolhem onde apostar.`,
+      acao: { rotulo: "Continuar", para: "/jornada/5#comparar" },
+    };
+  if (semResposta.length)
+    return {
+      titulo: `Falta responder “é para você?” sobre ${semResposta[0].nome}.`,
+      acao: { rotulo: "Responder", para: `/jornada/5#para-voce-${semResposta[0].hipotese.id}` },
+    };
+  if (!enviadoEm(d, 5))
+    return {
+      titulo: `Pronta para ${dia}. Vamos escolher onde apostar.`,
+      porque: msgDuvida ?? "Envie para a Karen: ela lê a sua comparação antes da call.",
+      extra: msgDuvida ? "Envie para a Karen: ela lê a sua comparação antes da call." : undefined,
+      acao: { rotulo: "Enviar", para: "/jornada/5#envio" },
+    };
+  return { titulo: `Pronta para ${dia}. Vamos escolher onde apostar.`, porque: msgDuvida ?? "Enviado para a Karen." };
+}
+
+// Depois da aposta: a passagem para o NORTE.
+function passoPassagem(d: DadosJornada): Passo | null {
+  const dec = decisaoM5(d);
+  if (!dec || dec.pendente_publicacao) return null;
+  const passagem = leitura(d, "passagem_norte");
+  const c4 = call(d, 4);
+  if (!passagem)
+    return {
+      titulo: `Aguardando a leitura da Karen sobre a passagem para o NORTE${c4 ? `, até ${dataHora(somarHoras(c4.data_realizada ?? c4.data_atual, 48))}` : ""}.`,
+      porque: "Nada a fazer até lá. A sua aposta já está registrada.",
+      acao: { rotulo: "Ver a aposta", para: "/jornada/5" },
+    };
+  const c = dec.conteudo_mentora as DecisaoM5;
+  const h = todasHipoteses(d).find((x) => x.id === c.aposta);
+  return {
+    titulo: `Sua aposta: ${h ? (dadosHipotese(h).publico ?? "a hipótese escolhida") : "a hipótese escolhida"}`,
+    porque: `“${porqueDaAposta(dec)}”`,
+    extra: (c.nao_sabemos ?? []).length ? `O que ainda não sabemos: ${(c.nao_sabemos ?? []).join(" · ")} O NORTE começa na próxima call com a Karen.` : undefined,
+    acao: { rotulo: "Ver a aposta", para: "/jornada/5" },
+  };
 }
 
 export default function Agora() {
@@ -251,7 +350,20 @@ export default function Agora() {
   const atual = movimentoAtual(dados);
   const mensagem = leitura(dados, "mensagem_abertura");
   const leituraCall1 = leitura(dados, "call_1");
-  const passo = atual === 1 ? passoM1(dados) : atual === 2 ? passoM2(dados) : atual === 3 ? passoM3(dados) : atual === 4 ? passoM4(dados) : null;
+  const passo =
+    atual === 1
+      ? passoM1(dados)
+      : atual === 2
+        ? passoM2(dados)
+        : atual === 3
+          ? passoM3(dados)
+          : atual === 4
+            ? passoM4(dados)
+            : atual === 5
+              ? passoComparacao(dados)
+              : atual === 6
+                ? passoPassagem(dados)
+                : null;
   const ultimaLeitura =
     atual === 2
       ? leitura(dados, "mapa_ativos") ?? leituraCall1
@@ -259,7 +371,9 @@ export default function Agora() {
         ? leitura(dados, "call_2")
         : atual === 4
           ? leitura(dados, "call_3")
-          : undefined;
+          : atual === 6
+            ? leitura(dados, "passagem_norte")
+            : undefined;
   const primeiroAcesso = atual === 1 && !dados.registros.some((r) => r.autora_papel === "mentorada");
   const proxima = dados.encontros.find((e) => e.tipo === "call" && e.estado === "marcado");
 

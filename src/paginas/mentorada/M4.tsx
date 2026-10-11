@@ -46,6 +46,8 @@ import Colinha from "../../componentes/Colinha";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 import DicaExpertIA from "../../componentes/DicaExpertIA";
+import { Link } from "react-router-dom";
+import { comparacaoLiberada, comparadas, prontaCall4M5 } from "../../lib/m5";
 
 const SIM_NAO = [
   { valor: "nao", rotulo: "Não" },
@@ -139,7 +141,26 @@ export default function M4() {
         <CartaoFrente key={f.id} dados={dados} frente={f} n={i + 1} total={lista.length} travado={!!decisao} dia={dia} aoSalvar={recarregar} />
       ))}
 
-      {!decisao && (
+      {comparacaoLiberada(dados) && dados.movimentos.find((m) => m.codigo === 5)?.estado !== "fechado" && (
+        <section className="ws-bloco ws-pauta">
+          <p className="mem-label">Próximo · comparar</p>
+          <p className="mem-body">
+            {prontaCall4M5(dados)
+              ? "Sua comparação está feita."
+              : comparadas(dados).length === 1
+                ? "Uma hipótese já tem o que precisa. Falta uma pergunta sobre ela antes da call: é para você?"
+                : `${comparadas(dados).length} hipóteses já têm o que precisa. Compare antes da call: ~30 min.`}
+          </p>
+          <div>
+            <Link className="mem-btn mem-btn--primary" to="/jornada/5">
+              {prontaCall4M5(dados) ? "Ver comparação" : "Comparar"}
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Com a comparação liberada, o envio acontece no fim dela (vale pelos dois). */}
+      {!decisao && !comparacaoLiberada(dados) && (
         <div id="envio">
           <EnviarParaKaren dados={dados} movimento={4} numeroCall={4} falta={faltaEnvioM4(dados)} aoSalvar={recarregar} />
         </div>
@@ -288,16 +309,18 @@ function CartaoConversa({ registro, n, podeEditar, aoEditar }: { registro: Regis
   );
 }
 
-function FormConversa({
+export function FormConversa({
   dados,
   frente,
   registro,
   aoFechar,
   aoSalvar,
+  movimento = 4,
 }: {
   dados: DadosJornada;
   frente: Registro;
   registro?: Registro;
+  movimento?: number; // 5 = investigação curta do M5, sem reabrir o M4
   aoFechar: () => void;
   aoSalvar: () => Promise<void>;
 }) {
@@ -319,7 +342,7 @@ function FormConversa({
       : await supabase.from("registro").insert({
           conta_id: dados.jornada.conta_id,
           jornada_id: dados.jornada.id,
-          movimento_codigo: 4,
+          movimento_codigo: movimento,
           tipo: "conversa",
           origem_id: frente.id,
           conteudo,

@@ -8,6 +8,9 @@ const SECOES: [string, string][] = [
   ["o_que_investigamos", "O que investigamos"],
   ["o_que_e_ativo", "O que é um ativo"],
   ["o_que_fazer_agora", "O que fazer agora"],
+  ["o_que_levamos", "O que levamos"],
+  ["o_que_nao_sabemos", "O que ainda não sabemos"],
+  ["o_que_muda", "O que muda a partir de agora"],
 ];
 
 const TITULOS: Record<string, string> = {
@@ -15,6 +18,8 @@ const TITULOS: Record<string, string> = {
   mensagem_abertura: "Mensagem da Karen",
   mapa_ativos: "Leitura com os seus padrões",
   call_2: "Leitura da Call 2",
+  call_3: "Leitura da Call 3",
+  passagem_norte: "Do MAPA para o NORTE",
 };
 
 export default function LeituraKaren({ registro }: { registro: Registro }) {

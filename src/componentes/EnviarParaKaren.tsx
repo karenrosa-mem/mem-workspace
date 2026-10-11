@@ -13,12 +13,14 @@ export default function EnviarParaKaren({
   numeroCall,
   falta,
   aoSalvar,
+  tambem,
 }: {
   dados: DadosJornada;
   movimento: number;
   numeroCall: number;
   falta: string[]; // vazio = pronta
   aoSalvar: () => Promise<void>;
+  tambem?: number; // marca também o envio de outro movimento da mesma call, se ainda não foi
 }) {
   const { pessoa } = useSessao();
   const [enviando, setEnviando] = useState(false);
@@ -45,6 +47,16 @@ export default function EnviarParaKaren({
           autora_papel: "mentorada",
           autora_id: pessoa.id,
         });
+    if (!r.error && tambem && !envioDe(dados, tambem))
+      await supabase.from("registro").insert({
+        conta_id: dados.jornada.conta_id,
+        jornada_id: dados.jornada.id,
+        movimento_codigo: tambem,
+        tipo: "envio",
+        conteudo,
+        autora_papel: "mentorada",
+        autora_id: pessoa.id,
+      });
     setEnviando(false);
     if (r.error) return setErro(true);
     await aoSalvar();

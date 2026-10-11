@@ -1421,3 +1421,56 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-criterio .mem-label {
   color: var(--brand);
 }
+
+/* M5 · comparação: fatos lado a lado, em ordem fixa, sem destaque de "líder" */
+.ws-colunas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.ws-coluna {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ws-coluna > * {
+  margin: 0;
+}
+
+/* A leitura dela fica sempre separada dos fatos */
+.ws-sua-leitura {
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ws-sua-leitura > * {
+  margin: 0;
+}
+
+.ws-aposta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ws-aposta > * {
+  margin: 0;
+}
+
+.ws-check {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.ws-guia__parte {
+  margin-top: var(--space-6);
+}

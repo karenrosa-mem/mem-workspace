@@ -19,6 +19,7 @@ import {
 } from "../../lib/m2";
 import { LASTRO, dadosHipotese, disputaPublico, fraseTexto, hipoteses } from "../../lib/m3";
 import { ROTEIRO, ROTEIRO_NUNCA, contagem, conversasDe, fraseDaFrente, frentes, ideiasDe, meta, resumo, situacaoPublico, type Conversa, type Frente } from "../../lib/m4";
+import { CRITERIOS, comparadas, duvidas, leituraValida, naoSabemosDerivado, nomeEscolha, rotuloParaVoce, soUma, dadosComparacao } from "../../lib/m5";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -37,6 +38,7 @@ export default function GuiaCall() {
   const [nome, setNome] = useState("");
   const [mentoriaId, setMentoriaId] = useState<string | null>(null);
   const [nota, setNota] = useState<Nota>({});
+  const [nota5, setNota5] = useState<Nota>({});
 
   useEffect(() => {
     if (!supabase || !id) return;
@@ -67,6 +69,26 @@ export default function GuiaCall() {
           setNota(data ? JSON.parse(data.conteudo as string) : {});
         } catch {
           setNota({});
+        }
+      });
+  }, [mentoriaId, numero]);
+
+  // A Call 4 tem duas partes: fim do M4 e o M5 inteiro.
+  useEffect(() => {
+    if (!supabase || !mentoriaId || numero !== 4) return;
+    supabase
+      .from("nota_privada")
+      .select("conteudo")
+      .eq("mentoria_id", mentoriaId)
+      .eq("movimento_codigo", 5)
+      .order("criada_em")
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        try {
+          setNota5(data ? JSON.parse(data.conteudo as string) : {});
+        } catch {
+          setNota5({});
         }
       });
   }, [mentoriaId, numero]);
@@ -112,7 +134,7 @@ export default function GuiaCall() {
       ) : numero === 3 ? (
         <GuiaCall3 dados={dados} nota={nota} chave={`${id}:3`} />
       ) : (
-        <GuiaCall4 dados={dados} nota={nota} chave={`${id}:4`} />
+        <GuiaCall4 dados={dados} nota={nota} nota5={nota5} chave={`${id}:4`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -543,7 +565,7 @@ function GuiaCall3({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
 // ---------------------------------------------------------------------
 // Call 4 · início: o que cada hipótese mostrou
 // ---------------------------------------------------------------------
-function GuiaCall4({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+function GuiaCall4({ dados, nota, nota5, chave }: { dados: DadosJornada; nota: Nota; nota5: Nota; chave: string }) {
   const { marcados, alternar } = useMarcados(chave);
   const lista = frentes(dados);
 
@@ -592,22 +614,64 @@ function GuiaCall4({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
     { id: "d4-registrar", texto: "Registre a decisão de cada hipótese, com a razão. O M5 abre e vocês seguem para a segunda parte da call." },
   ];
 
-  const todos = [...porFrente, ...daNota, ...decidir];
+  // Segunda parte: M5 · escolher onde apostar.
+  const pv = dadosComparacao(dados).para_voce ?? {};
+  const leituras: Item[] = [
+    ...(soUma(dados)
+      ? []
+      : CRITERIOS.map((cr) => {
+          const l = leituraValida(dados, cr.chave);
+          return {
+            id: `m5-${cr.chave}`,
+            texto: `${cr.pergunta} Ela leu: ${l ? nomeEscolha(dados, l.escolha) : "sem resposta"}`,
+            detalhe: l ? `“${l.porque}” · Os fatos sustentam? Se não: “o que sustenta isso?”` : "Faça a leitura com ela na call.",
+          };
+        })),
+    ...linhas(nota5.distancia).map((t, i) => ({ id: `m5-dist-${i}`, texto: t, detalhe: "Da sua nota: leitura × fatos" })),
+  ];
+  const paraVoce: Item[] = [
+    ...comparadas(dados).map((c) => ({ id: `m5-pv-${c.hipotese.id}`, texto: `${c.nome}: ${rotuloParaVoce(pv[c.hipotese.id])}` })),
+    ...duvidas(dados).map(({ c, resposta }) => ({
+      id: `m5-duv-${c.hipotese.id}`,
+      texto: `Conversar sobre “${rotuloParaVoce(resposta).toLowerCase()}” em ${c.nome}`,
+      detalhe: "Do que ela não tem vontade, ou o que falta para saber? Marque a conversa como feita na página dela.",
+    })),
+    { id: "m5-sim", texto: "Nos “sim, e quero”: é convicção ou medo de dizer não?" },
+    ...linhas(nota5.desejo).map((t, i) => ({ id: `m5-des-${i}`, texto: t, detalhe: "Da sua nota: evidência × desejo" })),
+  ];
+  const apostar: Item[] = [
+    ...linhas(nota5.recomendacao).map((t, i) => ({ id: `m5-rec-${i}`, texto: t, detalhe: "Sua recomendação (da nota)" })),
+    { id: "m5-recomendar", texto: "Faça a sua recomendação antes de ela escolher, com os critérios declarados. Não se esconda atrás de neutralidade." },
+    ...linhas(nota5.empates).map((t, i) => ({ id: `m5-emp-${i}`, texto: t, detalhe: "Empate: primeiro desempate é “dá para testar logo?”" })),
+    { id: "m5-escolha", texto: "A escolha é dela. Se for diferente da sua recomendação: razão estratégica escrita e condição de revisão." },
+    { id: "m5-porque", texto: "Peça o porquê, agora, nas palavras dela. Anote literal." },
+    { id: "m5-reserva", texto: "Reserva e em que condição ela entra. As de fora: por que agora não e quando podem voltar." },
+    {
+      id: "m5-nao-sabemos",
+      texto: "O que ainda não sabemos",
+      detalhe: naoSabemosDerivado(dados).join(" · "),
+    },
+    { id: "m5-nao-valida", texto: "Diga com todas as letras: apostar não é validar. É a hipótese que merece as próximas semanas." },
+    { id: "m5-registrar", texto: "Registre a aposta na página dela. O NORTE abre." },
+  ];
+
+  const todos = [...porFrente, ...daNota, ...decidir, ...leituras, ...paraVoce, ...apostar];
   const feitos = todos.filter((i) => marcados[i.id]).length;
 
   return (
     <>
       <Objetivo
-        objetivo="Início da Call 4: para cada hipótese, o que apareceu, o que não apareceu e o que ainda é dúvida. Depois, ela decide o que segue para comparação."
-        sai={["A decisão de cada hipótese (segue, volta ou guardada), com a razão", "O M5 aberto, para a segunda parte da call"]}
+        objetivo="Primeira parte: para cada hipótese, o que apareceu e o que não apareceu; ela decide o que segue para comparação. Segunda parte: a comparação dela e a escolha de onde apostar."
+        sai={["A decisão de cada hipótese do M4 (segue, volta ou guardada), com a razão", "A aposta, com o porquê dela, a reserva e o que ainda não sabemos", "A sua recomendação registrada, concordando ou não"]}
       />
       <Progresso total={todos.length} feitos={feitos} />
       <Bloco n={1} titulo="Hipótese por hipótese" porque="Só os fatos, sem nota nem ranking." itens={porFrente} marcados={marcados} alternar={alternar} vazio="Nenhuma hipótese em teste." />
       <Bloco n={2} titulo="Da sua nota privada" itens={daNota} marcados={marcados} alternar={alternar} vazio="Nada anotado na nota privada do M4." />
       <Bloco n={3} titulo="Decidir" itens={decidir} marcados={marcados} alternar={alternar} />
-      <Aviso variante="warn" titulo="Segunda parte da call">
-        A comparação (M5) ganha guia quando o M5 for construído.
-      </Aviso>
+      <h2 className="mem-h2 ws-guia__parte">Segunda parte · escolher onde apostar</h2>
+      <Bloco n={4} titulo="Onde a leitura dela se afasta dos fatos" porque="Percorra só os critérios em que a leitura dela e os fatos se distanciam. Nenhum placar: ela nunca vê quantas vezes escolheu cada hipótese." itens={leituras} marcados={marcados} alternar={alternar} vazio="Ela ainda não comparou." />
+      <Bloco n={5} titulo="É para ela?" itens={paraVoce} marcados={marcados} alternar={alternar} />
+      <Bloco n={6} titulo="Recomendar e decidir" itens={apostar} marcados={marcados} alternar={alternar} />
     </>
   );
 }

@@ -6,6 +6,7 @@ import Mentoradas from "./paginas/mentora/Mentoradas";
 import IniciarJornada from "./paginas/mentora/IniciarJornada";
 import M3 from "./paginas/mentorada/M3";
 import M4 from "./paginas/mentorada/M4";
+import M5 from "./paginas/mentorada/M5";
 import GuiaCall from "./paginas/mentora/GuiaCall";
 import MentoradaM1 from "./paginas/mentora/MentoradaM1";
 import Jornada, { MovimentoEmConstrucao, MOVIMENTOS_PRONTOS } from "./paginas/mentorada/Jornada";
@@ -61,6 +62,7 @@ function PaginaMovimento() {
   if (n === 2) return <M2 />;
   if (n === 3) return <M3 />;
   if (n === 4) return <M4 />;
+  if (n === 5) return <M5 />;
   if (!MOVIMENTOS_PRONTOS.has(n) && n >= 1 && n <= 10) return <MovimentoEmConstrucao codigo={n} />;
   return <Navigate to="/jornada" replace />;
 }

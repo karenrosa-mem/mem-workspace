@@ -28,6 +28,8 @@ import { DEFINICAO_ATIVO } from "../../lib/m2";
 import SecaoM2 from "./MentoradaM2";
 import SecaoM3 from "./MentoradaM3";
 import SecaoM4 from "./MentoradaM4";
+import SecaoM5 from "./MentoradaM5";
+import { comparacaoLiberada } from "../../lib/m5";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
 type Nota = {
@@ -76,6 +78,8 @@ export default function MentoradaM1() {
     );
 
   const atual = movimentoAtual(dados);
+  // O M5 acontece na segunda parte da Call 4.
+  const callDoAtual = atual && atual <= 4 ? atual : atual === 5 ? 4 : null;
   const c1 = call(dados, 1);
   const leituraCall1 = leitura(dados, "call_1");
 
@@ -89,11 +93,11 @@ export default function MentoradaM1() {
       </span>
       <h1 className="mem-h1">{nome || "Mentorada"}</h1>
       <p className="mem-body-lg">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Jornada"}</p>
-      {atual && atual <= 4 && call(dados, atual) && (
-        <Link className="ws-guia-atalho" to={`/mentoradas/${dados.jornada.id}/call/${atual}`}>
-          <span className="mem-label">Guia da Call {atual}</span>
+      {callDoAtual && call(dados, callDoAtual) && (
+        <Link className="ws-guia-atalho" to={`/mentoradas/${dados.jornada.id}/call/${callDoAtual}`}>
+          <span className="mem-label">Guia da Call {callDoAtual}</span>
           <span className="mem-body">
-            {dataHora(call(dados, atual)!.data_atual)} · o roteiro da call com o que é dela, para marcar enquanto conversa
+            {dataHora(call(dados, callDoAtual)!.data_atual)} · o roteiro da call com o que é dela, para marcar enquanto conversa
           </span>
         </Link>
       )}
@@ -104,13 +108,16 @@ export default function MentoradaM1() {
         <>
           {mentoriaId &&
             ([
+              [5, "M5 · comparação e aposta", SecaoM5],
               [4, "M4 · conversas, revisões e decisão", SecaoM4],
               [3, "M3 · hipóteses e decisão", SecaoM3],
               [2, "M2 · padrões, respostas dela e decisão", SecaoM2],
             ] as const).map(([codigo, rotulo, Secao]) => {
               const estado = dados.movimentos.find((m) => m.codigo === codigo)?.estado;
-              if (estado === "nao_iniciado") return null;
-              return estado === "aberto" ? (
+              // O M5 aparece antes de abrir: ela compara antes da Call 4.
+              const ativo = estado === "aberto" || (codigo === 5 && estado === "nao_iniciado" && comparacaoLiberada(dados));
+              if (estado === "nao_iniciado" && !ativo) return null;
+              return ativo ? (
                 <Secao key={codigo} dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
               ) : (
                 <details key={codigo} className="ws-bloco">
