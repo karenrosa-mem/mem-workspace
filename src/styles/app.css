@@ -1396,3 +1396,9 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-link {
   color: var(--brand);
 }
+
+.ws-trilha-titulo {
+  margin: 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}

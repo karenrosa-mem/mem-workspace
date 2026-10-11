@@ -22,6 +22,7 @@ import {
   ONDE_SINAL,
   TEMPO,
   TRILHAS,
+  pesquisa,
   podeSeguir,
   relatosDe,
   sinaisMercadoDe,
@@ -43,7 +44,7 @@ import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 const NOTA_M4 = [
   {
     chave: "combinacao",
-    rotulo: "O que a combinação dos fatos demonstra, por frente",
+    rotulo: "O que a combinação dos fatos demonstra, por hipótese",
     ajuda: "Sua leitura de cada frente. Se usar forte, médio e fraco, é aqui: ela nunca vê.",
     exemplo: "H1: três casos concretos, dois tentaram resolver: forte para existência, fraco para dinheiro. H4: poucas conversas, mas um pagamento muito próximo.",
   },
@@ -92,13 +93,23 @@ export default function SecaoM4({
   const env = enviadoEm(dados, 4);
 
   const passos: Passo[] = [
-    { id: "m4-prep", titulo: "Preparar o campo (Call 3, segunda metade)", quem: "Juntas", estado: conversas.length ? "feito" : "agora" },
+    {
+      id: "m4-prep",
+      titulo: "Combinar como ela vai investigar",
+      quem: "Juntas",
+      estado: lista.every((f) => trilha(f)) ? "feito" : "agora",
+      nota: "ainda na Call 3, logo depois da decisão",
+    },
     {
       id: "m4-conv",
-      titulo: "Conversar e registrar",
+      titulo: "Investigar e registrar",
       quem: "Ela",
       estado: registrada || prontas === lista.length ? "feito" : "esperando",
-      nota: env ? `enviado ${dataHora(env)}` : `${prontas} de ${lista.length} hipóteses prontas · ${conversas.length} conversas`,
+      nota: env
+        ? `enviado ${dataHora(env)}`
+        : `${prontas} de ${lista.length} hipóteses prontas · ${lista
+            .map((f) => TRILHAS.find((t) => t.valor === trilha(f))?.rotulo.toLowerCase() ?? "sem trilha")
+            .join(" · ")}`,
     },
     {
       id: "m4-rev",
@@ -107,7 +118,7 @@ export default function SecaoM4({
       estado: !primeiras.length ? "depois" : semNota.length ? "agora" : "feito",
       nota: semNota.length && prazoRevisao ? `até ${dataHora(prazoRevisao)}` : undefined,
     },
-    { id: "m4-nota", titulo: "Ler as frentes e escrever a nota privada", quem: "Você", estado: registrada ? "feito" : conversas.length ? "agora" : "depois", nota: "véspera da Call 4" },
+    { id: "m4-nota", titulo: "Ler as hipóteses e escrever a nota privada", quem: "Você", estado: registrada ? "feito" : conversas.length ? "agora" : "depois", nota: "véspera da Call 4" },
     {
       id: "m4-call",
       titulo: "Call 4: decidir cada hipótese",
@@ -126,7 +137,7 @@ export default function SecaoM4({
         n={1}
         passo={passos[0]}
         aberta={!conversas.length}
-        porque="Na segunda metade da Call 3: leiam o roteiro juntas, ensaiem a abertura, definam a meta de conversas de cada hipótese e por onde ela começa (normalmente por quem ela já ajudou). O medo de abordar se trata aqui, ao vivo."
+        porque="A Call 3 tem duas partes. Na primeira, vocês decidem quais hipóteses ela vai testar (fecha o M3). Logo em seguida, na mesma call, vocês combinam como ela vai investigar cada uma: pesquisando sozinha, conversando com pessoas ou as duas. Para quem vai conversar, definam a meta e ensaiem a abertura."
       >
         <div className="ws-acoes">
           <Link className="mem-btn mem-btn--secondary" to={`/mentoradas/${dados.jornada.id}/call/3`}>
@@ -142,7 +153,7 @@ export default function SecaoM4({
         n={2}
         passo={passos[1]}
         aberta={!registrada}
-        porque="Cada conversa mostra só o que a pessoa fez. Nas primeiras, deixe uma nota curta na própria conversa. Em “em parte do público”, decida se conta. Marque as falas que são opinião ou previsão."
+        porque="Cada hipótese mostra a trilha que ela escolheu e o que já apareceu em cada uma. Nas conversas, deixe uma nota nas primeiras, decida se “em parte do público” conta e marque as falas que são opinião. Nos relatos, confira o link e marque o que não conta."
       >
         {lista.map((f, i) => (
           <FrenteMentoraCartao key={f.id} dados={dados} frente={f} n={i + 1} travado={registrada} aoSalvar={recarregar} />
@@ -189,10 +200,13 @@ function MetaFrente({ dados, frente, travado, aoSalvar }: { dados: DadosJornada;
     setSalvo(!r.error);
     if (!r.error) await aoSalvar();
   }
+  const t = trilha(frente);
   return (
     <article className="mem-card ws-padrao">
+      <TagTrilha frente={frente} />
       <p className="mem-body ws-serif ws-frase">{fraseDaFrente(dados, frente)}</p>
-      <div className="mem-field">
+      {!t && <p className="mem-body-sm">Ela ainda não escolheu como investigar. Combinem agora: ela escolhe na tela dela.</p>}
+      {(t === "conversas" || t === "ambas" || !t) && <div className="mem-field">
         <label className="mem-field__label" htmlFor={`meta-${frente.id}`}>
           Meta de conversas do público
         </label>
@@ -218,7 +232,10 @@ function MetaFrente({ dados, frente, travado, aoSalvar }: { dados: DadosJornada;
           {salvo && <span className="mem-body-sm mem-muted">Salvo.</span>}
         </div>
         <Colinha serve="Vale para a trilha de conversas. 2 é o ponto de partida; mais quando os sinais vierem contraditórios. Nunca menos de 2: nenhuma conclusão sai de uma conversa só." />
-      </div>
+      </div>}
+      {t === "pesquisa" && (
+        <p className="mem-body-sm">Na pesquisa, a meta é fixa: 3 relatos com caso concreto e 1 sinal de demanda sustentada.</p>
+      )}
     </article>
   );
 }
@@ -229,42 +246,61 @@ function FrenteMentoraCartao({ dados, frente, n, travado, aoSalvar }: { dados: D
   const fr = frente.conteudo as Frente;
   return (
     <article className="mem-card ws-padrao">
-      <span className="mem-label mem-muted">Hipótese {n}</span>
+      <div className="ws-situacao__topo">
+        <span className="mem-label mem-muted">Hipótese {n}</span>
+        <TagTrilha frente={frente} />
+      </div>
       <p className="mem-body-lg ws-serif ws-frase">{fraseDaFrente(dados, frente)}</p>
-      <p className="mem-body">
-        <strong>
-          {k.doPublico} de {meta(frente)}
-        </strong>{" "}
-        · {resumo(dados, frente)}
-      </p>
-      <p className="mem-body-sm mem-muted">
-        Trilha: {TRILHAS.find((t) => t.valor === trilha(frente))?.rotulo.toLowerCase() ?? "ainda não escolheu"}
-      </p>
-      {relatosDe(dados, frente).map((r) => (
-        <RelatoMentora key={r.id} registro={r} travado={travado} aoSalvar={aoSalvar} />
-      ))}
-      {sinaisMercadoDe(dados, frente).map((r) => {
-        const x = r.conteudo as SinalMercado;
-        return (
-          <p key={r.id} className="mem-body-sm">
-            Sinal de mercado ({ONDE_SINAL.find((o) => o.valor === x.onde)?.rotulo ?? ""}): {x.nome}
-            {x.tempo ? ` · ${TEMPO.find((t) => t.valor === x.tempo)?.rotulo.toLowerCase()}` : ""}
-            {x.anuncios ? ` · ${x.anuncios} anúncios` : ""}
-            {x.mais_vendidos ? " · entre os mais vendidos" : ""}
-            {x.preco ? ` · ${x.preco}` : ""}
-            {sustentado(r) ? " · sustentado" : ""}
-            {x.link && (
-              <>
-                {" "}
-                ·{" "}
-                <a href={x.link} target="_blank" rel="noreferrer">
-                  link
-                </a>
-              </>
-            )}
+
+      {(trilha(frente) === "pesquisa" || trilha(frente) === "ambas" || relatosDe(dados, frente).length + sinaisMercadoDe(dados, frente).length > 0) && (
+        <div className="ws-padrao__parte">
+          <p className="mem-h4 ws-trilha-titulo">
+            Pesquisa de mercado · {pesquisa(dados, frente).relatosCaso} de 3 relatos com caso ·{" "}
+            {pesquisa(dados, frente).sustentados ? "sinal sustentado ✓" : "falta 1 sinal sustentado"}
           </p>
-        );
-      })}
+          {relatosDe(dados, frente).length + sinaisMercadoDe(dados, frente).length === 0 && (
+            <p className="mem-body-sm mem-muted">Nada registrado ainda.</p>
+          )}
+          {relatosDe(dados, frente).map((r) => (
+            <RelatoMentora key={r.id} registro={r} travado={travado} aoSalvar={aoSalvar} />
+          ))}
+          {sinaisMercadoDe(dados, frente).map((r) => {
+            const x = r.conteudo as SinalMercado;
+            return (
+              <p key={r.id} className="mem-body-sm">
+                Sinal de mercado ({ONDE_SINAL.find((o) => o.valor === x.onde)?.rotulo ?? ""}): {x.nome}
+                {x.tempo ? ` · ${TEMPO.find((t) => t.valor === x.tempo)?.rotulo.toLowerCase()}` : ""}
+                {x.anuncios ? ` · ${x.anuncios} anúncios` : ""}
+                {x.mais_vendidos ? " · entre os mais vendidos" : ""}
+                {x.preco ? ` · ${x.preco}` : ""}
+                {sustentado(r) ? " · sustentado" : ""}
+                {x.link && (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <a className="ws-link" href={x.link} target="_blank" rel="noreferrer">
+                      link
+                    </a>
+                  </>
+                )}
+              </p>
+            );
+          })}
+        </div>
+      )}
+
+      {(trilha(frente) === "conversas" || trilha(frente) === "ambas" || lista.length > 0) && (
+        <div className="ws-padrao__parte">
+          <p className="mem-h4 ws-trilha-titulo">
+            Conversas · {k.doPublico} de {meta(frente)} do público · {k.caso} com caso concreto
+          </p>
+          {lista.length === 0 && <p className="mem-body-sm mem-muted">Nenhuma conversa ainda.</p>}
+          {lista.map((c, i) => (
+            <RevisaoConversaCartao key={c.id} registro={c} n={i + 1} travado={travado} aoSalvar={aoSalvar} />
+          ))}
+        </div>
+      )}
+
       {fr.checagem && (
         <p className="mem-body-sm">
           Alguém já cobra? {fr.checagem === "sim" ? `Sim: ${(fr.checagem_links ?? []).join("; ")}` : "Não encontrou"}
@@ -277,9 +313,6 @@ function FrenteMentoraCartao({ dados, frente, n, travado, aoSalvar }: { dados: D
           <p className="mem-body-sm">{proximoPasso(dados, frente)}</p>
         </div>
       )}
-      {lista.map((c, i) => (
-        <RevisaoConversaCartao key={c.id} registro={c} n={i + 1} travado={travado} aoSalvar={aoSalvar} />
-      ))}
       {ideiasDe(dados, frente).length > 0 && (
         <p className="mem-body-sm">
           Ideias novas dela: {ideiasDe(dados, frente).map((x) => String((x.conteudo as { texto?: string }).texto ?? "")).join("; ")}
@@ -387,6 +420,12 @@ function RevisaoConversaCartao({ registro, n, travado, aoSalvar }: { registro: R
   );
 }
 
+function TagTrilha({ frente }: { frente: Registro }) {
+  const t = trilha(frente);
+  const rot = t === "pesquisa" ? "Trilha: pesquisa de mercado" : t === "conversas" ? "Trilha: conversas" : t === "ambas" ? "Trilha: pesquisa e conversas" : "Trilha: ainda não escolhida";
+  return <span className={`mem-tag ${t ? "mem-tag--decisao" : "mem-tag--pendencia"}`}>{rot}</span>;
+}
+
 function RelatoMentora({ registro, travado, aoSalvar }: { registro: Registro; travado: boolean; aoSalvar: () => Promise<void> }) {
   const x = registro.conteudo as Relato;
   const naoConta = (registro.conteudo_mentora as { nao_conta?: boolean }).nao_conta === true;
@@ -404,7 +443,7 @@ function RelatoMentora({ registro, travado, aoSalvar }: { registro: Registro; tr
       <p className="mem-body-sm ws-fala">“{x.trecho}”</p>
       <div className="ws-acoes">
         {x.link && (
-          <a className="mem-body-sm" href={x.link} target="_blank" rel="noreferrer">
+          <a className="mem-body-sm ws-link" href={x.link} target="_blank" rel="noreferrer">
             conferir o link
           </a>
         )}
@@ -520,7 +559,10 @@ function DecisaoM4Etapa({ dados, passo, registrada, recarregar }: { dados: Dados
         let k = 0;
         return (
           <article key={f.id} className="mem-card ws-padrao">
-            <span className="mem-label mem-muted">Hipótese {i + 1}</span>
+            <div className="ws-situacao__topo">
+              <span className="mem-label mem-muted">Hipótese {i + 1}</span>
+              <TagTrilha frente={f} />
+            </div>
             <p className="mem-body ws-serif ws-frase">{fraseDaFrente(dados, f)}</p>
             <p className="mem-body-sm">{resumo(dados, f)}</p>
             <Pergunta n={++k} feita={!!l.resultado} titulo="O que acontece com esta hipótese?">
