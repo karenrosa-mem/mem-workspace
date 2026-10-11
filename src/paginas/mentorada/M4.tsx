@@ -540,8 +540,10 @@ function PesquisaFrente({ dados, frente, travado, aoSalvar }: { dados: DadosJorn
             ))}
           </ul>
           <DicaExpertIA>
-            Peça ao ExpertIA para garimpar comentários, avaliações e anúncios sobre este tema e organizar o que achar. Ele
-            organiza; o que entra aqui é o que você conferir no link.
+            Comece pedindo ao ExpertIA palavras-chave sobre este tema: os termos que este público usaria para buscar o problema,
+            do jeito que ele fala, não do jeito técnico. Use essas palavras na biblioteca de anúncios, nas plataformas de cursos, na
+            Amazon e no Google Trends. Depois, ele também pode garimpar comentários e avaliações e organizar o que achar. O que entra
+            aqui é o que você conferir no link.
           </DicaExpertIA>
         </details>
       )}
