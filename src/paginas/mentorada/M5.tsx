@@ -348,7 +348,7 @@ function Investigacao({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () =
   const texto = String((inv.conteudo_mentora as { texto?: string }).texto ?? "");
   return (
     <section className="ws-bloco ws-pauta">
-      <p className="mem-label">Voltamos ao campo só para entender uma coisa</p>
+      <p className="mem-label">Mais uma ou duas conversas, só para entender uma coisa</p>
       <p className="mem-body-lg">{texto}</p>
       <p className="mem-body-sm">
         Uma ou duas conversas a mais, nesta semana. Não é fracasso: é a pergunta que faltava responder antes de escolher.

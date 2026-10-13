@@ -104,7 +104,7 @@ export const PASSOS: Passo[] = [
       {
         chave: "momento",
         pergunta: "Quando não dá mais para adiar?",
-        semMaterial: "O campo não mostrou isso",
+        semMaterial: "Não apareceu no que eu ouvi",
         serve: "O ponto em que a pessoa sente que precisa resolver já. Olhe os casos: o que aconteceu logo antes de ela agir?",
         exemplo: "Quando alguém do time ignora uma cobrança na frente dos outros.",
       },
@@ -117,7 +117,7 @@ export const PASSOS: Passo[] = [
       {
         chave: "desejo",
         pergunta: "O que essa pessoa quer que mude?",
-        semMaterial: "O campo não mostrou isso",
+        semMaterial: "Não apareceu no que eu ouvi",
         serve: "Nas palavras dela. Pode juntar várias falas numa frase, desde que quem leu as conversas reconheça ali o que foi ouvido.",
         exemplo: "Cobrar sem se sentir traidora.",
       },
@@ -132,14 +132,14 @@ export const PASSOS: Passo[] = [
   },
   {
     n: 5,
-    titulo: "Por qual caminho você entra",
+    titulo: "Como você ajuda",
     itens: [
       {
         chave: "direcao",
-        pergunta: "Por qual caminho a sua experiência entra para resolver isso?",
+        pergunta: "Do que você já fez, o que ajuda essa pessoa a resolver isso?",
         semMaterial: "Ainda não sei",
-        serve: "Uma frase sobre o caminho, a partir do que você já fez de verdade. Ainda não é o formato: nada de curso, mentoria, quantas semanas, preço ou ferramenta.",
-        exemplo: "Ensinando a conversa de cobrança que eu já conduzi com gestores que vieram do próprio time.",
+        serve: "Uma frase, a partir do que você já fez de verdade. Ainda não é como você vai vender: nada de curso, mentoria, quantas semanas, preço ou ferramenta. Isso vem no próximo movimento.",
+        exemplo: "Ensinar a conversa de cobrança que eu já conduzi com gestores que vieram do próprio time.",
       },
     ],
   },
@@ -160,7 +160,7 @@ export const PASSOS: Passo[] = [
 
 export const TODOS_ITENS = PASSOS.flatMap((p) => p.itens);
 
-export const TRANSVERSAL = "Em uma ou duas frases: o que você está mantendo da sua aposta, e o que o campo te fez mudar?";
+export const TRANSVERSAL = "Em uma ou duas frases: o que você manteve da sua aposta, e o que mudou por causa do que você ouviu?";
 
 // A aposta do M5 (hipótese e frente).
 export function aposta(d: DadosJornada): { hipotese: Registro; frente?: Registro; decisao: Registro } | undefined {

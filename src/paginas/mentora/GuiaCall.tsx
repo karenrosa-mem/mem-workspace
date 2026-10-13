@@ -700,7 +700,7 @@ function GuiaCall5({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
   const m = mentoraOportunidade(dados);
   const { apostando, naoSabemos } = listasIncertezas(dados);
   const explicar: Item[] = [
-    { id: "c5-explicar", texto: "Antes de abrir o texto: “me explica a sua oportunidade em um minuto, com as suas palavras”.", detalhe: "Para quem, que problema, o que muda, por qual caminho você entra." },
+    { id: "c5-explicar", texto: "Antes de abrir o texto: “me explica a sua oportunidade em um minuto, com as suas palavras”.", detalhe: "Para quem, que problema, o que muda, como você ajuda." },
     { id: "c5-ler", texto: "Agora ela lê a oportunidade montada na tela dela. Note onde a explicação e o texto se afastam.", detalhe: "Anote em “Posse”, na sua nota." },
   ];
   const confrontar: Item[] = [
@@ -719,7 +719,7 @@ function GuiaCall5({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
   ];
   const assumir: Item[] = [
     ...linhas(nota.recomendacao).map((t, i) => ({ id: `c5-rec-${i}`, texto: t, detalhe: "Sua recomendação (da nota)" })),
-    { id: "c5-confere", texto: "Confira: quem vive o problema foi ouvido; o problema é o do campo; nenhuma aposta ficou implícita; a direção é caminho." },
+    { id: "c5-confere", texto: "Confira: quem vive o problema foi ouvido; o problema é o que apareceu nas conversas e na pesquisa; nenhuma aposta ficou implícita; a direção não fala de formato." },
     { id: "c5-assume", texto: "Ela assume a oportunidade como a aposta que vai para o NORTE. Registre na página dela: o M7 abre." },
     { id: "c5-nao-valida", texto: "Diga: assumida não é validada. A oferta é construída no M7 e testada no M9." },
   ];

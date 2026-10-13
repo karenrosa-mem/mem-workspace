@@ -252,7 +252,7 @@ function passoComparacao(d: DadosJornada): Passo {
   const inv = investigacaoAberta(d);
   if (inv)
     return {
-      titulo: `Voltamos ao campo só para entender: ${String((inv.conteudo_mentora as { texto?: string }).texto ?? "")}`,
+      titulo: `Mais uma ou duas conversas, só para entender: ${String((inv.conteudo_mentora as { texto?: string }).texto ?? "")}`,
       porque: "Uma ou duas conversas a mais. Não é fracasso: é a pergunta que faltava antes de escolher.",
       acao: { rotulo: "Registrar conversa", para: "/jornada/5" },
     };
@@ -328,7 +328,7 @@ function passoM6(d: DadosJornada): Passo {
     };
   }
   if (!dadosOportunidade(d).transversal?.trim())
-    return { titulo: "Última coisa: o que você manteve e o que o campo te fez mudar?", acao: { rotulo: "Responder", para: "/jornada/6#transversal" } };
+    return { titulo: "Última coisa: o que você manteve e o que mudou por causa do que você ouviu?", acao: { rotulo: "Responder", para: "/jornada/6#transversal" } };
   const titulo = `Pronta para ${dia}. Você vai explicar a sua oportunidade com as suas palavras, antes de ler.`;
   if (prontaCall5(d) && !enviadoEm(d, 6))
     return { titulo, porque: "Envie para a Karen: ela lê antes da call.", acao: { rotulo: "Enviar", para: "/jornada/6#envio" } };

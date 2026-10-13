@@ -545,7 +545,7 @@ function Investigacao({ dados, recarregar }: { dados: DadosJornada; recarregar: 
     return (
       <div className="ws-pauta">
         <p className="mem-label">Investigação curta em andamento</p>
-        <p className="mem-body">Voltamos ao campo só para entender: {String((inv.conteudo_mentora as { texto?: string }).texto ?? "")}</p>
+        <p className="mem-body">Mais conversas, só para entender: {String((inv.conteudo_mentora as { texto?: string }).texto ?? "")}</p>
         <p className="mem-body-sm">
           {novas} {novas === 1 ? "conversa nova" : "conversas novas"}. Quando voltarem, ela refaz a leitura do critério e vocês registram a aposta.
         </p>
@@ -562,7 +562,7 @@ function Investigacao({ dados, recarregar }: { dados: DadosJornada; recarregar: 
       <summary className="mem-body-sm">Empate que não se resolve? Abrir uma investigação curta</summary>
       <p className="mem-body-sm mem-muted">
         Primeiro desempate: “dá para testar logo?”. Só se ainda empatar: uma ou duas conversas a mais na semana seguinte, no critério que
-        empatou. A aposta fica para depois; ela vê “voltamos ao campo só para entender…”.
+        empatou. A aposta fica para depois; ela vê “mais uma ou duas conversas, só para entender…”.
       </p>
       <Opcoes rotulo="Critério que empatou" opcoes={CRITERIOS.map((c) => ({ valor: c.chave, rotulo: c.nome }))} valor={criterio} aoEscolher={(v) => setCriterio(v as ChaveCriterio)} />
       <input className="mem-input" aria-label="O que ela vai investigar" placeholder="O que ela vai investigar" value={texto} onChange={(e) => setTexto(e.target.value)} />

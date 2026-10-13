@@ -112,7 +112,7 @@ export default function SecaoM6({ dados, mentoriaId, recarregar }: { dados: Dado
         n={1}
         passo={passos[0]}
         aberta={!assumida}
-        porque="O que o MAPA definiu vem carregado e ela escolhe Mantenho ou Ajusto. O resto ela escreve olhando o que ouviu, ou diz que o campo não mostrou. Nem você nem o Workspace escrevem por ela."
+        porque="O que o MAPA definiu vem carregado e ela escolhe Mantenho ou Ajusto. O resto ela escreve olhando o que ouviu, ou marca que isso não apareceu no que ouviu. Nem você nem o Workspace escrevem por ela."
       >
         {assumida ? <OportunidadeAssumida dados={dados} paraMentora /> : <p className="mem-body-sm mem-muted">A comparação lado a lado está no passo 2.</p>}
       </Etapa>
@@ -359,7 +359,7 @@ function PreparacaoECall({ dados, mentoriaId, passos, recarregar }: { dados: Dad
           </div>
           <Colinha
             serve="Dado o destino, o que foi ouvido e o ativo. Vira a cerca do M7: a oferta não promete nada daqui."
-            exemplo="Não prometer que o time inteiro muda de comportamento: o campo só mostrou a relação com quem era colega."
+            exemplo="Não prometer que o time inteiro muda de comportamento: as conversas só mostraram a relação com quem era colega."
           />
         </article>
 
@@ -413,7 +413,7 @@ function PreparacaoECall({ dados, mentoriaId, passos, recarregar }: { dados: Dad
               ela ouviu
             </label>
             <label className="ws-check mem-body-sm">
-              <input type="checkbox" checked={!!v.problema_ouvido} onChange={(e) => setV("problema_ouvido", e.target.checked)} /> O problema é o que apareceu no campo
+              <input type="checkbox" checked={!!v.problema_ouvido} onChange={(e) => setV("problema_ouvido", e.target.checked)} /> O problema é o que apareceu nas conversas e na pesquisa
             </label>
             <label className="ws-check mem-body-sm">
               <input type="checkbox" checked={!!v.apostas_declaradas} onChange={(e) => setV("apostas_declaradas", e.target.checked)} /> Nenhuma aposta importante ficou

@@ -331,7 +331,7 @@ function Transversal({ dados, travada, aoSalvar }: { dados: DadosJornada; travad
   return (
     <article className="mem-card ws-padrao" id="transversal">
       <span className="mem-label mem-muted">Última pergunta</span>
-      <h3 className="mem-h3">O que você manteve e o que o campo te fez mudar?</h3>
+      <h3 className="mem-h3">O que você manteve e o que mudou por causa do que você ouviu?</h3>
       {editando && !travada ? (
         <div className="ws-form">
           <textarea className="mem-input" rows={3} aria-label={TRANSVERSAL} value={texto} onChange={(e) => setTexto(e.target.value)} />
