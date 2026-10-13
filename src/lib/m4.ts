@@ -10,7 +10,7 @@ export const ROTEIRO = [
   "Já tentou resolver isso de algum jeito? Como?",
   "Já pagou por alguma coisa para resolver? O quê?",
 ];
-export const ROTEIRO_APROFUNDAR = "Quanto isso te custa hoje, de tempo, de dinheiro, de desgaste? (só depois de um caso concreto, e se fizer sentido)";
+export const ROTEIRO_APROFUNDAR = "Teve alguma vez que isso não te deixou dormir? Me conta. E quanto isso te custa hoje, de tempo, de dinheiro, de desgaste? (só depois de um caso concreto, e se fizer sentido)";
 export const ROTEIRO_NUNCA = ["O que você acha da minha ideia?", "Você compraria?", "Quanto pagaria?"];
 
 export const PUBLICO = [
@@ -74,6 +74,7 @@ export const TEMPO = [
 export const ONDE_PROCURAR = [
   "Comentários de vídeos sobre o tema (YouTube, Instagram, TikTok): procure quem conta o que aconteceu com ela.",
   "Reddit, grupos de Facebook e LinkedIn: posts de quem pede ajuda com o problema.",
+  "Desabafos: posts e comentários escritos de madrugada, ou com “não consigo parar de pensar nisso”, “isso não me deixa dormir”. São os relatos que mais valem: mostram um problema que tira o sono.",
   "Avaliações de livros, cursos e serviços sobre o tema: quem avalia pagou para resolver.",
   "Biblioteca de anúncios da Meta: mesmo anunciante, vários anúncios, rodando há meses.",
   "Mais vendidos da Amazon e das plataformas de cursos (Hotmart, Kiwify, Eduzz) sobre o tema.",

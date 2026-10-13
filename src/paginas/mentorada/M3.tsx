@@ -282,7 +282,7 @@ function Hipoteses({ dados, travado, aoSalvar }: { dados: DadosJornada; travado:
       <div className="ws-etapa__corpo">
         {!travado && (
           <p className="mem-body mem-muted ws-measure">
-            Escolha de 3 a 5 públicos da sua lista. Para cada um, só o que é novo: do que essa pessoa reclama, quando isso
+            Escolha de 3 a 5 públicos da sua lista. Para cada um, só o que é novo: o que tira o sono dessa pessoa, quando isso
             acontece e o que muda para ela.
           </p>
         )}
@@ -563,10 +563,10 @@ function EditorHipotese({
         <Colinha serve="É quem você vai procurar para conversar no próximo movimento. Quanto mais específico, mais fácil encontrar." />
       </Pergunta>}
 
-      <Pergunta n={++k} feita={!!h.problema?.trim()} titulo="Do que essa pessoa reclama?">
+      <Pergunta n={++k} feita={!!h.problema?.trim()} titulo="O que tira o sono dessa pessoa?">
         <input className="mem-input" aria-label="Problema" value={h.problema ?? ""} onChange={(e) => setH({ ...h, problema: e.target.value })} />
         <Colinha
-          serve="O problema do jeito que essa pessoa contaria para uma amiga, não com o nome técnico que você daria. Não precisa descrever a pessoa inteira: só a queixa."
+          serve="A preocupação que volta à cabeça dela de madrugada ou no banho. Escreva do jeito que ela contaria para uma amiga, não com o nome técnico que você daria. Se é só uma reclamação de café, que ela esquece no dia seguinte, ainda não é esse o problema."
           exemplo="“Não consigo cobrar quem até ontem era meu colega” (e não “dificuldade de liderança”)."
         />
       </Pergunta>
