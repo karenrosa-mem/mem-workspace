@@ -39,31 +39,31 @@ const NOTA_M3 = [
     chave: "genericas",
     rotulo: "Quais estão genéricas",
     ajuda: "Hipóteses que serviriam para qualquer pessoa. Na call, você lê em voz alta e pergunta “isso serve para quem mais?”.",
-    exemplo: "H2: “conflitos” serve para todo mundo. Que conflito, entre quem?",
+    exemplo: "Sócias de pequenos negócios: “conflitos” serve para todo mundo. Que conflito, entre quem?",
   },
   {
     chave: "imaginadas",
     rotulo: "Quais são só imaginadas",
     ajuda: "As marcadas “Imagino”. Podem ir a campo, mas ela vai precisar encontrar pessoas que nunca viu.",
-    exemplo: "H3, líderes de startup: ela não conhece ninguém nesse público.",
+    exemplo: "Líderes de startup: ela não conhece ninguém nesse público.",
   },
   {
     chave: "ativo_usado",
     rotulo: "Usam o ativo de verdade ou só citam",
     ajuda: "O ativo aparece no problema e na transformação, ou só no fim da frase? E o público novo tem mesmo o problema observado no M2?",
-    exemplo: "H4 cita mediação, mas o problema descrito é de finanças, não de conflito.",
+    exemplo: "A das clínicas cita mediação, mas o problema descrito é de finanças, não de conflito.",
   },
   {
     chave: "disputa",
     rotulo: "Disputa de público",
     ajuda: "Hipóteses com o mesmo público. A disputa pode revelar um padrão mais forte ou ser só repetição. Nenhuma é eliminada por isso.",
-    exemplo: "H2 e H4 parecem o mesmo problema (sociedade que não decide junto) em contextos diferentes.",
+    exemplo: "Sócias de pequenos negócios e gerentes de clínica parecem o mesmo problema (sociedade que não decide junto) em contextos diferentes.",
   },
   {
     chave: "ideia_entrada",
     rotulo: "A ideia com que ela chegou apareceu?",
     ajuda: "Se a ideia de produto do M1 virou hipótese e está dominando o conjunto. Ela não vê essa ligação.",
-    exemplo: "Não tinha ideia de entrada. / A H1 é a ideia do curso que ela trouxe, e é a única com lastro.",
+    exemplo: "Não tinha ideia de entrada. / A dos gestores recém-promovidos é a ideia do curso que ela trouxe, e é a única com lastro.",
   },
 ];
 

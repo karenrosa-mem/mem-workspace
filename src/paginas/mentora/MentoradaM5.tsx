@@ -43,13 +43,13 @@ export const NOTA_M5 = [
     chave: "distancia",
     rotulo: "Onde a leitura dela se afasta dos fatos",
     ajuda: "Critério por critério. Otimismo (escolheu a hipótese de que gosta mesmo com fatos fracos) ou autossabotagem (desvalorizou um sinal bom). Na call, você pergunta “o que sustenta isso?”.",
-    exemplo: "Escolheu H1 em “o problema pesa”, mas H4 tem pagamento e solução própria. O que sustenta H1?",
+    exemplo: "Em “o problema incomoda tanto…”, escolheu os gestores recém-promovidos, mas nas clínicas alguém pagou e outro inventou uma solução própria. O que sustenta a escolha?",
   },
   {
     chave: "desejo",
     rotulo: "Evidência × desejo",
     ajuda: "Quando a hipótese com mais sinal não é a que ela quer, ou quando um “sim, e quero” parece medo de dizer não.",
-    exemplo: "H4 tem o sinal econômico mais próximo; H1 tem recorrência, acesso e o desejo dela.",
+    exemplo: "As clínicas têm o sinal de dinheiro mais próximo; os gestores recém-promovidos têm repetição, acesso fácil e o desejo dela.",
   },
   {
     chave: "empates",
@@ -61,7 +61,7 @@ export const NOTA_M5 = [
     chave: "recomendacao",
     rotulo: "A recomendação que você vai fazer, e por quê",
     ajuda: "O método pede que você não se esconda atrás de neutralidade. Recomende com os critérios declarados. A escolha final é dela.",
-    exemplo: "H2 como aposta: o problema se repete, uma pagou consultora e há curso anunciando há meses. H1 como reserva, se aparecer alguém pagando para resolver.",
+    exemplo: "Sócias de pequenos negócios como aposta: o problema se repete, uma pagou consultora e há curso anunciando há meses. Gestores recém-promovidos como reserva, se aparecer alguém pagando para resolver.",
   },
 ];
 

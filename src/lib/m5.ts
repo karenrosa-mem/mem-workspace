@@ -34,7 +34,7 @@ export const CRITERIOS: { chave: ChaveCriterio; nome: string; pergunta: string; 
     nome: "O problema pesa",
     pergunta: "Em qual público o problema incomoda tanto que as pessoas já fizeram algo para resolver?",
     serve: "Fazer algo é: tentar resolver sozinha, inventar um jeito próprio, pedir ajuda, pagar alguém. Reclamar não conta: quem só reclama ainda convive bem com o problema.",
-    exemplo: "Hipótese 2: um pagou advogado e o outro criou uma reunião só para isso. Pesa mais.",
+    exemplo: "Gerentes de clínica: um pagou advogado e o outro criou uma reunião só para isso. Pesa mais.",
     naoSabemos: "Se o problema pesa o bastante para a pessoa agir.",
   },
   {
@@ -43,7 +43,7 @@ export const CRITERIOS: { chave: ChaveCriterio; nome: string; pergunta: string; 
     nome: "Se repete",
     pergunta: "Em qual público o problema aparece em mais pessoas diferentes, e não só no seu círculo?",
     serve: "Pessoas que não se conhecem, de empresas ou lugares diferentes, contando o mesmo problema. Três amigas da mesma turma valem menos que três desconhecidas.",
-    exemplo: "Hipótese 1: três pessoas, em três empresas diferentes.",
+    exemplo: "Gestores recém-promovidos: três pessoas, em três empresas diferentes.",
     naoSabemos: "Se o problema se repete fora do círculo de quem você já conhece.",
   },
   {
@@ -52,7 +52,7 @@ export const CRITERIOS: { chave: ChaveCriterio; nome: string; pergunta: string; 
     nome: "Há dinheiro em torno",
     pergunta: "Em qual público já tem gente gastando dinheiro com esse problema?",
     serve: "Alguém contou que pagou para resolver, ou você encontrou quem venda solução para esse problema há meses (anúncio rodando, curso entre os mais vendidos, serviço).",
-    exemplo: "Hipótese 2: alguém já gastou de verdade com isso.",
+    exemplo: "Sócias de pequenos negócios: uma pagou consultora e há curso anunciado há meses.",
     naoSabemos: "Se alguém paga para resolver esse problema.",
   },
   {
@@ -70,7 +70,7 @@ export const CRITERIOS: { chave: ChaveCriterio; nome: string; pergunta: string; 
     nome: "Dá para testar logo",
     pergunta: "Qual público você consegue alcançar mais rápido para oferecer algo nas próximas semanas?",
     serve: "Pense em quanto tempo levou para achar essas pessoas no Movimento 4 e se você sabe onde encontrar mais delas.",
-    exemplo: "Hipótese 1: consegui as conversas em 4 dias, por colegas e LinkedIn.",
+    exemplo: "Gestores recém-promovidos: consegui as conversas em 4 dias, por colegas e LinkedIn.",
     naoSabemos: "Se você consegue chegar rápido nesse público.",
   },
 ];

@@ -46,7 +46,7 @@ const NOTA_M4 = [
     chave: "combinacao",
     rotulo: "O que a combinação dos fatos demonstra, por hipótese",
     ajuda: "Sua leitura de cada frente. Se usar forte, médio e fraco, é aqui: ela nunca vê.",
-    exemplo: "H1: três casos concretos, dois tentaram resolver: forte para existência, fraco para dinheiro. H4: poucas conversas, mas um pagamento muito próximo.",
+    exemplo: "Gestores recém-promovidos: três casos concretos, dois tentaram resolver; forte para o problema existir, fraco para dinheiro. Gerentes de clínica: poucas conversas, mas um pagamento muito próximo.",
   },
   {
     chave: "opiniao",
@@ -58,13 +58,13 @@ const NOTA_M4 = [
     chave: "forcando",
     rotulo: "Onde ela parece forçar ou desvalorizar o que ouviu",
     ajuda: "Quando o desejo passa na frente da evidência, ou quando ela descarta um sinal bom por insegurança.",
-    exemplo: "Ela gosta muito de H2 e leu “eu pagaria” como prova.",
+    exemplo: "Ela gosta muito da hipótese das sócias e leu “eu pagaria” como prova.",
   },
   {
     chave: "pagamento",
     rotulo: "Pagamentos: ligados de fato à hipótese?",
     ajuda: "Se o que a pessoa pagou resolve o problema da hipótese ou é algo só parecido.",
-    exemplo: "A consultora de sociedade resolve exatamente o problema de H2; o advogado de H4 é parecido, não igual.",
+    exemplo: "A consultora de sociedade resolve exatamente o problema das sócias; o advogado das clínicas é parecido, não igual.",
   },
 ];
 
