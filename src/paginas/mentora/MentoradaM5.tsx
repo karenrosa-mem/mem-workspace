@@ -33,6 +33,7 @@ import {
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
+import PublicarLeituraPartes from "../../componentes/PublicarLeituraPartes";
 import NotaPrivada from "../../componentes/NotaPrivada";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
@@ -649,83 +650,18 @@ function PublicarPassagem({
   aoPublicar: () => Promise<void>;
 }) {
   const c = decisao.conteudo_mentora as DecisaoM5;
-  const [rascunhoId, setRascunhoId] = useState<string | null>(null);
-  const [campos, setCampos] = useState<Record<string, string>>({ o_que_nao_sabemos: (c.nao_sabemos ?? []).join("\n") });
-  const [erro, setErro] = useState<string | null>(null);
   const c4 = call(dados, 4);
-  const prazo = c4 ? somarHoras(c4.data_realizada ?? c4.data_atual, 48) : null;
-
-  useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from("leitura_rascunho")
-      .select("id, campos")
-      .eq("mentoria_id", mentoriaId)
-      .eq("movimento_codigo", 5)
-      .eq("tipo_leitura", "passagem_norte")
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!data) return;
-        setRascunhoId(data.id as string);
-        setCampos((x) => ({ ...x, ...(data.campos as Record<string, string>) }));
-      });
-  }, [mentoriaId]);
-
-  async function salvar(): Promise<string | null> {
-    if (!supabase) return null;
-    if (rascunhoId) {
-      const r = await supabase.from("leitura_rascunho").update({ campos }).eq("id", rascunhoId);
-      return r.error ? null : rascunhoId;
-    }
-    const r = await supabase
-      .from("leitura_rascunho")
-      .insert({ mentoria_id: mentoriaId, movimento_codigo: 5, tipo_leitura: "passagem_norte", campos })
-      .select("id")
-      .single();
-    if (r.error) return null;
-    setRascunhoId(r.data.id as string);
-    return r.data.id as string;
-  }
-
-  async function publicar() {
-    if (!supabase) return;
-    setErro(null);
-    const id = await salvar();
-    if (!id) return setErro("Não foi possível salvar o rascunho.");
-    const r = await supabase.rpc("publicar_leitura", { p_rascunho: id, p_fecha_movimento: false });
-    if (r.error) return setErro(r.error.message);
-    await aoPublicar();
-  }
-
-  const completa = PARTES_PASSAGEM.every((p) => (campos[p.chave] ?? "").trim());
   return (
-    <div className="ws-bloco ws-form">
-      {prazo && <p className="mem-body-sm mem-muted">Até {dataHora(prazo)}.</p>}
-      {PARTES_PASSAGEM.map((p, i) => (
-        <Pergunta key={p.chave} n={i + 1} feita={!!(campos[p.chave] ?? "").trim()} titulo={p.rotulo}>
-          <textarea
-            className="mem-input ws-serif"
-            rows={3}
-            aria-label={p.rotulo}
-            value={campos[p.chave] ?? ""}
-            onChange={(e) => setCampos({ ...campos, [p.chave]: e.target.value })}
-            onBlur={salvar}
-          />
-          <Colinha serve="Curto, na linguagem dela. Nunca “melhor”, “vencedora” ou “validada”: é uma aposta consciente." exemplo={p.exemplo} />
-        </Pergunta>
-      ))}
-      {erro && (
-        <Aviso variante="danger" titulo="Não publicada">
-          {erro}
-        </Aviso>
-      )}
-      <div className="ws-acoes">
-        <button type="button" className="mem-btn mem-btn--primary" disabled={!completa} onClick={publicar}>
-          Publicar leitura de passagem
-        </button>
-      </div>
-    </div>
+    <PublicarLeituraPartes
+      mentoriaId={mentoriaId}
+      movimento={5}
+      tipo="passagem_norte"
+      partes={PARTES_PASSAGEM}
+      inicial={{ o_que_nao_sabemos: (c.nao_sabemos ?? []).join("\n") }}
+      prazo={c4 ? somarHoras(c4.data_realizada ?? c4.data_atual, 48) : null}
+      rotuloBotao="Publicar leitura de passagem"
+      aoPublicar={aoPublicar}
+    />
   );
 }
 

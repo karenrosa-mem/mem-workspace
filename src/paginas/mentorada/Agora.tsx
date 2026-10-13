@@ -19,6 +19,7 @@ import {
   type DecisaoM5,
 } from "../../lib/m5";
 import { dadosHipotese, hipoteses as todasHipoteses } from "../../lib/m3";
+import { PASSOS as PASSOS_M6, carregado as carregadoM6, dadosOportunidade, mentoraOportunidade, oportunidadeDe, passoFeito, prontaCall5 } from "../../lib/m6";
 import { DEFINICAO_HIPOTESE, ativosEscolhidos, ativosSemHipotese, hipoteses, hipotesesCompletas, quemMaisRespondido } from "../../lib/m3";
 import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jornada";
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
@@ -303,6 +304,55 @@ function passoComparacao(d: DadosJornada): Passo {
   return { titulo: `Pronta para ${dia}. Vamos escolher onde apostar.`, porque: msgDuvida ?? "Enviado para a Karen." };
 }
 
+// Agora no M6 (Modelo por movimento, M6.2).
+function passoM6(d: DadosJornada): Passo {
+  const c5 = call(d, 5);
+  const dia = c5 ? diaDaSemana(c5.data_atual) : "a Call 5";
+  const nada = !oportunidadeDe(d);
+  const perto = c5 && horasAte(c5.data_atual) <= 24;
+  const prox = PASSOS_M6.find((p) => !passoFeito(d, p));
+  if (nada)
+    return {
+      titulo: "Defina a sua oportunidade · 6 passos · ~30–45 min",
+      porque: `Muita coisa já vem pronta do caminho até aqui. ${naDia(dia)}, vocês leem juntas e você assume.`,
+      acao: { rotulo: "Começar", para: "/jornada/6#passo-1" },
+    };
+  if (prox && perto)
+    return { titulo: `Para ${dia}, o essencial são os passos 1, 2 e 4.`, acao: { rotulo: "Continuar", para: `/jornada/6#passo-${prox.n}` } };
+  if (prox) {
+    const pronto = prox.itens.some((i) => carregadoM6(d, i.chave));
+    return {
+      titulo: `Passo ${prox.n} de 6: ${prox.itens[0].pergunta}`,
+      porque: pronto ? "Já vem pronto do caminho até aqui: você mantém ou ajusta." : "Escreva olhando o que você ouviu, que fica ao lado.",
+      acao: { rotulo: "Continuar", para: `/jornada/6#passo-${prox.n}` },
+    };
+  }
+  if (!dadosOportunidade(d).transversal?.trim())
+    return { titulo: "Última coisa: o que você manteve e o que o campo te fez mudar?", acao: { rotulo: "Responder", para: "/jornada/6#transversal" } };
+  const titulo = `Pronta para ${dia}. Você vai explicar a sua oportunidade com as suas palavras, antes de ler.`;
+  if (prontaCall5(d) && !enviadoEm(d, 6))
+    return { titulo, porque: "Envie para a Karen: ela lê antes da call.", acao: { rotulo: "Enviar", para: "/jornada/6#envio" } };
+  return { titulo, porque: "Enviado para a Karen." };
+}
+
+// Depois da Call 5: a oportunidade assumida.
+function passoM7(d: DadosJornada): Passo {
+  const c5 = call(d, 5);
+  if (!leitura(d, "call_5"))
+    return {
+      titulo: `Aguardando a leitura da Karen sobre a Call 5${c5 ? `, até ${dataHora(somarHoras(c5.data_realizada ?? c5.data_atual, 48))}` : ""}.`,
+      porque: "Nada a fazer até lá. A sua oportunidade já está registrada.",
+      acao: { rotulo: "Ver a oportunidade", para: "/jornada/6" },
+    };
+  const m = mentoraOportunidade(d);
+  return {
+    titulo: "Você assumiu a sua oportunidade.",
+    porque: (m.limites ?? []).length ? `A oferta não poderá prometer: ${(m.limites ?? []).filter((x) => x.trim()).join(" · ")}` : undefined,
+    extra: "O próximo passo, desenhar a oferta, começa na próxima call com a Karen.",
+    acao: { rotulo: "Ver a oportunidade", para: "/jornada/6" },
+  };
+}
+
 // Depois da aposta: a passagem para o NORTE.
 function passoPassagem(d: DadosJornada): Passo | null {
   const dec = decisaoM5(d);
@@ -315,6 +365,7 @@ function passoPassagem(d: DadosJornada): Passo | null {
       porque: "Nada a fazer até lá. A sua aposta já está registrada.",
       acao: { rotulo: "Ver a aposta", para: "/jornada/5" },
     };
+  if (passagem) return passoM6(d);
   const c = dec.conteudo_mentora as DecisaoM5;
   const h = todasHipoteses(d).find((x) => x.id === c.aposta);
   return {
@@ -363,7 +414,9 @@ export default function Agora() {
               ? passoComparacao(dados)
               : atual === 6
                 ? passoPassagem(dados)
-                : null;
+                : atual === 7
+                  ? passoM7(dados)
+                  : null;
   const ultimaLeitura =
     atual === 2
       ? leitura(dados, "mapa_ativos") ?? leituraCall1
@@ -373,7 +426,9 @@ export default function Agora() {
           ? leitura(dados, "call_3")
           : atual === 6
             ? leitura(dados, "passagem_norte")
-            : undefined;
+            : atual === 7
+              ? leitura(dados, "call_5")
+              : undefined;
   const primeiroAcesso = atual === 1 && !dados.registros.some((r) => r.autora_papel === "mentorada");
   const proxima = dados.encontros.find((e) => e.tipo === "call" && e.estado === "marcado");
 

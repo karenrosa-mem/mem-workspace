@@ -20,6 +20,8 @@ import {
 import { LASTRO, dadosHipotese, disputaPublico, fraseTexto, hipoteses } from "../../lib/m3";
 import { ROTEIRO, ROTEIRO_NUNCA, contagem, conversasDe, fraseDaFrente, frentes, ideiasDe, meta, resumo, situacaoPublico, type Conversa, type Frente } from "../../lib/m4";
 import { CRITERIOS, comparadas, duvidas, leituraValida, naoSabemosDerivado, nomeEscolha, rotuloParaVoce, soUma, dadosComparacao } from "../../lib/m5";
+import { CALLS_DO_MOVIMENTO } from "../../lib/metodo";
+import { listasIncertezas, mentoraOportunidade, valorItem } from "../../lib/m6";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -29,7 +31,15 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2, 3, 4]);
+const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5]);
+
+// A nota privada que o guia lê: até a Call 4, a do movimento de mesmo número;
+// depois, a do movimento decidido naquela call (Call 5 → M6).
+function movimentoDaNota(numero: number): number {
+  if (numero <= 4) return numero;
+  const ms = Object.entries(CALLS_DO_MOVIMENTO).filter(([, c]) => c.decide === numero).map(([m]) => Number(m));
+  return ms.length ? Math.max(...ms) : numero;
+}
 
 export default function GuiaCall() {
   const { id, n } = useParams();
@@ -60,7 +70,7 @@ export default function GuiaCall() {
       .from("nota_privada")
       .select("conteudo")
       .eq("mentoria_id", mentoriaId)
-      .eq("movimento_codigo", numero)
+      .eq("movimento_codigo", movimentoDaNota(numero))
       .order("criada_em")
       .limit(1)
       .maybeSingle()
@@ -133,14 +143,16 @@ export default function GuiaCall() {
         <GuiaCall2 dados={dados} nota={nota} chave={`${id}:2`} />
       ) : numero === 3 ? (
         <GuiaCall3 dados={dados} nota={nota} chave={`${id}:3`} />
-      ) : (
+      ) : numero === 4 ? (
         <GuiaCall4 dados={dados} nota={nota} nota5={nota5} chave={`${id}:4`} />
+      ) : (
+        <GuiaCall5 dados={dados} nota={nota} chave={`${id}:5`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
         <NotaPrivada
           mentoriaId={mentoriaId}
-          movimento={numero}
+          movimento={movimentoDaNota(numero)}
           aberta
           titulo="Anotações durante a call · só você vê"
           campos={[
@@ -676,6 +688,54 @@ function GuiaCall4({ dados, nota, nota5, chave }: { dados: DadosJornada; nota: N
       <Bloco n={4} titulo="Onde a leitura dela se afasta dos fatos" porque="Percorra só os critérios em que a leitura dela e os fatos se distanciam. Nenhum placar: ela nunca vê quantas vezes escolheu cada hipótese." itens={leituras} marcados={marcados} alternar={alternar} vazio="Ela ainda não comparou." />
       <Bloco n={5} titulo="É para ela?" itens={paraVoce} marcados={marcados} alternar={alternar} />
       <Bloco n={6} titulo="Recomendar e decidir" itens={apostar} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 5 · Navegação (M6)
+// ---------------------------------------------------------------------
+function GuiaCall5({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const m = mentoraOportunidade(dados);
+  const { apostando, naoSabemos } = listasIncertezas(dados);
+  const explicar: Item[] = [
+    { id: "c5-explicar", texto: "Antes de abrir o texto: “me explica a sua oportunidade em um minuto, com as suas palavras”.", detalhe: "Para quem, que problema, o que muda, por qual caminho você entra." },
+    { id: "c5-ler", texto: "Agora ela lê a oportunidade montada na tela dela. Note onde a explicação e o texto se afastam.", detalhe: "Anote em “Posse”, na sua nota." },
+  ];
+  const confrontar: Item[] = [
+    ...linhas(nota.confrontos).map((t, i) => ({ id: `c5-conf-${i}`, texto: t, detalhe: "Da sua nota · em cada ponto, ela mantém ou ajusta na tela dela" })),
+    { id: "c5-ouviu", texto: "“O que você ouviu que te faz dizer isso?”" },
+    { id: "c5-fora", texto: "“Como alguém de fora perceberia que isso mudou?”", detalhe: `Destino: ${valorItem(dados, "destino") || "—"}` },
+    { id: "c5-caminho", texto: "“Isso é o caminho, ou já é o formato?”", detalhe: `Direção: ${valorItem(dados, "direcao") || "—"}` },
+    { id: "c5-paga", texto: "“Se essa pessoa não pagar, quem pagaria, e o que você ouviu sobre isso?”", detalhe: `Comprador: ${valorItem(dados, "comprador") || "ainda não sabe"}${m.comprador_critico ? " · aposta crítica" : ""}` },
+    { id: "c5-manteve", texto: "“O que você manteve da sua aposta, e por quê?”" },
+    { id: "c5-nivel3", texto: "Se surgir uma mudança de nível 3 (pessoa ou problema que não foi ouvido): não é ajuste, é retorno. Ela decide, com a sua recomendação explícita." },
+  ];
+  const separar: Item[] = [
+    ...apostando.map((t, i) => ({ id: `c5-ap-${i}`, texto: t, detalhe: "O que estamos apostando" })),
+    ...naoSabemos.map((t, i) => ({ id: `c5-ns-${i}`, texto: t, detalhe: "O que ainda não sabemos e vamos acompanhar" })),
+    ...(m.limites ?? []).filter((x) => x.trim()).map((t, i) => ({ id: `c5-lim-${i}`, texto: t, detalhe: "O que a oferta não poderá prometer · ela concorda ou discute" })),
+  ];
+  const assumir: Item[] = [
+    ...linhas(nota.recomendacao).map((t, i) => ({ id: `c5-rec-${i}`, texto: t, detalhe: "Sua recomendação (da nota)" })),
+    { id: "c5-confere", texto: "Confira: quem vive o problema foi ouvido; o problema é o do campo; nenhuma aposta ficou implícita; a direção é caminho." },
+    { id: "c5-assume", texto: "Ela assume a oportunidade como a aposta que vai para o NORTE. Registre na página dela: o M7 abre." },
+    { id: "c5-nao-valida", texto: "Diga: assumida não é validada. A oferta é construída no M7 e testada no M9." },
+  ];
+  const todos = [...explicar, ...confrontar, ...separar, ...assumir];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+  return (
+    <>
+      <Objetivo
+        objetivo="Que ela assuma, com posse e coerência, a oportunidade sobre a qual a oferta vai ser construída."
+        sai={["A oportunidade assumida, com o que estamos apostando, o que ainda não sabemos e o que a oferta não poderá prometer", "O M7 aberto"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="Explicar sem olhar, depois ler" porque="~10 min. A explicação dela é o teste de posse." itens={explicar} marcados={marcados} alternar={alternar} />
+      <Bloco n={2} titulo="Confrontar" porque="25 a 35 min. Só os até três pontos da véspera e o que surgiu entre a explicação e o texto." itens={confrontar} marcados={marcados} alternar={alternar} />
+      <Bloco n={3} titulo="Separar o que sabemos do que apostamos" porque="~10 min, em linguagem comum." itens={separar} marcados={marcados} alternar={alternar} vazio="Roteie as incertezas e rascunhe os limites na página dela, no passo 2 do M6." />
+      <Bloco n={4} titulo="Assumir" itens={assumir} marcados={marcados} alternar={alternar} />
     </>
   );
 }

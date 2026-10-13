@@ -34,7 +34,7 @@ export function pilarDe(codigo: number) {
   return PILARES.find((p) => codigo >= p.de && codigo <= p.ate)!;
 }
 
-// Em qual call cada movimento acontece (especificações M1–M7; M8–M10 ainda a definir).
+// Em qual call cada movimento acontece (especificações M1–M10; o M8 cobre as Calls 7 e 8).
 // Um movimento pode começar numa call e ser decidido na seguinte, e uma call
 // pode cobrir dois movimentos (a Call 4 fecha o M4 e decide o M5).
 export const CALLS_DO_MOVIMENTO: Record<number, { comeca?: number; decide: number }> = {
@@ -45,6 +45,9 @@ export const CALLS_DO_MOVIMENTO: Record<number, { comeca?: number; decide: numbe
   5: { decide: 4 },
   6: { decide: 5 },
   7: { decide: 6 },
+  8: { comeca: 7, decide: 8 },
+  9: { decide: 9 },
+  10: { decide: 10 },
 };
 
 // Os movimentos tratados numa call, em ordem.
