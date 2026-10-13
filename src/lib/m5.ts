@@ -75,6 +75,36 @@ export const CRITERIOS: { chave: ChaveCriterio; nome: string; pergunta: string; 
   },
 ];
 
+// Como chegar à recomendação (proposta de 13/10, a validar com a primeira mentorada).
+// O método pede recomendação explícita com os critérios declarados; a ordem abaixo
+// organiza o raciocínio sem somar pontos.
+export const COMO_RECOMENDAR: { titulo: string; texto: string }[] = [
+  {
+    titulo: "1. Tire o que não pode ser aposta",
+    texto: "“Não” em “é para você?” sai. “Sem vontade” ou “ainda não sei” só entra depois da conversa na call: anote o que você quer perguntar.",
+  },
+  {
+    titulo: "2. Olhe os fatos, não a leitura dela",
+    texto: "Releia cada pergunta pelas colunas de fatos. Onde a leitura dela não bate com os fatos, anote: é otimismo (gosta da hipótese) ou autossabotagem (desvalorizou um sinal bom)?",
+  },
+  {
+    titulo: "3. Comece pelo problema existir de verdade",
+    texto: "Primeiro: o problema pesa e se repete? Sem isso não há o que vender, por mais que haja dinheiro em volta. Uma hipótese forte aqui sustenta a aposta.",
+  },
+  {
+    titulo: "4. Desempate pelo que dá para testar logo",
+    texto: "Entre as que têm o problema de pé, recomende a que ela alcança mais rápido: o NORTE aprende mais rápido com ela. É o desempate do método.",
+  },
+  {
+    titulo: "5. Dinheiro e mudança desejada viram risco declarado",
+    texto: "Se a hipótese recomendada não mostra dinheiro ou desejo claro, ela ainda pode ser a aposta: isso entra em “o que ainda não sabemos” e é o que o NORTE testa primeiro.",
+  },
+  {
+    titulo: "6. Escolha a reserva",
+    texto: "A segunda hipótese com o problema de pé e que é para ela. Escreva em que condição ela entra.",
+  },
+];
+
 export const ESCALA = "Se isso cresce além dos primeiros clientes.";
 
 export type Leitura = { escolha?: string; porque?: string; em?: string };

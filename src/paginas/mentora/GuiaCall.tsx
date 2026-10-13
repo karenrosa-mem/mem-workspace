@@ -641,7 +641,11 @@ function GuiaCall4({ dados, nota, nota5, chave }: { dados: DadosJornada; nota: N
   ];
   const apostar: Item[] = [
     ...linhas(nota5.recomendacao).map((t, i) => ({ id: `m5-rec-${i}`, texto: t, detalhe: "Sua recomendação (da nota)" })),
-    { id: "m5-recomendar", texto: "Faça a sua recomendação antes de ela escolher, com os critérios declarados. Não se esconda atrás de neutralidade." },
+    {
+      id: "m5-recomendar",
+      texto: "Faça a sua recomendação antes de ela escolher, com os critérios declarados. Não se esconda atrás de neutralidade.",
+      detalhe: "Ordem: o problema pesa e se repete → dá para testar logo → dinheiro e mudança desejada viram risco declarado.",
+    },
     ...linhas(nota5.empates).map((t, i) => ({ id: `m5-emp-${i}`, texto: t, detalhe: "Empate: primeiro desempate é “dá para testar logo?”" })),
     { id: "m5-escolha", texto: "A escolha é dela. Se for diferente da sua recomendação: razão estratégica escrita e condição de revisão." },
     { id: "m5-porque", texto: "Peça o porquê, agora, nas palavras dela. Anote literal." },

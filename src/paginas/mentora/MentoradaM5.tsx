@@ -7,6 +7,7 @@ import { dataHora, somarHoras } from "../../lib/datas";
 import { enviadoEm } from "../../lib/envio";
 import { dadosHipotese, fraseTexto, hipoteses } from "../../lib/m3";
 import {
+  COMO_RECOMENDAR,
   CRITERIOS,
   ativoDa,
   comparacaoDe,
@@ -128,6 +129,7 @@ export default function SecaoM5({
       </Etapa>
 
       <Etapa n={2} passo={passos[1]} aberta={!registrada} porque="Na véspera, compare a leitura dela com os fatos e decida a recomendação. Sua nota alimenta o guia da segunda parte da Call 4.">
+        <ComoRecomendar />
         <NotaPrivada mentoriaId={mentoriaId} movimento={5} campos={NOTA_M5} aberta titulo="Nota privada · M5 · só você vê" />
       </Etapa>
 
@@ -167,6 +169,26 @@ export default function SecaoM5({
         )}
       </Etapa>
     </section>
+  );
+}
+
+// Referência para a véspera e para a call: como chegar à recomendação.
+export function ComoRecomendar({ aberta = true }: { aberta?: boolean }) {
+  return (
+    <details className="ws-referencia" open={aberta}>
+      <summary className="mem-body-sm">Como decidir a recomendação · sem somar pontos</summary>
+      <ol className="ws-lista-simples mem-body-sm">
+        {COMO_RECOMENDAR.map((p) => (
+          <li key={p.titulo}>
+            <strong>{p.titulo}</strong> {p.texto}
+          </li>
+        ))}
+      </ol>
+      <p className="mem-body-sm mem-muted">
+        Na call, diga a recomendação com os critérios em voz alta (“recomendo esta porque o problema se repete e você chega nessas pessoas rápido; o
+        risco é que ninguém pagou ainda”). A escolha final é dela.
+      </p>
+    </details>
   );
 }
 
