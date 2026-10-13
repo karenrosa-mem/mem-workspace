@@ -22,7 +22,8 @@ import { ROTEIRO, ROTEIRO_NUNCA, contagem, conversasDe, fraseDaFrente, frentes, 
 import { CRITERIOS, comparadas, duvidas, leituraValida, naoSabemosDerivado, nomeEscolha, rotuloParaVoce, soUma, dadosComparacao } from "../../lib/m5";
 import { CALLS_DO_MOVIMENTO } from "../../lib/metodo";
 import { listasIncertezas, mentoraOportunidade, valorItem } from "../../lib/m6";
-import { clientesSimultaneos, dadosOferta, etapas, reais } from "../../lib/m7";
+import { clientesSimultaneos, dadosOferta, etapas, limitesDaOferta, reais } from "../../lib/m7";
+import { CAMINHO, ROTAS, dadosPreparo, falasDesejo, tentativas, vocabularioMem } from "../../lib/m8";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -32,13 +33,13 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6]);
+const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7, 8]);
 
 // A nota privada que o guia lê: até a Call 4, a do movimento de mesmo número;
 // depois, a do movimento decidido naquela call (Call 5 → M6).
 function movimentoDaNota(numero: number): number {
   if (numero <= 4) return numero;
-  const ms = Object.entries(CALLS_DO_MOVIMENTO).filter(([, c]) => c.decide === numero).map(([m]) => Number(m));
+  const ms = Object.entries(CALLS_DO_MOVIMENTO).filter(([, c]) => c.decide === numero || c.comeca === numero).map(([m]) => Number(m));
   return ms.length ? Math.max(...ms) : numero;
 }
 
@@ -148,8 +149,12 @@ export default function GuiaCall() {
         <GuiaCall4 dados={dados} nota={nota} nota5={nota5} chave={`${id}:4`} />
       ) : numero === 5 ? (
         <GuiaCall5 dados={dados} nota={nota} chave={`${id}:5`} />
-      ) : (
+      ) : numero === 6 ? (
         <GuiaCall6 dados={dados} nota={nota} chave={`${id}:6`} />
+      ) : numero === 7 ? (
+        <GuiaCall7 dados={dados} nota={nota} chave={`${id}:7`} />
+      ) : (
+        <GuiaCall8 dados={dados} nota={nota} chave={`${id}:8`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -795,6 +800,97 @@ function GuiaCall6({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
       <Bloco n={5} titulo="Capacidade, limites e dependências" porque="~10 min." itens={capacidade} marcados={marcados} alternar={alternar} />
       <Bloco n={6} titulo="Preço" porque="5 a 10 min." itens={preco} marcados={marcados} alternar={alternar} />
       <Bloco n={7} titulo="Assumir" itens={assumir} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 7 · Traduzir (M8)
+// ---------------------------------------------------------------------
+function GuiaCall7({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const p = dadosPreparo(dados);
+  const o = dadosOferta(dados);
+  const vocab = vocabularioMem(p.resumo);
+  const confrontos: Item[] = linhas(nota.confrontos).map((t, i) => ({ id: `c7-conf-${i}`, texto: t, detalhe: "Da sua nota" }));
+  const promessa: Item[] = [
+    { id: "c7-ler", texto: "Ela lê a promessa.", detalhe: `“${p.promessa?.texto ?? "—"}”` },
+    { id: "c7-cumpre", texto: "“Se ela receber exatamente o que você entrega, vai reconhecer que isso foi cumprido?”", detalhe: `Entrega: ${o.entrega?.texto ?? "—"}` },
+    { id: "c7-origem", texto: "“Essa mudança já está na entrega, ou você está acrescentando?”" },
+    { id: "c7-fora", texto: "“Isso está na lista do que fica de fora?”", detalhe: `Fica de fora: ${o.entrega?.fora ?? "—"} · limites: ${limitesDaOferta(dados).join(" · ") || "—"}` },
+    { id: "c7-m7", texto: "Se a promessa só fica de pé com uma entrega maior: registre o possível retorno ao M7, na decisão da entrega." },
+  ];
+  const abordagem: Item[] = [
+    { id: "c7-ab", texto: "Confere com o diferencial do M7, sem superioridade inventada?", detalhe: `Dela: ${p.abordagem?.texto ?? "—"} · diferencial: ${o.como?.diferencial ?? "—"}` },
+  ];
+  const falada: Item[] = [
+    { id: "c7-fala", texto: "Ela apresenta em até um minuto, sem olhar." },
+    { id: "c7-vocab", texto: "“Uma pessoa que nunca te ouviu entenderia essa palavra?”", detalhe: vocab.length ? `No resumo: ${vocab.join(", ")}` : "Nenhuma palavra da mentoria no resumo." },
+    { id: "c7-cresceu", texto: "Aponte onde a fala cresceu além da entrega." },
+  ];
+  const rota: Item[] = [
+    { id: "c7-rota", texto: "“Por que essa rota, com o acesso que você já mostrou?”", detalhe: `${ROTAS.find((r) => r.valor === p.rota?.tipo)?.rotulo ?? "—"} · ${p.rota?.porque ?? "—"}` },
+    { id: "c7-pagar", texto: "“O que precisa estar disponível para alguém conseguir pagar?”", detalhe: "Liste com ela o que falta para os quatro passos: interesse, aceite, pagamento, início." },
+  ];
+  const todos = [...confrontos, ...promessa, ...abordagem, ...falada, ...rota];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+  return (
+    <>
+      <Objetivo
+        objetivo="Traduzir: promessa contida, “por que do seu jeito” e apresentação prontos para o ensaio; rota inicial escolhida. Você não reescreve: diz o que não funciona e por quê."
+        sai={["Promessa que passa nas duas perguntas", "Apresentação falada e escrita para ensaiar", "Rota inicial, como hipótese, e a lista do que falta no caminho"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      {confrontos.length > 0 && <Bloco n={1} titulo="Seus pontos de confronto" itens={confrontos} marcados={marcados} alternar={alternar} />}
+      <Bloco n={2} titulo="Promessa" porque="15 a 20 min." itens={promessa} marcados={marcados} alternar={alternar} />
+      <Bloco n={3} titulo="Por que do seu jeito" porque="~10 min." itens={abordagem} marcados={marcados} alternar={alternar} />
+      <Bloco n={4} titulo="Apresentação falada" porque="~15 min." itens={falada} marcados={marcados} alternar={alternar} />
+      <Bloco n={5} titulo="Rota e caminho" porque="~10 min." itens={rota} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 8 · Ensaiar e passar (M8) + handoff para o M9
+// ---------------------------------------------------------------------
+function GuiaCall8({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const p = dadosPreparo(dados);
+  const papel: Item[] = [
+    ...linhas(nota.papel).map((t, i) => ({ id: `c8-papel-${i}`, texto: t, detalhe: "O seu papel (da nota)" })),
+    ...falasDesejo(dados).slice(0, 3).map((t, i) => ({ id: `c8-fala-${i}`, texto: t, detalhe: "Fala do M4 para usar no papel" })),
+    ...tentativas(dados).slice(0, 2).map((t, i) => ({ id: `c8-tent-${i}`, texto: `Já tentei: ${t}`, detalhe: "Duvide a partir disso" })),
+    { id: "c8-nunca", texto: "No papel: pergunte, duvide, peça o preço. Nunca diga “eu compraria”." },
+  ];
+  const devolucao: Item[] = [
+    { id: "c8-sair", texto: "Saia do papel e conte o que entendeu: o que é, para quem, que mudança, o que recebe, quanto, como avança." },
+    { id: "c8-compreensao", texto: "Onde você não conseguiu dizer: problema de compreensão." },
+    { id: "c8-contencao", texto: "Onde entendeu algo maior que a entrega: problema de contenção." },
+  ];
+  const caminho: Item[] = CAMINHO.map((x) => ({ id: `c8-${x.chave}`, texto: `Percorram juntas: ${x.titulo.toLowerCase()}`, detalhe: p.caminho?.[x.chave]?.como ?? "—" }));
+  const fechar: Item[] = [
+    { id: "c8-obj", texto: "Registrem até três objeções previsíveis, com origem, e a resposta dela dentro da entrega." },
+    { id: "c8-gate", texto: "Confiram o Gate 6 e ela assume a oferta preparada." },
+    { id: "c8-nao", texto: "Diga: o ensaio não é validação. É “estamos prontos para descobrir”." },
+  ];
+  const handoff: Item[] = [
+    { id: "c8-b1", texto: "Parte B: registrem o ponto de partida, os materiais, as hipóteses que chegam ao M9 e os limites do teste." },
+    { id: "c8-b2", texto: "Sem definir quem abordar, quantas pessoas, duração ou metas: isso é do M9, por escrito, logo depois da call." },
+  ];
+  const todos = [...papel, ...devolucao, ...caminho, ...fechar, ...handoff];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+  return (
+    <>
+      <Objetivo
+        objetivo="Parte A: verificar compreensão, contenção e caminho no ensaio, e o Gate 6. Parte B: o registro do que o M9 recebe."
+        sai={["A oferta preparada para teste, assumida por ela", "Até três objeções previsíveis, com origem", "O handoff para o M9"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="Ensaio: ela apresenta, você no papel" porque="~10 min." itens={papel} marcados={marcados} alternar={alternar} />
+      <Bloco n={2} titulo="Devolução" porque="~10 min." itens={devolucao} marcados={marcados} alternar={alternar} />
+      <Bloco n={3} titulo="Percorrer o caminho" porque="5 a 10 min. Cada passo está disponível e pode ser percorrido sem improviso?" itens={caminho} marcados={marcados} alternar={alternar} />
+      <Bloco n={4} titulo="Objeções e Gate 6" porque="5 a 10 min." itens={fechar} marcados={marcados} alternar={alternar} />
+      <Bloco n={5} titulo="Parte B · handoff para o M9" porque="10 a 15 min." itens={handoff} marcados={marcados} alternar={alternar} />
     </>
   );
 }

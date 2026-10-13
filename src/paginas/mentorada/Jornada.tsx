@@ -8,7 +8,7 @@ import type { Encontro, Movimento } from "../../lib/jornada";
 import Aviso from "../../componentes/Aviso";
 
 // Movimentos que já têm tela construída.
-export const MOVIMENTOS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7]);
+export const MOVIMENTOS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7, 8]);
 
 // O mapa da jornada (JourneyTrail do kit). Para a mentorada, a passagem é
 // "decisão com a Karen" — nunca "Gate N" (adaptação aprovada em 09/10).
