@@ -4,7 +4,7 @@
 set -e
 P="${PSQL:-psql -U postgres} -X -q"
 D="$(dirname "$0")"; M="$D/../migrations"
-for teste in 01_acesso_nucleo 02_m1 03_m2 04_m3 05_m4 06_m5 07_m6; do
+for teste in 01_acesso_nucleo 02_m1 03_m2 04_m3 05_m4 06_m5 07_m6 08_m7; do
   $P -c "drop database if exists mem_teste" >/dev/null && $P -c "create database mem_teste" >/dev/null
   $P -d mem_teste -v ON_ERROR_STOP=1 -c "do \$\$ begin create role anon nologin; exception when duplicate_object then null; end \$\$; do \$\$ begin create role authenticated nologin; exception when duplicate_object then null; end \$\$;" >/dev/null
   grep -v "create role" "$D/00_imitacao_supabase.sql" | $P -d mem_teste -v ON_ERROR_STOP=1 >/dev/null

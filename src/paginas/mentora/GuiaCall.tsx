@@ -22,6 +22,7 @@ import { ROTEIRO, ROTEIRO_NUNCA, contagem, conversasDe, fraseDaFrente, frentes, 
 import { CRITERIOS, comparadas, duvidas, leituraValida, naoSabemosDerivado, nomeEscolha, rotuloParaVoce, soUma, dadosComparacao } from "../../lib/m5";
 import { CALLS_DO_MOVIMENTO } from "../../lib/metodo";
 import { listasIncertezas, mentoraOportunidade, valorItem } from "../../lib/m6";
+import { clientesSimultaneos, dadosOferta, etapas, reais } from "../../lib/m7";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -31,7 +32,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5]);
+const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6]);
 
 // A nota privada que o guia lê: até a Call 4, a do movimento de mesmo número;
 // depois, a do movimento decidido naquela call (Call 5 → M6).
@@ -145,8 +146,10 @@ export default function GuiaCall() {
         <GuiaCall3 dados={dados} nota={nota} chave={`${id}:3`} />
       ) : numero === 4 ? (
         <GuiaCall4 dados={dados} nota={nota} nota5={nota5} chave={`${id}:4`} />
-      ) : (
+      ) : numero === 5 ? (
         <GuiaCall5 dados={dados} nota={nota} chave={`${id}:5`} />
+      ) : (
+        <GuiaCall6 dados={dados} nota={nota} chave={`${id}:6`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -736,6 +739,62 @@ function GuiaCall5({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
       <Bloco n={2} titulo="Confrontar" porque="25 a 35 min. Só os até três pontos da véspera e o que surgiu entre a explicação e o texto." itens={confrontar} marcados={marcados} alternar={alternar} />
       <Bloco n={3} titulo="Separar o que sabemos do que apostamos" porque="~10 min, em linguagem comum." itens={separar} marcados={marcados} alternar={alternar} vazio="Roteie as incertezas e rascunhe os limites na página dela, no passo 2 do M6." />
       <Bloco n={4} titulo="Assumir" itens={assumir} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 6 · Desenhar a Oferta (M7)
+// ---------------------------------------------------------------------
+function GuiaCall6({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const o = dadosOferta(dados);
+  const cs = clientesSimultaneos(o);
+  const deps = Object.entries(o.como?.competencia ?? {});
+  const confrontos = linhas(nota.confrontos).map((t, i) => ({ id: `c6-conf-${i}`, texto: t, detalhe: "Da sua nota · trate dentro do momento a que pertence" }));
+  const explicar: Item[] = [
+    { id: "c6-explicar", texto: "Sem a tela: “me explica como a oferta funciona”.", detalhe: "Para quem, o que entrega, como, em que forma. É explicar o instrumento, não vender." },
+  ];
+  const coerencia: Item[] = [
+    { id: "c6-contida", texto: "“Ao final, o que estará concretamente diferente para essa pessoa?”", detalhe: `Entrega: ${o.entrega?.texto || "—"} · destino do M6: ${valorItem(dados, "destino") || "—"}` },
+    { id: "c6-fora", texto: "“Que parte do destino fica de fora — e você está confortável com isso?”", detalhe: `Fica de fora: ${o.entrega?.fora || "—"}` },
+    { id: "c6-promessa", texto: "“O que você está prometendo aqui sem perceber?”" },
+  ];
+  const comoForma: Item[] = [
+    ...etapas(o).map((e, i) => ({ id: `c6-etapa-${i}`, texto: `“Essa etapa serve a quê na entrega?” · ${i + 1}) ${e}` })),
+    { id: "c6-dif", texto: "“O que isso faz que o que essa pessoa já tentou não fez?”", detalhe: `Diferencial: ${o.como?.diferencial || "—"}` },
+    { id: "c6-assim", texto: "“Por que assim, e não de outro jeito?”", detalhe: `Forma: ${o.forma?.texto || "—"}` },
+  ];
+  const capacidade: Item[] = [
+    { id: "c6-cabe", texto: "“Com o tempo que você tem hoje, isso cabe?”", detalhe: `${o.capacidade?.horas_semana ?? "—"} h/semana · ${o.capacidade?.horas_cliente ?? "—"} h/cliente → ${cs === null ? "—" : `até ${cs}`}` },
+    { id: "c6-exclui", texto: "O que não está incluído", detalhe: o.forma?.exclui || "—" },
+    ...deps.map(([i, c]) => ({ id: `c6-dep-${i}`, texto: `“Essa parte depende de algo que você ainda não fez de verdade?” · etapa ${Number(i) + 1}`, detalhe: `${c.qual || "—"} · já fez de parecido: ${c.ja_fez || "—"}` })),
+  ];
+  const preco: Item[] = [
+    { id: "c6-preco", texto: "“Por que começar nesse preço?”", detalhe: `${reais(o.preco?.valor)}, ${o.preco?.condicao || "—"} · ${o.preco?.racional || "—"}` },
+    { id: "c6-hip", texto: "Diga: assumir a oferta não é assumir que o preço está certo. É hipótese." },
+  ];
+  const assumir: Item[] = [
+    ...linhas(nota.recomendacao).map((t, i) => ({ id: `c6-rec-${i}`, texto: t, detalhe: "Sua recomendação (da nota)" })),
+    { id: "c6-verif", texto: "Confira as sete verificações na página dela." },
+    { id: "c6-assume", texto: "Ela assume a oferta. Registre as recomendações e se ela concordou: o M8 abre." },
+  ];
+  const todos = [...explicar, ...confrontos, ...coerencia, ...comoForma, ...capacidade, ...preco, ...assumir];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+  return (
+    <>
+      <Objetivo
+        objetivo="Que ela explique, sustente e assuma o instrumento que construiu. Não é apresentação comercial e você não aprova: confere se a passagem é possível."
+        sai={["A oferta assumida, com o que é hipótese e os limites", "Suas recomendações e se ela concordou", "O M8 aberto"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="Explicar sem olhar" porque="~5 min." itens={explicar} marcados={marcados} alternar={alternar} />
+      {confrontos.length > 0 && <Bloco n={2} titulo="Seus pontos de confronto" itens={confrontos} marcados={marcados} alternar={alternar} />}
+      <Bloco n={3} titulo="Oportunidade, destino e entrega" porque="15 a 20 min." itens={coerencia} marcados={marcados} alternar={alternar} />
+      <Bloco n={4} titulo="O como e a forma" porque="10 a 15 min." itens={comoForma} marcados={marcados} alternar={alternar} />
+      <Bloco n={5} titulo="Capacidade, limites e dependências" porque="~10 min." itens={capacidade} marcados={marcados} alternar={alternar} />
+      <Bloco n={6} titulo="Preço" porque="5 a 10 min." itens={preco} marcados={marcados} alternar={alternar} />
+      <Bloco n={7} titulo="Assumir" itens={assumir} marcados={marcados} alternar={alternar} />
     </>
   );
 }
