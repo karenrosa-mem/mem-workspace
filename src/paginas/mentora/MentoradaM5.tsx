@@ -24,6 +24,7 @@ import {
   porqueDaAposta,
   prontaCall4M5,
   rotuloParaVoce,
+  sinaisDeDinheiro,
   soUma,
   type ChaveCriterio,
   type ComparacaoMentora,
@@ -60,7 +61,7 @@ export const NOTA_M5 = [
     chave: "recomendacao",
     rotulo: "A recomendação que você vai fazer, e por quê",
     ajuda: "O método pede que você não se esconda atrás de neutralidade. Recomende com os critérios declarados. A escolha final é dela.",
-    exemplo: "H1 como aposta, H4 como reserva. Deixar claro que “quem paga, o gestor ou a empresa” é a pergunta central do NORTE.",
+    exemplo: "H2 como aposta: o problema se repete, uma pagou consultora e há curso anunciando há meses. H1 como reserva, se aparecer alguém pagando para resolver.",
   },
 ];
 
@@ -185,8 +186,8 @@ export function ComoRecomendar({ aberta = true }: { aberta?: boolean }) {
         ))}
       </ol>
       <p className="mem-body-sm mem-muted">
-        Na call, diga a recomendação com os critérios em voz alta (“recomendo esta porque o problema se repete e você chega nessas pessoas rápido; o
-        risco é que ninguém pagou ainda”). A escolha final é dela.
+        Na call, diga a recomendação com os critérios em voz alta (“recomendo esta porque o problema se repete, já tem gente pagando para resolver e
+        você chega nessas pessoas rápido”). A escolha final é dela.
       </p>
     </details>
   );
@@ -223,7 +224,7 @@ function ComparacaoMentora({ dados }: { dados: DadosJornada }) {
         <p className="mem-body-sm mem-muted">Só uma hipótese chegou à comparação: ela responde apenas “é para você?”.</p>
       )}
       <article className="mem-card ws-padrao">
-        <h4 className="mem-h3">É para ela?</h4>
+        <h4 className="mem-h3">É para ela? E tem dinheiro em volta?</h4>
         <ul className="ws-lista-simples mem-body">
           {lista.map((c) => {
             const a = ativoDa(dados, c);
@@ -234,6 +235,11 @@ function ComparacaoMentora({ dados }: { dados: DadosJornada }) {
                   {" "}
                   · ativo: {a.nome}
                   {a.vontade ? ` · no M2, ${a.vontade} vontade` : ""}
+                </span>
+                <br />
+                <span className="mem-body-sm">
+                  Sinal de dinheiro:{" "}
+                  {sinaisDeDinheiro(dados, c).length ? sinaisDeDinheiro(dados, c).join(" · ") : <strong>nenhum (ninguém pagou e nada vende há meses)</strong>}
                 </span>
               </li>
             );
@@ -406,7 +412,7 @@ function RegistrarAposta({ dados, recarregar }: { dados: DadosJornada; recarrega
           <input className="mem-input" aria-label="Critérios da recomendação" value={recTexto} onChange={(e) => setRecTexto(e.target.value)} />
           <Colinha
             serve="O método pede recomendação explícita, com os critérios declarados. Ela não vê este campo; vê a sua fala na call."
-            exemplo="Recorrência, facilidade de testar e o “sim, e quero”. Risco: ninguém pagou ainda."
+            exemplo="O problema se repete, alguém já pagou consultora e há curso vendendo há meses; ela chega nesse público rápido."
           />
         </Pergunta>
       </article>
@@ -421,7 +427,7 @@ function RegistrarAposta({ dados, recarregar }: { dados: DadosJornada; recarrega
           <textarea className="mem-input" rows={3} aria-label="Por que esta, agora" value={porque} onChange={(e) => setPorque(e.target.value)} />
           <Colinha
             serve="Duas ou três linhas. Pergunte na call e anote literal, sem melhorar: é o que ela vai precisar sustentar no NORTE. Ela pode ajustar depois."
-            exemplo="É o problema que mais se repete, as pessoas querem exatamente a mudança que eu sei provocar e eu consigo chegar nelas rápido. Ninguém pagou ainda — é isso que o NORTE vai testar."
+            exemplo="É o problema que mais se repete, as pessoas querem exatamente a mudança que eu sei provocar e eu consigo chegar nelas rápido. Já tem gente pagando para resolver isso."
           />
         </Pergunta>
         {contra && <p className="mem-body-sm">A escolha dela é diferente da sua recomendação. Pode, mas pede razão estratégica e condição de revisão. Fica registrado que você recomendou diferente.</p>}
@@ -487,7 +493,7 @@ function RegistrarAposta({ dados, recarregar }: { dados: DadosJornada; recarrega
           <textarea className="mem-input" rows={4} aria-label="O que ainda não sabemos" value={naoSabemos} onChange={(e) => setNaoSabemos(e.target.value)} />
           <Colinha
             serve="Já vem com as perguntas em que ela marcou “ainda não dá para dizer” e com a escala. Complete com o que vocês perceberam na call. Vira a lista do que o teste comercial precisa responder."
-            exemplo="Quem paga: o gestor ou a empresa. Se o ativo “preparar gestores” se sustenta além da percepção dela."
+            exemplo="Se elas pagariam por uma mediação feita por mim, e não por uma consultora conhecida. Se isso cresce além das indicações da minha amiga."
           />
         </Pergunta>
       </article>
@@ -612,7 +618,7 @@ const PARTES_PASSAGEM = [
   {
     chave: "o_que_decidimos",
     rotulo: "O que decidimos",
-    exemplo: "Você escolheu apostar nos gestores promovidos de dentro do time, com as clínicas como reserva.",
+    exemplo: "Você escolheu apostar nas donas de pequenos negócios com sócias, com os gestores recém-promovidos como reserva.",
   },
   {
     chave: "o_que_levamos",
@@ -622,7 +628,7 @@ const PARTES_PASSAGEM = [
   {
     chave: "o_que_nao_sabemos",
     rotulo: "O que ainda não sabemos",
-    exemplo: "Quem paga: o gestor ou a empresa. É a primeira pergunta do NORTE.",
+    exemplo: "Se elas pagariam a você, e não a quem já vende. É a primeira pergunta do NORTE.",
   },
   {
     chave: "o_que_muda",

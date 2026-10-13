@@ -644,7 +644,7 @@ function GuiaCall4({ dados, nota, nota5, chave }: { dados: DadosJornada; nota: N
     {
       id: "m5-recomendar",
       texto: "Faça a sua recomendação antes de ela escolher, com os critérios declarados. Não se esconda atrás de neutralidade.",
-      detalhe: "Ordem: o problema pesa e se repete → dá para testar logo → dinheiro e mudança desejada viram risco declarado.",
+      detalhe: "Ordem: o problema pesa e se repete → tem sinal de dinheiro (alguém pagou ou algo vende há meses) → dá para testar logo. Nenhuma com dinheiro: investigação curta antes de apostar.",
     },
     ...linhas(nota5.empates).map((t, i) => ({ id: `m5-emp-${i}`, texto: t, detalhe: "Empate: primeiro desempate é “dá para testar logo?”" })),
     { id: "m5-escolha", texto: "A escolha é dela. Se for diferente da sua recomendação: razão estratégica escrita e condição de revisão." },

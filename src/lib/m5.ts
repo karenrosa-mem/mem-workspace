@@ -75,9 +75,10 @@ export const CRITERIOS: { chave: ChaveCriterio; nome: string; pergunta: string; 
   },
 ];
 
-// Como chegar à recomendação (proposta de 13/10, a validar com a primeira mentorada).
+// Como chegar à recomendação (decisão da Karen em 13/10, a validar com a primeira mentorada).
 // O método pede recomendação explícita com os critérios declarados; a ordem abaixo
-// organiza o raciocínio sem somar pontos.
+// organiza o raciocínio sem somar pontos. Dinheiro é condição: "ninguém pagou" não é
+// oceano azul até prova em contrário.
 export const COMO_RECOMENDAR: { titulo: string; texto: string }[] = [
   {
     titulo: "1. Tire o que não pode ser aposta",
@@ -88,22 +89,39 @@ export const COMO_RECOMENDAR: { titulo: string; texto: string }[] = [
     texto: "Releia cada pergunta pelas colunas de fatos. Onde a leitura dela não bate com os fatos, anote: é otimismo (gosta da hipótese) ou autossabotagem (desvalorizou um sinal bom)?",
   },
   {
-    titulo: "3. Comece pelo problema existir de verdade",
-    texto: "Primeiro: o problema pesa e se repete? Sem isso não há o que vender, por mais que haja dinheiro em volta. Uma hipótese forte aqui sustenta a aposta.",
+    titulo: "3. O problema existe de verdade?",
+    texto: "O problema pesa e se repete? Sem isso não há o que vender.",
   },
   {
-    titulo: "4. Desempate pelo que dá para testar logo",
-    texto: "Entre as que têm o problema de pé, recomende a que ela alcança mais rápido: o NORTE aprende mais rápido com ela. É o desempate do método.",
+    titulo: "4. Já tem dinheiro em volta?",
+    texto: "Recomende só hipótese com pelo menos um sinal de dinheiro: alguém contou que pagou para resolver, ou alguém vende solução para esse problema há meses (anúncio rodando há mais de 3 meses, produto entre os mais vendidos, serviço). Ninguém pagando e nada vendendo não é oceano azul até prova: é risco alto.",
   },
   {
-    titulo: "5. Dinheiro e mudança desejada viram risco declarado",
-    texto: "Se a hipótese recomendada não mostra dinheiro ou desejo claro, ela ainda pode ser a aposta: isso entra em “o que ainda não sabemos” e é o que o NORTE testa primeiro.",
+    titulo: "5. Desempate pelo que dá para testar logo",
+    texto: "Entre as que passaram em 3 e 4, a que ela alcança mais rápido. O NORTE aprende mais rápido com ela.",
   },
   {
-    titulo: "6. Escolha a reserva",
-    texto: "A segunda hipótese com o problema de pé e que é para ela. Escreva em que condição ela entra.",
+    titulo: "6. Nenhuma tem sinal de dinheiro?",
+    texto: "Não recomende no escuro. Abra uma investigação curta em “há dinheiro em torno?”: procurar quem vende solução e perguntar a quem tem o problema se já pagou por algo.",
+  },
+  {
+    titulo: "7. Escolha a reserva",
+    texto: "A segunda hipótese que passou em 3 e 4 e é para ela. A mudança desejada que ainda não apareceu clara vai para “o que ainda não sabemos”.",
   },
 ];
+
+// Fatos de dinheiro de uma hipótese (sem nota): quem pagou e o que vende há meses.
+export function sinaisDeDinheiro(d: DadosJornada, c: Comparada): string[] {
+  const out = contagem(d, c.frente).pagou.map((o) => `alguém pagou por: ${o}`);
+  sinaisMercadoDe(d, c.frente).forEach((r) => {
+    const s = r.conteudo as SinalMercado;
+    if (s.tempo === "mais_3" || s.mais_vendidos) out.push(`${s.nome?.trim() || "solução"} vende ${s.mais_vendidos ? "entre os mais vendidos" : "há mais de 3 meses"}`);
+    else if (s.onde === "servico") out.push(`serviço: ${s.nome?.trim() || "alguém cobra para resolver"}`);
+  });
+  const fr = c.frente.conteudo as Frente;
+  if (fr.checagem === "sim" && fr.checagem_links?.length) out.push(`já vendem: ${fr.checagem_links.join("; ")}`);
+  return out;
+}
 
 export const ESCALA = "Se isso cresce além dos primeiros clientes.";
 
