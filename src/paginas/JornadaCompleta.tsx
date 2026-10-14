@@ -6,13 +6,13 @@ import { useSessao } from "../lib/sessao";
 import { useJornada } from "../lib/useJornada";
 import { call, type DadosJornada, type Registro } from "../lib/jornada";
 import { dataCurta } from "../lib/datas";
-import { CALLS_DO_MOVIMENTO, MOVIMENTOS } from "../lib/metodo";
+import { CALLS_DO_MOVIMENTO, MOVIMENTOS, PILARES } from "../lib/metodo";
 import { situacoes, tituloDaSituacao, type Situacao } from "../lib/m1";
 import { ROTULOS, decisaoM2, nomePadrao, porqueDaDecisao } from "../lib/m2";
 import { ativosEscolhidos, dadosHipotese, fraseTexto, hipoteses } from "../lib/m3";
 import { fraseDaFrente, frentes, resumo } from "../lib/m4";
 import { decisaoM5, porqueDaAposta, type DecisaoM5 } from "../lib/m5";
-import { fimDoAcesso, mentoraM10, rotuloStatusJornada } from "../lib/m10";
+import { dadosM10, fimDoAcesso, mentoraM10, rotuloDecisao, rotuloStatusJornada } from "../lib/m10";
 import Aviso from "../componentes/Aviso";
 import LeituraKaren from "../componentes/LeituraKaren";
 import { OportunidadeAssumida } from "./mentorada/M6";
@@ -82,33 +82,59 @@ export default function JornadaCompleta() {
           {dataComAno(dados.jornada.data_inicio)} a {dataComAno(dados.jornada.encerrada_em ?? m.gate_em ?? dados.jornada.data_limite)}
         </p>
         <p className="mem-body">{rotuloStatusJornada(m.status_jornada)}</p>
-        <ul className="ws-dossie__sumario mem-body">
-          <li>
-            <span className="mem-label mem-muted">00</span> Onde você chegou
-          </li>
-          {Object.entries(MOVIMENTOS).map(([n, t]) => (
-            <li key={n}>
-              <span className="mem-label mem-muted">{n.padStart(2, "0")}</span> {t}
-            </li>
+        {dadosM10(dados).decisao && (
+          <p className="mem-body-lg ws-serif">
+            Onde você chegou: {rotuloDecisao(dadosM10(dados).decisao).toLowerCase()}. A decisão completa e o plano estão no fim, no Movimento 10.
+          </p>
+        )}
+        <div className="ws-dossie__sumario">
+          {PILARES.map((p) => (
+            <div key={p.nome} className="ws-dossie__sumario-pilar">
+              <p className="mem-label">{p.nome}</p>
+              <p className="mem-body-sm mem-muted">{p.frase}</p>
+              <ul className="mem-body">
+                {numeros(p.de, p.ate).map((n) => (
+                  <li key={n}>
+                    <span className="mem-label mem-muted">{String(n).padStart(2, "0")}</span> {MOVIMENTOS[n]}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </header>
 
-      <section className="ws-dossie__parte">
-        <SecaoNumero n="00" titulo="Onde você chegou" />
-        <RelatorioFinal dados={dados} final />
-      </section>
 
-      {Object.keys(MOVIMENTOS).map((k) => {
-        const n = Number(k);
-        return (
-          <section key={n} className="ws-dossie__parte">
-            <SecaoNumero n={String(n).padStart(2, "0")} titulo={MOVIMENTOS[n]} sub={rotuloCall(dados, n)} />
-            <Construido dados={dados} n={n} />
-            <Leituras dados={dados} n={n} />
+      {PILARES.map((p, i) => (
+        <div key={p.nome} className="ws-dossie__pilar-grupo">
+          <section className="ws-dossie__parte ws-dossie__abertura">
+            <div className="ws-pilar ws-pilar--atual">
+              <span className="ws-pilar__nome">{p.nome}</span>
+              <span className="ws-pilar__meta">
+                Pilar {i + 1} de 2 · movimentos {p.de} a {p.ate}
+              </span>
+              <span className="ws-pilar__frase">{p.frase}</span>
+            </div>
+            <ol className="ws-dossie__perguntas">
+              {numeros(p.de, p.ate).map((n) => (
+                <li key={n}>
+                  <span className="mem-label mem-muted">
+                    {String(n).padStart(2, "0")} · {MOVIMENTOS[n]}
+                  </span>
+                  <span className="mem-h3 ws-serif">{PERGUNTA[n]}</span>
+                </li>
+              ))}
+            </ol>
           </section>
-        );
-      })}
+          {numeros(p.de, p.ate).map((n) => (
+            <section key={n} className="ws-dossie__parte">
+              <SecaoNumero n={`${p.nome} · ${String(n).padStart(2, "0")}`} titulo={MOVIMENTOS[n]} sub={rotuloCall(dados, n)} pergunta={PERGUNTA[n]} />
+              <Construido dados={dados} n={n} />
+              <Leituras dados={dados} n={n} />
+            </section>
+          ))}
+        </div>
+      ))}
 
       <footer className="ws-dossie__rodape mem-body-sm mem-muted">
         MEM · Método Expertise Monetizada · gerado em {dataComAno(new Date().toISOString())}
@@ -122,7 +148,25 @@ function dataComAno(v: string): string {
   return d.toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
 }
 
-function SecaoNumero({ n, titulo, sub }: { n: string; titulo: string; sub?: string }) {
+// A pergunta que cada movimento respondeu, na linguagem dela.
+const PERGUNTA: Record<number, string> = {
+  1: "O que você já fez, na prática?",
+  2: "O que você sabe fazer que resolve o problema de alguém?",
+  3: "Para quem isso pode valer dinheiro?",
+  4: "O que as pessoas fizeram, e não só o que acharam?",
+  5: "Onde vale apostar primeiro?",
+  6: "Qual é, exatamente, a oportunidade?",
+  7: "O que você vende, como e por quanto?",
+  8: "Como você apresenta a oferta e chega até as pessoas?",
+  9: "Alguém compra?",
+  10: "O que o teste mostrou, e o que você decide?",
+};
+
+function numeros(de: number, ate: number): number[] {
+  return Array.from({ length: ate - de + 1 }, (_, i) => de + i);
+}
+
+function SecaoNumero({ n, titulo, sub, pergunta }: { n: string; titulo: string; sub?: string; pergunta?: string }) {
   return (
     <div className="ws-dossie__secao">
       <span className="mem-label mem-muted">
@@ -130,6 +174,7 @@ function SecaoNumero({ n, titulo, sub }: { n: string; titulo: string; sub?: stri
         {sub ? ` · ${sub}` : ""}
       </span>
       <h2 className="mem-h1">{titulo}</h2>
+      {pergunta && <p className="mem-body-lg ws-serif mem-muted">{pergunta}</p>}
     </div>
   );
 }
@@ -253,7 +298,7 @@ function Construido({ dados, n }: { dados: DadosJornada; n: number }) {
   if (n === 7) return <OfertaAssumida dados={dados} />;
   if (n === 8) return <PreparoAssumido dados={dados} />;
   if (n === 9) return <Resultado dados={dados} final />;
-  return <p className="mem-body mem-muted">A decisão e o plano estão em “Onde você chegou”, no começo deste material.</p>;
+  return <RelatorioFinal dados={dados} final />;
 }
 
 // As leituras que a Karen publicou neste movimento, em ordem.

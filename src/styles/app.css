@@ -1586,6 +1586,53 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
   gap: var(--space-1);
 }
 
+.ws-dossie__sumario {
+  gap: var(--space-4);
+}
+
+.ws-dossie__sumario > *,
+.ws-dossie__sumario-pilar > * {
+  margin: 0;
+}
+
+.ws-dossie__sumario-pilar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.ws-dossie__sumario-pilar ul {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ws-dossie__pilar-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.ws-dossie__perguntas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.ws-dossie__perguntas li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 .ws-dossie__parte {
   display: flex;
   flex-direction: column;
