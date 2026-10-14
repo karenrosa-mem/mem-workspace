@@ -7,6 +7,7 @@ export type Jornada = {
   data_limite: string;
   folga_total_dias: number;
   estado: string;
+  encerrada_em?: string | null;
 };
 
 export type Movimento = { codigo: number; estado: "nao_iniciado" | "aberto" | "fechado" };
@@ -51,7 +52,7 @@ export async function carregarJornada(
 ): Promise<DadosJornada | null> {
   let consulta = db
     .from("jornada")
-    .select("id, conta_id, data_inicio, data_limite, folga_total_dias, estado");
+    .select("id, conta_id, data_inicio, data_limite, folga_total_dias, estado, encerrada_em");
   consulta = jornadaId
     ? consulta.eq("id", jornadaId)
     : consulta.order("criada_em", { ascending: false }).limit(1);

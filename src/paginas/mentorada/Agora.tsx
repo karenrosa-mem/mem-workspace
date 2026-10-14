@@ -488,7 +488,7 @@ function passoFim(d: DadosJornada): Passo {
     titulo: `A sua decisão: ${rotuloDecisao(x.decisao).toLowerCase()}.`,
     porque: x.plano?.acao ? `Próxima ação: ${x.plano.acao}` : undefined,
     extra: x.plano?.revisitar ? `Releia o plano e o relatório em ${dataCurta(x.plano.revisitar)}.` : undefined,
-    acao: { rotulo: "Ver o relatório final", para: "/jornada/10" },
+    acao: { rotulo: "Baixar a jornada completa", para: "/jornada/completa" },
   };
 }
 

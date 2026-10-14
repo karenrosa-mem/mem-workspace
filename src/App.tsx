@@ -12,6 +12,7 @@ import M7 from "./paginas/mentorada/M7";
 import M8 from "./paginas/mentorada/M8";
 import M9 from "./paginas/mentorada/M9";
 import M10 from "./paginas/mentorada/M10";
+import JornadaCompleta from "./paginas/JornadaCompleta";
 import GuiaCall from "./paginas/mentora/GuiaCall";
 import MentoradaM1 from "./paginas/mentora/MentoradaM1";
 import Jornada, { MovimentoEmConstrucao, MOVIMENTOS_PRONTOS } from "./paginas/mentorada/Jornada";
@@ -47,11 +48,13 @@ export default function App() {
             <Route path="iniciar" element={<IniciarJornada />} />
             <Route path="mentoradas/:id" element={<MentoradaM1 />} />
             <Route path="mentoradas/:id/call/:n" element={<GuiaCall />} />
+            <Route path="mentoradas/:id/jornada-completa" element={<JornadaCompleta />} />
           </>
         ) : (
           <>
             <Route index element={<Agora />} />
             <Route path="jornada" element={<Jornada />} />
+            <Route path="jornada/completa" element={<JornadaCompleta />} />
             <Route path="jornada/:n" element={<PaginaMovimento />} />
           </>
         )}

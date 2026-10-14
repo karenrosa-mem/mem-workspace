@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useSessao } from "../../lib/sessao";
 import { useJornada } from "../../lib/useJornada";
@@ -305,7 +306,8 @@ function Formulario({ dados, travado, aoSalvar }: { dados: DadosJornada; travado
 
 // ---------------------------------------------------------------------
 // Relatório final: montado a partir dos registros; ninguém escreve do zero.
-export function RelatorioFinal({ dados, paraMentora = false }: { dados: DadosJornada; paraMentora?: boolean }) {
+// "final": dentro da jornada completa (sem o botão e sem o caminho, que vem movimento a movimento).
+export function RelatorioFinal({ dados, paraMentora = false, final = false }: { dados: DadosJornada; paraMentora?: boolean; final?: boolean }) {
   const x = dadosM10(dados);
   const m = mentoraM10(dados);
   const o = dadosOferta(dados);
@@ -323,13 +325,16 @@ export function RelatorioFinal({ dados, paraMentora = false }: { dados: DadosJor
       {naoDem.length > 0 && (
         <p className="mem-body-sm mem-muted">Ainda não demonstrado nesta call: {naoDem.map((c) => c.titulo.toLowerCase()).join("; ")}.</p>
       )}
-      <div className="ws-acoes">
-        <button type="button" className="mem-btn mem-btn--secondary" onClick={() => window.print()}>
-          Imprimir ou salvar em PDF
-        </button>
-      </div>
+      {!final && (
+        <div className="ws-acoes">
+          <Link className="mem-btn mem-btn--primary" to={paraMentora ? `/mentoradas/${dados.jornada.id}/jornada-completa` : "/jornada/completa"}>
+            {paraMentora ? "Ver a jornada completa que ela recebe" : "Baixar a jornada completa em PDF"}
+          </Link>
+          <span className="mem-body-sm mem-muted">Este relatório e, movimento a movimento, tudo o que você construiu e as leituras da Karen.</span>
+        </div>
+      )}
 
-      <h2 className="mem-h2">O caminho</h2>
+      {!final && <><h2 className="mem-h2">O caminho</h2>
       <dl className="ws-resumo">
         <div>
           <dt className="mem-body-sm mem-muted">O que você sabe fazer que resolve o problema de alguém</dt>
@@ -374,6 +379,7 @@ export function RelatorioFinal({ dados, paraMentora = false }: { dados: DadosJor
 
       <h2 className="mem-h2">O que o teste mostrou</h2>
       <Resultado dados={dados} paraMentora={paraMentora} final />
+      </>}
 
       <h2 className="mem-h2">A decisão</h2>
       <dl className="ws-resumo">
