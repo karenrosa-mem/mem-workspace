@@ -32,6 +32,7 @@ import SecaoM5 from "./MentoradaM5";
 import SecaoM6 from "./MentoradaM6";
 import SecaoM7 from "./MentoradaM7";
 import SecaoM8 from "./MentoradaM8";
+import SecaoM9 from "./MentoradaM9";
 import { comparacaoLiberada } from "../../lib/m5";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
@@ -82,7 +83,7 @@ export default function MentoradaM1() {
 
   const atual = movimentoAtual(dados);
   // O M5 acontece na segunda parte da Call 4.
-  const callDoAtual = atual && atual <= 4 ? atual : atual === 5 ? 4 : atual === 6 ? 5 : atual === 7 ? 6 : atual === 8 ? (call(dados, 7)?.estado === "realizado" ? 8 : 7) : null;
+  const callDoAtual = atual && atual <= 4 ? atual : atual === 5 ? 4 : atual === 6 ? 5 : atual === 7 ? 6 : atual === 8 ? (call(dados, 7)?.estado === "realizado" ? 8 : 7) : atual === 9 ? 9 : null;
   const c1 = call(dados, 1);
   const leituraCall1 = leitura(dados, "call_1");
 
@@ -111,6 +112,7 @@ export default function MentoradaM1() {
         <>
           {mentoriaId &&
             ([
+              [9, "M9 · teste comercial", SecaoM9],
               [8, "M8 · oferta preparada para teste", SecaoM8],
               [7, "M7 · oferta assumida", SecaoM7],
               [6, "M6 · oportunidade assumida", SecaoM6],

@@ -23,6 +23,7 @@ import { CRITERIOS, comparadas, duvidas, leituraValida, naoSabemosDerivado, nome
 import { CALLS_DO_MOVIMENTO } from "../../lib/metodo";
 import { listasIncertezas, mentoraOportunidade, valorItem } from "../../lib/m6";
 import { clientesSimultaneos, dadosOferta, etapas, limitesDaOferta, reais } from "../../lib/m7";
+import { VARIAVEIS, dadosTeste, fatosVariavel, resumoFatos, rotuloLeitura } from "../../lib/m9";
 import { CAMINHO, ROTAS, dadosPreparo, falasDesejo, tentativas, vocabularioMem } from "../../lib/m8";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
@@ -33,7 +34,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7, 8]);
+const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
 // A nota privada que o guia lê: até a Call 4, a do movimento de mesmo número;
 // depois, a do movimento decidido naquela call (Call 5 → M6).
@@ -153,8 +154,10 @@ export default function GuiaCall() {
         <GuiaCall6 dados={dados} nota={nota} chave={`${id}:6`} />
       ) : numero === 7 ? (
         <GuiaCall7 dados={dados} nota={nota} chave={`${id}:7`} />
-      ) : (
+      ) : numero === 8 ? (
         <GuiaCall8 dados={dados} nota={nota} chave={`${id}:8`} />
+      ) : (
+        <GuiaCall9 dados={dados} nota={nota} chave={`${id}:9`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -891,6 +894,50 @@ function GuiaCall8({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
       <Bloco n={3} titulo="Percorrer o caminho" porque="5 a 10 min. Cada passo está disponível e pode ser percorrido sem improviso?" itens={caminho} marcados={marcados} alternar={alternar} />
       <Bloco n={4} titulo="Objeções e Gate 6" porque="5 a 10 min." itens={fechar} marcados={marcados} alternar={alternar} />
       <Bloco n={5} titulo="Parte B · handoff para o M9" porque="10 a 15 min." itens={handoff} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Call 9 · Leitura e Gate 7 (M9)
+// ---------------------------------------------------------------------
+function GuiaCall9({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const t = dadosTeste(dados);
+  const r = resumoFatos(dados);
+  const narrar: Item[] = [
+    { id: "c9-narrar", texto: "Sem olhar: “me conta o teste: quantas pessoas, até onde chegaram, o que disseram”.", detalhe: "Note o que ela lembra e o que esquece." },
+  ];
+  const acesso: Item[] = [
+    { id: "c9-acesso", texto: "A rota chegou a quem devia?", detalhe: `${r.tentados} contatos → ${r.alcancados} responderam → ${r.total} exposições completas` },
+    { id: "c9-compat", texto: "“Essa pessoa era de quem você espera que compre? Ela chegou a receber uma proposta concreta?”" },
+    ...linhas(nota.acesso_oferta).map((x, i) => ({ id: `c9-ao-${i}`, texto: x, detalhe: "Da sua nota" })),
+  ];
+  const variaveis: Item[] = [
+    ...VARIAVEIS.map((v) => ({ id: `c9-v-${v.chave}`, texto: v.rotulo, detalhe: fatosVariavel(dados, v.chave).join(" · ") })),
+    { id: "c9-fez", texto: "“Isso foi o que ela fez, ou o que ela disse? Esse motivo apareceu mais de uma vez?”" },
+  ];
+  const limites: Item[] = [
+    { id: "c9-mud", texto: "O que mudou durante o teste, e com que ponto de corte?", detalhe: (t.mudancas ?? []).map((m) => `${m.tipo}: ${m.o_que}`).join(" · ") || "Nenhuma mudança registrada" },
+    { id: "c9-nao", texto: "“O que essa leitura não pode dizer?”", detalhe: t.leitura?.limites ?? "—" },
+  ];
+  const classificar: Item[] = [
+    ...linhas(nota.confrontos).map((x, i) => ({ id: `c9-conf-${i}`, texto: x, detalhe: "Seu ponto de confronto" })),
+    { id: "c9-leitura", texto: `Ela apresenta a leitura: ${rotuloLeitura(t.leitura?.geral)}`, detalhe: t.leitura?.sintese ?? "—" },
+    { id: "c9-gate", texto: "Confiram o Gate 7. Se discordarem, registrem as duas leituras." },
+    { id: "c9-naodecide", texto: "Não decidam mudar preço, oferta, rota ou comprador, nem continuar ou parar: isso é do M10." },
+  ];
+  const todos = [...narrar, ...acesso, ...variaveis, ...limites, ...classificar];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+  return (
+    <>
+      <Objetivo objetivo="Organizar o que aconteceu, classificar a evidência e passar pelo Gate 7, sem decidir o próximo passo." sai={["A evidência por parte, com o que permite e o que não permite dizer", "A leitura classificada (e a sua, se diferente)", "O M10 aberto"]} />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="O que aconteceu" porque="~10 min." itens={narrar} marcados={marcados} alternar={alternar} />
+      <Bloco n={2} titulo="Acesso × oferta" porque="~10 min. Só as exposições completas leem a oferta." itens={acesso} marcados={marcados} alternar={alternar} />
+      <Bloco n={3} titulo="Comportamento e motivos, parte por parte" porque="15 a 20 min." itens={variaveis} marcados={marcados} alternar={alternar} />
+      <Bloco n={4} titulo="Mudanças e limites" porque="5 a 10 min." itens={limites} marcados={marcados} alternar={alternar} />
+      <Bloco n={5} titulo="Classificação e Gate 7" porque="~10 min." itens={classificar} marcados={marcados} alternar={alternar} />
     </>
   );
 }

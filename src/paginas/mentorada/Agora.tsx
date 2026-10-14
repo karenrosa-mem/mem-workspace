@@ -19,6 +19,7 @@ import {
   type DecisaoM5,
 } from "../../lib/m5";
 import { dadosHipotese, hipoteses as todasHipoteses } from "../../lib/m3";
+import { dadosTeste, desenhoFeito, diaDaJanela, mentoraTeste, resumoFatos, sinais } from "../../lib/m9";
 import { DECISOES_M8, call7Feita, caminhoPronto, dadosPreparo, decisaoM8Feita, preparoDe } from "../../lib/m8";
 import { capacidadeNaoFecha, dadosOferta, ofertaDe, proximaDecisao } from "../../lib/m7";
 import { PASSOS as PASSOS_M6, carregado as carregadoM6, dadosOportunidade, mentoraOportunidade, oportunidadeDe, passoFeito, prontaCall5 } from "../../lib/m6";
@@ -410,20 +411,56 @@ function passoM8(d: DadosJornada): Passo {
   };
 }
 
-// Depois da Call 8: a oferta preparada para o teste.
+// Depois da Call 8: aguarda a leitura; depois, o M9 (teste comercial).
 function passoM9(d: DadosJornada): Passo {
   const c8 = call(d, 8);
   if (!leitura(d, "call_8"))
     return {
       titulo: `Aguardando a leitura da Karen sobre a Call 8${c8 ? `, até ${dataHora(somarHoras(c8.data_realizada ?? c8.data_atual, 48))}` : ""}.`,
-      porque: "Nada a fazer até lá. A sua oferta está pronta para o teste.",
-      acao: { rotulo: "Ver a oferta", para: "/jornada/8" },
+      porque: "Enquanto isso, você já pode desenhar o teste: de onde vêm os contatos e as datas.",
+      acao: { rotulo: "Desenhar o teste", para: "/jornada/9#desenho" },
+    };
+  const t = dadosTeste(d);
+  const c9 = call(d, 9);
+  const dia9 = c9 ? diaDaSemana(c9.data_atual) : "a Call 9";
+  if (!desenhoFeito(t))
+    return {
+      titulo: "Desenhe o teste · ~30 min",
+      porque: "De onde vêm os contatos e as datas da janela (até 14 dias). O resto já vem do método.",
+      acao: { rotulo: "Desenhar", para: "/jornada/9#desenho" },
+    };
+  const r = resumoFatos(d);
+  const j = diaDaJanela(t);
+  if (!t.encerramento?.criterio) {
+    const s = sinais(d)[0];
+    if (j && j.dia < 1) return { titulo: `O teste começa em ${dataCurta(t.desenho!.inicio!)}.`, porque: "A Karen confere o desenho até lá." };
+    return {
+      titulo: r.total === 0 ? "Faça a primeira proposta completa e registre no mesmo dia." : `${r.total} ${r.total === 1 ? "pessoa recebeu" : "pessoas receberam"} a proposta completa${j ? ` · dia ${j.dia} de ${j.total}` : ""}.`,
+      porque: s ?? "Registre cada pessoa no mesmo dia. O que vale é o que ela fez, não o que disse.",
+      extra: r.total === 2 && !mentoraTeste(d).revisao?.texto ? "A Karen vai olhar as suas duas primeiras em até 48 h." : undefined,
+      acao: { rotulo: "Registrar", para: "/jornada/9#exposicoes" },
+    };
+  }
+  if (!t.leitura?.geral || !t.leitura.sintese?.trim() || !t.leitura.limites?.trim())
+    return { titulo: "O teste terminou. Organize o que aconteceu e proponha uma leitura · ~30 min", acao: { rotulo: "Propor a leitura", para: "/jornada/9#leitura" } };
+  if (!enviadoEm(d, 9)) return { titulo: `Pronta para ${dia9}.`, porque: "Envie para a Karen: ela lê os registros antes da call.", acao: { rotulo: "Enviar", para: "/jornada/9#envio" } };
+  return { titulo: `Pronta para ${dia9}. Vocês conferem juntas a leitura do teste.`, porque: "Enviado para a Karen." };
+}
+
+// Depois da Call 9: o resultado do teste.
+function passoM10(d: DadosJornada): Passo {
+  const c9 = call(d, 9);
+  if (!leitura(d, "call_9"))
+    return {
+      titulo: `Aguardando a leitura da Karen sobre a Call 9${c9 ? `, até ${dataHora(somarHoras(c9.data_realizada ?? c9.data_atual, 48))}` : ""}.`,
+      porque: "Nada a fazer até lá. O seu teste já está registrado.",
+      acao: { rotulo: "Ver o teste", para: "/jornada/9" },
     };
   return {
-    titulo: "A sua oferta está pronta para o teste.",
-    porque: "Estar pronta não é saber se vão comprar. É poder descobrir.",
-    extra: "O próximo passo, desenhar o teste, aparece aqui em breve.",
-    acao: { rotulo: "Ver a oferta", para: "/jornada/8" },
+    titulo: "O seu teste está registrado e lido.",
+    porque: "O que fazer com isso é decidido no Movimento 10.",
+    extra: "O próximo passo aparece aqui em breve.",
+    acao: { rotulo: "Ver o teste", para: "/jornada/9" },
   };
 }
 
@@ -494,7 +531,9 @@ export default function Agora() {
                     ? passoM8(dados)
                     : atual === 9
                       ? passoM9(dados)
-                      : null;
+                      : atual === 10
+                        ? passoM10(dados)
+                        : null;
   const ultimaLeitura =
     atual === 2
       ? leitura(dados, "mapa_ativos") ?? leituraCall1
@@ -510,7 +549,9 @@ export default function Agora() {
                 ? leitura(dados, "call_6")
                 : atual === 9
                   ? leitura(dados, "call_8")
-                  : undefined;
+                  : atual === 10
+                    ? leitura(dados, "call_9")
+                    : undefined;
   const primeiroAcesso = atual === 1 && !dados.registros.some((r) => r.autora_papel === "mentorada");
   const proxima = dados.encontros.find((e) => e.tipo === "call" && e.estado === "marcado");
 

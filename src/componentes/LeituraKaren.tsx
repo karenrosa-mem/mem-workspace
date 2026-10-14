@@ -16,6 +16,8 @@ const SECOES: [string, string][] = [
   ["o_que_e_hipotese", "O que é hipótese"],
   ["o_que_segue_m8", "O que segue para o próximo movimento"],
   ["o_que_preparamos", "O que preparamos"],
+  ["o_que_aconteceu", "O que aconteceu"],
+  ["a_leitura", "A leitura"],
   ["o_que_nao_sabemos", "O que ainda não sabemos"],
   ["o_que_muda", "O que muda a partir de agora"],
 ];
@@ -30,6 +32,7 @@ const TITULOS: Record<string, string> = {
   call_5: "Leitura da Call 5",
   call_6: "Leitura da Call 6",
   call_8: "Leitura da Call 8",
+  call_9: "Leitura da Call 9",
 };
 
 export default function LeituraKaren({ registro }: { registro: Registro }) {
