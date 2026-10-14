@@ -28,7 +28,7 @@ import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jorn
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, naDia, somarHoras } from "../../lib/datas";
 import { decisaoM2, escolhaDois, padroes, padroesFaltando, precisaEscolherDois } from "../../lib/m2";
-import { competenciasAConfirmar, dadosM10, decisaoFeita, planoFeito, quatroFeitas, rotuloDecisao } from "../../lib/m10";
+import { competenciasAConfirmar, dadosM10, fimDoAcesso, decisaoFeita, planoFeito, quatroFeitas, rotuloDecisao } from "../../lib/m10";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 
@@ -484,9 +484,10 @@ function passoM10(d: DadosJornada): Passo {
 // Jornada concluída: o relatório final e o plano.
 function passoFim(d: DadosJornada): Passo {
   const x = dadosM10(d);
+  const fim = fimDoAcesso(d);
   return {
-    titulo: `A sua decisão: ${rotuloDecisao(x.decisao).toLowerCase()}.`,
-    porque: x.plano?.acao ? `Próxima ação: ${x.plano.acao}` : undefined,
+    titulo: fim ? `Baixe a sua jornada completa até ${dataCurta(fim)}.` : "Baixe a sua jornada completa.",
+    porque: `Depois disso o seu acesso ao Workspace fecha. O PDF leva tudo: o que você construiu, as leituras da Karen e o seu plano. A sua decisão: ${rotuloDecisao(x.decisao).toLowerCase()}${x.plano?.acao ? `; próxima ação: ${x.plano.acao}` : ""}.`,
     extra: x.plano?.revisitar ? `Releia o plano e o relatório em ${dataCurta(x.plano.revisitar)}.` : undefined,
     acao: { rotulo: "Baixar a jornada completa", para: "/jornada/completa" },
   };

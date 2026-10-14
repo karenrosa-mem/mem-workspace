@@ -975,6 +975,7 @@ function GuiaCall10({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; c
     { id: "c10-a", texto: "Confiram a qualidade da decisão (parte A)." },
     { id: "c10-b", texto: "Marquem cada capacidade: demonstrada ou não nesta call, com o que faltou." },
     { id: "c10-fim", texto: "A decisão é dela. Fechem a jornada." },
+    { id: "c10-pdf", texto: "Avise: o PDF da jornada completa fica no relatório final, e o acesso fecha 60 dias depois desta call." },
   ];
   const todos = [...reconstruir, ...sugere, ...decidir, ...continuidade, ...fechar];
   const feitos = todos.filter((i) => marcados[i.id]).length;

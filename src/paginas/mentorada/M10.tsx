@@ -28,6 +28,7 @@ import {
   quatroFeitas,
   reservaM5,
   rotuloDecisao,
+  fimDoAcesso,
   mudasDe,
   alternarMuda,
   rotuloMudas,
@@ -330,7 +331,11 @@ export function RelatorioFinal({ dados, paraMentora = false, final = false }: { 
           <Link className="mem-btn mem-btn--primary" to={paraMentora ? `/mentoradas/${dados.jornada.id}/jornada-completa` : "/jornada/completa"}>
             {paraMentora ? "Ver a jornada completa que ela recebe" : "Baixar a jornada completa em PDF"}
           </Link>
-          <span className="mem-body-sm mem-muted">Este relatório e, movimento a movimento, tudo o que você construiu e as leituras da Karen.</span>
+          <span className="mem-body-sm mem-muted">
+            {paraMentora
+              ? `O acesso dela fecha em ${fimDoAcesso(dados) ? dataCurta(fimDoAcesso(dados)!) : "—"}. Lembre de dizer isso na Call 10.`
+              : `Este relatório e, movimento a movimento, tudo o que você construiu e as leituras da Karen. Baixe até ${fimDoAcesso(dados) ? dataCurta(fimDoAcesso(dados)!) : "—"}: depois disso o seu acesso ao Workspace fecha.`}
+          </span>
         </div>
       )}
 

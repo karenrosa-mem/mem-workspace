@@ -190,3 +190,12 @@ export function rotuloStatusJornada(s?: string): string {
   if (s === "nao_demonstrada") return "Jornada concluída · autonomia ainda não demonstrada";
   return "—";
 }
+
+// Depois do fim da jornada, o acesso fica aberto por 60 dias (decisão do índice).
+// O PDF da jornada completa é o que ela leva.
+export const DIAS_DE_ACESSO = 60;
+export function fimDoAcesso(d: DadosJornada): string | null {
+  const fim = d.jornada.encerrada_em ?? mentoraM10(d).gate_em;
+  if (!fim) return null;
+  return new Date(new Date(fim).getTime() + DIAS_DE_ACESSO * 864e5).toISOString();
+}

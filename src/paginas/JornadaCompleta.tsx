@@ -12,7 +12,7 @@ import { ROTULOS, decisaoM2, nomePadrao, porqueDaDecisao } from "../lib/m2";
 import { ativosEscolhidos, dadosHipotese, fraseTexto, hipoteses } from "../lib/m3";
 import { fraseDaFrente, frentes, resumo } from "../lib/m4";
 import { decisaoM5, porqueDaAposta, type DecisaoM5 } from "../lib/m5";
-import { mentoraM10, rotuloStatusJornada } from "../lib/m10";
+import { fimDoAcesso, mentoraM10, rotuloStatusJornada } from "../lib/m10";
 import Aviso from "../componentes/Aviso";
 import LeituraKaren from "../componentes/LeituraKaren";
 import { OportunidadeAssumida } from "./mentorada/M6";
@@ -68,7 +68,10 @@ export default function JornadaCompleta() {
         <button type="button" className="mem-btn mem-btn--primary" onClick={() => window.print()}>
           Imprimir ou salvar em PDF
         </button>
-        <span className="mem-body-sm mem-muted">Na janela de impressão, escolha “Salvar como PDF”.</span>
+        <span className="mem-body-sm mem-muted">
+          Na janela de impressão, escolha “Salvar como PDF”.
+          {fimDoAcesso(dados) && (id ? ` O acesso dela fecha em ${dataCurta(fimDoAcesso(dados)!)}.` : ` Salve até ${dataCurta(fimDoAcesso(dados)!)}: depois disso o seu acesso fecha.`)}
+        </span>
       </div>
 
       <header className="ws-dossie__capa">
