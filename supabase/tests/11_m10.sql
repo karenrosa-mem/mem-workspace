@@ -12,7 +12,7 @@ insert into public.registro (conta_id, jornada_id, movimento_codigo, tipo, conte
   select conta_id, id, 10, 'decisao_m10', jsonb_build_object(
     'aconteceu', 'uma compra e um pedido de proposta entre três pessoas',
     'sugere', 'os dados sugerem que o problema leva a considerar comprar',
-    'aprendi', jsonb_build_array(jsonb_build_object('texto', 'quem paga é o próprio gestor, não o RH', 'muda', 'comprador')),
+    'aprendi', jsonb_build_array(jsonb_build_object('texto', 'quem paga é o próprio gestor, não o RH', 'muda', jsonb_build_array('comprador', 'preco'))),
     'decisao', 'continuar', 'porque', 'mais da mesma evidência', 'nao_sabe', 'se outros compram',
     'revisao', 'se nas próximas 6 exposições ninguém avançar',
     'estatuto', 'validada',

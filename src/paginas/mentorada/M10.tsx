@@ -27,6 +27,9 @@ import {
   quatroFeitas,
   reservaM5,
   rotuloDecisao,
+  mudasDe,
+  alternarMuda,
+  rotuloMudas,
   rotuloEstatuto,
   rotuloStatusJornada,
   type DecisaoM10,
@@ -104,7 +107,7 @@ function Formulario({ dados, travado, aoSalvar }: { dados: DadosJornada; travado
   const { pessoa } = useSessao();
   const [x, setX] = useState<DecisaoM10>(() => {
     const s = JSON.parse(JSON.stringify(dadosM10(dados))) as DecisaoM10;
-    if (!s.aprendi?.length) s.aprendi = [{ texto: "", muda: "" }];
+    if (!s.aprendi?.length) s.aprendi = [{ texto: "", muda: [] }];
     return s;
   });
   const [estado, setEstado] = useState("");
@@ -120,7 +123,7 @@ function Formulario({ dados, travado, aoSalvar }: { dados: DadosJornada; travado
   async function salvar() {
     if (!supabase || !pessoa) return;
     setEstado("salvando");
-    const conteudo = { ...x, aprendi: aprendi.filter((a) => a.texto.trim()) };
+    const conteudo = { ...x, aprendi: aprendi.filter((a) => a.texto.trim()).map((a) => ({ ...a, muda: mudasDe(a) })) };
     const atual = decisaoM10De(dados);
     const r = atual
       ? await supabase.from("registro").update({ conteudo }).eq("id", atual.id)
@@ -151,7 +154,7 @@ function Formulario({ dados, travado, aoSalvar }: { dados: DadosJornada; travado
             <textarea className="mem-input" rows={3} aria-label="O que isso sugere" disabled={travado} value={x.sugere ?? ""} onChange={(e) => set({ sugere: e.target.value })} />
             <Colinha serve="O que se repetiu, onde as pessoas concordaram e discordaram, e se existe outra explicação possível. Escreva “os dados sugerem”, não “é isso”." exemplo="Os dados sugerem que o problema leva gente a considerar comprar. O preço apareceu em três pessoas, mas pode ser timing: era fim de ano." />
           </Pergunta>
-          <Pergunta n={++k} feita={aprendi.some((a) => a.texto.trim() && a.muda)} titulo="O que você aprendeu?">
+          <Pergunta n={++k} feita={aprendi.some((a) => a.texto.trim() && mudasDe(a).length > 0)} titulo="O que você aprendeu?">
             <p className="mem-body-sm mem-muted">O que você sabe hoje que não sabia antes de colocar a oferta no mercado?</p>
             {aprendi.map((a, i) => (
               <div key={i} className="ws-form">
@@ -162,18 +165,19 @@ function Formulario({ dados, travado, aoSalvar }: { dados: DadosJornada; travado
                   value={a.texto}
                   onChange={(e) => set({ aprendi: aprendi.map((y, j) => (j === i ? { ...y, texto: e.target.value } : y)) })}
                 />
-                <Opcoes rotulo={`O que o aprendizado ${i + 1} muda`} opcoes={MUDA} valor={a.muda} aoEscolher={(v) => !travado && set({ aprendi: aprendi.map((y, j) => (j === i ? { ...y, muda: v } : y)) })} />
+                <p className="mem-body-sm mem-muted">O que isso muda? Marque quantas partes precisar.</p>
+                <Opcoes rotulo={`O que o aprendizado ${i + 1} muda`} opcoes={MUDA} marcados={mudasDe(a)} aoEscolher={(v) => !travado && set({ aprendi: aprendi.map((y, j) => (j === i ? { ...y, muda: alternarMuda(y, v) } : y)) })} />
               </div>
             ))}
             {!travado && aprendi.length < 3 && (
               <div>
-                <button type="button" className="mem-btn mem-btn--quiet" onClick={() => set({ aprendi: [...aprendi, { texto: "", muda: "" }] })}>
+                <button type="button" className="mem-btn mem-btn--quiet" onClick={() => set({ aprendi: [...aprendi, { texto: "", muda: [] }] })}>
                   Mais um
                 </button>
               </div>
             )}
             <Colinha
-              serve="Específico o bastante para mudar uma decisão. Marque o que ele muda."
+              serve="Específico o bastante para mudar uma decisão. Marque tudo o que ele muda: um aprendizado pode mexer no preço e no caminho até pagar ao mesmo tempo."
               exemplo="Fraco: “preciso melhorar meu marketing”. Forte: “o problema é reconhecido, mas a apresentação não deixa claro o que a pessoa recebe no primeiro encontro”."
             />
           </Pergunta>
@@ -417,7 +421,7 @@ export function RelatorioFinal({ dados, paraMentora = false }: { dados: DadosJor
               <ul className="ws-lista-simples">
                 {(x.aprendi ?? []).map((a) => (
                   <li key={a.texto}>
-                    {a.texto} <span className="mem-muted">· muda: {MUDA.find((z) => z.valor === a.muda)?.rotulo.toLowerCase()}</span>
+                    {a.texto} <span className="mem-muted">· muda: {rotuloMudas(a)}</span>
                   </li>
                 ))}
               </ul>

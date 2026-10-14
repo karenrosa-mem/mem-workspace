@@ -3,7 +3,7 @@
 --
 -- Registro novo:
 --   decisao_m10 — um por jornada, autora a mentorada (movimento 10).
---     conteudo: aconteceu, sugere, aprendi [{ texto, muda }], decisao, porque, nao_sabe,
+--     conteudo: aconteceu, sugere, aprendi [{ texto, muda: [partes] }], decisao, porque, nao_sabe,
 --       revisao, estatuto ('validada'|'fortalecida'|'enfraquecida'|'nao_testada'),
 --       retorno { para, o_que }, investigacao { pergunta, hipotese, evidencia, limite },
 --       historico { acreditava, aconteceu, acredita }, ativo { criterio, status },
@@ -61,7 +61,11 @@ begin
     raise exception 'Faltam “o que aconteceu” e “o que isso sugere”.';
   end if;
   if not exists (select 1 from jsonb_array_elements(coalesce(c -> 'aprendi', '[]'::jsonb)) a
-                 where nullif(trim(a ->> 'texto'), '') is not null and nullif(trim(a ->> 'muda'), '') is not null) then
+                 where nullif(trim(a ->> 'texto'), '') is not null
+                   and case jsonb_typeof(a -> 'muda')
+                         when 'array' then jsonb_array_length(a -> 'muda') > 0
+                         when 'string' then nullif(trim(a ->> 'muda'), '') is not null
+                         else false end) then
     raise exception 'Falta pelo menos um aprendizado, com o que ele muda.';
   end if;
   if coalesce(v_dec, '') not in ('continuar', 'ajustar', 'investigar', 'retornar', 'abandonar') then

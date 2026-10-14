@@ -8,7 +8,7 @@ import { VARIAVEIS, fatosVariavel, rotuloLeitura } from "../../lib/m9";
 import { compradorPretendido } from "../../lib/m9";
 import {
   CAPACIDADES,
-  MUDA,
+  rotuloMudas,
   PARTE_A,
   RETORNOS,
   TERMOS,
@@ -172,7 +172,7 @@ function Fluxo({ dados, mentoriaId, passos, recarregar }: { dados: DadosJornada;
           <div>
             <dt className="mem-body-sm mem-muted">O que aprendeu</dt>
             <dd className="mem-body">
-              {(x.aprendi ?? []).filter((y) => y.texto).map((y) => `${y.texto} (muda: ${MUDA.find((z) => z.valor === y.muda)?.rotulo.toLowerCase() ?? "—"})`).join(" · ") || "—"}
+              {(x.aprendi ?? []).filter((y) => y.texto).map((y) => `${y.texto} (muda: ${rotuloMudas(y)})`).join(" · ") || "—"}
             </dd>
           </div>
           <div>

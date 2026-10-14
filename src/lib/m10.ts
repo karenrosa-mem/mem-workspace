@@ -12,7 +12,7 @@ export type CapKey = "reconstruir" | "distinguir" | "justificar" | "proximo";
 export type DecisaoM10 = {
   aconteceu?: string;
   sugere?: string;
-  aprendi?: { texto: string; muda: string }[];
+  aprendi?: { texto: string; muda: string | string[] }[]; // muda: uma ou mais partes (antes era uma só)
   decisao?: Decisao10;
   porque?: string;
   nao_sabe?: string;
@@ -73,6 +73,18 @@ export const MUDA = [
   { valor: "capacidade", rotulo: "A capacidade" },
   { valor: "oportunidade", rotulo: "A oportunidade" },
 ];
+
+// O que um aprendizado muda: pode ser mais de uma parte. Aceita o formato antigo (uma só).
+export function mudasDe(a: { muda?: string | string[] }): string[] {
+  return Array.isArray(a.muda) ? a.muda : a.muda ? [a.muda] : [];
+}
+export function alternarMuda(a: { muda?: string | string[] }, v: string): string[] {
+  const m = mudasDe(a);
+  return m.includes(v) ? m.filter((x) => x !== v) : [...m, v];
+}
+export function rotuloMudas(a: { muda?: string | string[] }): string {
+  return mudasDe(a).map((v) => MUDA.find((z) => z.valor === v)?.rotulo.toLowerCase() ?? v).join(", ") || "—";
+}
 
 export const RETORNOS = [
   { valor: "M8_comunicacao", rotulo: "Explicar melhor", detalhe: "as pessoas não entenderam algo que a oferta já entrega (Movimento 8)" },
@@ -147,7 +159,7 @@ export function compradorCriticoM6(d: DadosJornada): boolean {
 
 const t = (v?: string) => !!v?.trim();
 export function quatroFeitas(x: DecisaoM10): boolean {
-  return t(x.aconteceu) && t(x.sugere) && (x.aprendi ?? []).some((a) => t(a.texto) && t(a.muda));
+  return t(x.aconteceu) && t(x.sugere) && (x.aprendi ?? []).some((a) => t(a.texto) && mudasDe(a).length > 0);
 }
 export function decisaoFeita(x: DecisaoM10): boolean {
   if (!x.decisao || !t(x.porque) || !t(x.nao_sabe) || !t(x.revisao) || !x.estatuto) return false;
