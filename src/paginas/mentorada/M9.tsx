@@ -615,7 +615,7 @@ function Leitura({ dados, travado, aoSalvar }: { dados: DadosJornada; travado: b
 }
 
 // Depois do Gate 7.
-export function Resultado({ dados, paraMentora = false }: { dados: DadosJornada; paraMentora?: boolean }) {
+export function Resultado({ dados, paraMentora = false, final = false }: { dados: DadosJornada; paraMentora?: boolean; final?: boolean }) {
   const t = dadosTeste(dados);
   const m = mentoraTeste(dados);
   const r = resumoFatos(dados);
@@ -627,7 +627,7 @@ export function Resultado({ dados, paraMentora = false }: { dados: DadosJornada;
       </div>
       <p className="mem-body-sm mem-muted">
         Teste comercial realizado de {t.desenho?.inicio ? dataCurta(t.desenho.inicio) : "—"} a {t.encerramento?.em ? dataCurta(t.encerramento.em) : "—"} ·{" "}
-        {rotuloLeitura(m.leitura_registrada ?? t.leitura?.geral).toLowerCase()}; aguarda interpretação e decisão (Movimento 10).
+        {rotuloLeitura(m.leitura_registrada ?? t.leitura?.geral).toLowerCase()}{final ? "." : "; aguarda interpretação e decisão (Movimento 10)."}
       </p>
       <p className="mem-body-sm">
         {r.tentados} contatos tentados → {r.alcancados} responderam → {r.total} receberam a proposta completa · {r.compras}{" "}
@@ -644,7 +644,7 @@ export function Resultado({ dados, paraMentora = false }: { dados: DadosJornada;
           <span className="mem-muted">Leitura da Karen:</span> {rotuloLeitura(m.leitura_karen.geral)} · {m.leitura_karen.porque}
         </p>
       )}
-      <p className="mem-body-sm mem-muted">O que fazer com isso é decidido no Movimento 10.</p>
+      {!final && <p className="mem-body-sm mem-muted">O que fazer com isso é decidido no Movimento 10.</p>}
     </section>
   );
 }

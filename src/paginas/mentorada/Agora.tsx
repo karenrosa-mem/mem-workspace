@@ -28,6 +28,7 @@ import { call, leitura, movimentoAtual, type DadosJornada } from "../../lib/jorn
 import { MINIMO_SITUACOES, perguntasFaltando, situacoes, situacaoCompleta, situacoesCompletas } from "../../lib/m1";
 import { dataCurta, dataHora, diasEntre, diaDaSemana, hojeBrasilia, horasAte, naDia, somarHoras } from "../../lib/datas";
 import { decisaoM2, escolhaDois, padroes, padroesFaltando, precisaEscolherDois } from "../../lib/m2";
+import { competenciasAConfirmar, dadosM10, decisaoFeita, planoFeito, quatroFeitas, rotuloDecisao } from "../../lib/m10";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 
@@ -447,20 +448,47 @@ function passoM9(d: DadosJornada): Passo {
   return { titulo: `Pronta para ${dia9}. Vocês conferem juntas a leitura do teste.`, porque: "Enviado para a Karen." };
 }
 
-// Depois da Call 9: o resultado do teste.
+// M10: as quatro perguntas, a decisão e o plano, antes da Call 10.
 function passoM10(d: DadosJornada): Passo {
   const c9 = call(d, 9);
-  if (!leitura(d, "call_9"))
+  const c10 = call(d, 10);
+  const dia10 = c10 ? diaDaSemana(c10.data_atual) : "a Call 10";
+  const x = dadosM10(d);
+  const espera = !leitura(d, "call_9")
+    ? `A leitura da Karen sobre a Call 9 chega${c9 ? ` até ${dataHora(somarHoras(c9.data_realizada ?? c9.data_atual, 48))}` : " em breve"}. Você já pode começar.`
+    : undefined;
+  if (!quatroFeitas(x))
     return {
-      titulo: `Aguardando a leitura da Karen sobre a Call 9${c9 ? `, até ${dataHora(somarHoras(c9.data_realizada ?? c9.data_atual, 48))}` : ""}.`,
-      porque: "Nada a fazer até lá. O seu teste já está registrado.",
-      acao: { rotulo: "Ver o teste", para: "/jornada/9" },
+      titulo: "O que o teste mostrou? Responda às perguntas · ~45 a 60 min",
+      porque: "O que aconteceu, o que isso sugere e o que você aprendeu. Os fatos do teste ficam à mão, na mesma página.",
+      extra: espera,
+      acao: { rotulo: "Responder", para: "/jornada/10#perguntas" },
     };
+  if (!decisaoFeita(x))
+    return {
+      titulo: "O que você decide?",
+      porque: "Continuar, ajustar, investigar, voltar um passo ou arquivar: todas são legítimas. Diga por quê, o que não sabe e o que faria você mudar de ideia.",
+      extra: espera,
+      acao: { rotulo: "Decidir", para: "/jornada/10#perguntas" },
+    };
+  if (!planoFeito(x)) return { titulo: "O que você faz depois da jornada?", porque: "A próxima ação, a próxima pergunta e quando reler o plano.", acao: { rotulo: "Escrever o plano", para: "/jornada/10#plano" } };
+  if (competenciasAConfirmar(d).length && !x.ativo?.criterio?.trim())
+    return { titulo: "O que mostraria que você sabe fazer o que ainda está a confirmar?", acao: { rotulo: "Responder", para: "/jornada/10#ativo" } };
+  if (!enviadoEm(d, 10)) return { titulo: `Pronta para ${dia10}.`, porque: "Envie para a Karen: ela lê as suas respostas antes da call.", acao: { rotulo: "Enviar", para: "/jornada/10#envio" } };
   return {
-    titulo: "O seu teste está registrado e lido.",
-    porque: "O que fazer com isso é decidido no Movimento 10.",
-    extra: "O próximo passo aparece aqui em breve.",
-    acao: { rotulo: "Ver o teste", para: "/jornada/9" },
+    titulo: `Pronta para ${dia10}, a última call.`,
+    porque: "Você conta o caminho sem olhar a tela, apresenta a decisão e vocês fecham a jornada.",
+  };
+}
+
+// Jornada concluída: o relatório final e o plano.
+function passoFim(d: DadosJornada): Passo {
+  const x = dadosM10(d);
+  return {
+    titulo: `A sua decisão: ${rotuloDecisao(x.decisao).toLowerCase()}.`,
+    porque: x.plano?.acao ? `Próxima ação: ${x.plano.acao}` : undefined,
+    extra: x.plano?.revisitar ? `Releia o plano e o relatório em ${dataCurta(x.plano.revisitar)}.` : undefined,
+    acao: { rotulo: "Ver o relatório final", para: "/jornada/10" },
   };
 }
 
@@ -533,7 +561,9 @@ export default function Agora() {
                       ? passoM9(dados)
                       : atual === 10
                         ? passoM10(dados)
-                        : null;
+                        : dados.jornada.estado === "concluida"
+                          ? passoFim(dados)
+                          : null;
   const ultimaLeitura =
     atual === 2
       ? leitura(dados, "mapa_ativos") ?? leituraCall1
@@ -561,7 +591,7 @@ export default function Agora() {
         Agora
         {atual ? ` · Movimento ${atual} de 10` : ""}
       </span>
-      <h1 className="mem-h1">{atual ? MOVIMENTOS[atual] : "Sua jornada"}</h1>
+      <h1 className="mem-h1">{atual ? MOVIMENTOS[atual] : dados.jornada.estado === "concluida" ? "Jornada concluída" : "Sua jornada"}</h1>
       {atual && leituraCall1 && <FaixaPilar codigo={atual} compacta />}
 
       {primeiroAcesso && mensagem && (

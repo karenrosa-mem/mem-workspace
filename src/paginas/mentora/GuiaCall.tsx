@@ -25,6 +25,7 @@ import { listasIncertezas, mentoraOportunidade, valorItem } from "../../lib/m6";
 import { clientesSimultaneos, dadosOferta, etapas, limitesDaOferta, reais } from "../../lib/m7";
 import { VARIAVEIS, dadosTeste, fatosVariavel, resumoFatos, rotuloLeitura } from "../../lib/m9";
 import { CAMINHO, ROTAS, dadosPreparo, falasDesejo, tentativas, vocabularioMem } from "../../lib/m8";
+import { CAPACIDADES, dadosM10, rotuloDecisao, rotuloEstatuto } from "../../lib/m10";
 import Aviso from "../../componentes/Aviso";
 import NotaPrivada from "../../componentes/NotaPrivada";
 
@@ -34,7 +35,7 @@ import NotaPrivada from "../../componentes/NotaPrivada";
 
 type Nota = Record<string, string | undefined>;
 
-const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+const GUIAS_PRONTOS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
 // A nota privada que o guia lê: até a Call 4, a do movimento de mesmo número;
 // depois, a do movimento decidido naquela call (Call 5 → M6).
@@ -156,8 +157,10 @@ export default function GuiaCall() {
         <GuiaCall7 dados={dados} nota={nota} chave={`${id}:7`} />
       ) : numero === 8 ? (
         <GuiaCall8 dados={dados} nota={nota} chave={`${id}:8`} />
-      ) : (
+      ) : numero === 9 ? (
         <GuiaCall9 dados={dados} nota={nota} chave={`${id}:9`} />
+      ) : (
+        <GuiaCall10 dados={dados} nota={nota} chave={`${id}:10`} />
       )}
 
       {mentoriaId && GUIAS_PRONTOS.has(numero) && (
@@ -938,6 +941,55 @@ function GuiaCall9({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; ch
       <Bloco n={3} titulo="Comportamento e motivos, parte por parte" porque="15 a 20 min." itens={variaveis} marcados={marcados} alternar={alternar} />
       <Bloco n={4} titulo="Mudanças e limites" porque="5 a 10 min." itens={limites} marcados={marcados} alternar={alternar} />
       <Bloco n={5} titulo="Classificação e Gate 7" porque="~10 min." itens={classificar} marcados={marcados} alternar={alternar} />
+    </>
+  );
+}
+
+function GuiaCall10({ dados, nota, chave }: { dados: DadosJornada; nota: Nota; chave: string }) {
+  const { marcados, alternar } = useMarcados(chave);
+  const x = dadosM10(dados);
+  const cap = (k: string) => CAPACIDADES.find((c) => c.chave === k)!;
+  const regra = "Só a abertura e, se precisar, esclarecimento. Registre cada pergunta na página dela.";
+  const reconstruir: Item[] = [
+    { id: "c10-rec", texto: `“${cap("reconstruir").abertura}”`, detalhe: regra },
+    { id: "c10-acont", texto: "“E o que aconteceu no teste?”", detalhe: "Corrija só fatos ou classificações mal sustentadas." },
+  ];
+  const sugere: Item[] = [
+    { id: "c10-sug", texto: "Ela apresenta o que o teste sugere e o que aprendeu.", detalhe: x.sugere ?? "—" },
+    ...linhas(nota.confrontos).map((t, i) => ({ id: `c10-conf-${i}`, texto: t, detalhe: "Seu ponto de confronto" })),
+    { id: "c10-dist", texto: `“${cap("distinguir").abertura}”`, detalhe: linhas(nota.conclusoes).join(" · ") || "Escolha as conclusões na nota privada" },
+  ];
+  const decidir: Item[] = [
+    { id: "c10-dec", texto: `“${cap("justificar").abertura}”`, detalhe: `Ela escreveu: ${rotuloDecisao(x.decisao)} · ${x.porque ?? "—"}` },
+    { id: "c10-ev", texto: "“Qual evidência sustenta isso?”" },
+    { id: "c10-op", texto: "“Você está decidindo sobre o que aconteceu ou sobre o que gostaria que tivesse acontecido?”" },
+    { id: "c10-sem", texto: "“Se tirarmos a sua opinião, o que sobra?”" },
+    { id: "c10-est", texto: "O estado da hipótese combina com a decisão?", detalhe: rotuloEstatuto(x.estatuto) },
+    { id: "c10-ret", texto: "Se volta um passo: é o menor retorno capaz de corrigir o que travou?" },
+  ];
+  const continuidade: Item[] = [
+    { id: "c10-prox", texto: `“${cap("proximo").abertura}”`, detalhe: `Plano dela: ${x.plano?.acao ?? "—"} · ${x.plano?.pergunta ?? "—"}` },
+    ...(x.ativo?.criterio ? [{ id: "c10-ativo", texto: "O critério do que está a confirmar demonstra a competência?", detalhe: x.ativo.criterio }] : []),
+  ];
+  const fechar: Item[] = [
+    { id: "c10-a", texto: "Confiram a qualidade da decisão (parte A)." },
+    { id: "c10-b", texto: "Marquem cada capacidade: demonstrada ou não nesta call, com o que faltou." },
+    { id: "c10-fim", texto: "A decisão é dela. Fechem a jornada." },
+  ];
+  const todos = [...reconstruir, ...sugere, ...decidir, ...continuidade, ...fechar];
+  const feitos = todos.filter((i) => marcados[i.id]).length;
+  return (
+    <>
+      <Objetivo
+        objetivo="Ela decide o que fazer com a aposta e mostra que sabe continuar decidindo sozinha. Você confronta e verifica; não escolhe por ela."
+        sai={["A decisão, com fundamento, limite e o que faria rever", "As quatro capacidades marcadas", "A jornada fechada, com o relatório final"]}
+      />
+      <Progresso total={todos.length} feitos={feitos} />
+      <Bloco n={1} titulo="Reconstruir sem olhar" porque="~10 min. Ela conta sem a tela." itens={reconstruir} marcados={marcados} alternar={alternar} />
+      <Bloco n={2} titulo="O que sugere e o que aprendeu" porque="~15 min." itens={sugere} marcados={marcados} alternar={alternar} />
+      <Bloco n={3} titulo="Decidir e testar a decisão" porque="~15 min." itens={decidir} marcados={marcados} alternar={alternar} />
+      <Bloco n={4} titulo="Continuidade" porque="~10 min." itens={continuidade} marcados={marcados} alternar={alternar} />
+      <Bloco n={5} titulo="Fechamento" porque="~10 min." itens={fechar} marcados={marcados} alternar={alternar} />
     </>
   );
 }

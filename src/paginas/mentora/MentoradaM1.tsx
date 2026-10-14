@@ -33,6 +33,7 @@ import SecaoM6 from "./MentoradaM6";
 import SecaoM7 from "./MentoradaM7";
 import SecaoM8 from "./MentoradaM8";
 import SecaoM9 from "./MentoradaM9";
+import SecaoM10 from "./MentoradaM10";
 import { comparacaoLiberada } from "../../lib/m5";
 
 type Marca = { candidata?: boolean; nome_provisorio?: string };
@@ -83,7 +84,7 @@ export default function MentoradaM1() {
 
   const atual = movimentoAtual(dados);
   // O M5 acontece na segunda parte da Call 4.
-  const callDoAtual = atual && atual <= 4 ? atual : atual === 5 ? 4 : atual === 6 ? 5 : atual === 7 ? 6 : atual === 8 ? (call(dados, 7)?.estado === "realizado" ? 8 : 7) : atual === 9 ? 9 : null;
+  const callDoAtual = atual && atual <= 4 ? atual : atual === 5 ? 4 : atual === 6 ? 5 : atual === 7 ? 6 : atual === 8 ? (call(dados, 7)?.estado === "realizado" ? 8 : 7) : atual === 9 ? 9 : atual === 10 ? 10 : null;
   const c1 = call(dados, 1);
   const leituraCall1 = leitura(dados, "call_1");
 
@@ -96,7 +97,7 @@ export default function MentoradaM1() {
         · {nome}
       </span>
       <h1 className="mem-h1">{nome || "Mentorada"}</h1>
-      <p className="mem-body-lg">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : "Jornada"}</p>
+      <p className="mem-body-lg">{atual ? `M${atual} · ${MOVIMENTOS[atual]}` : dados.jornada.estado === "concluida" ? "Jornada concluída" : "Jornada"}</p>
       {callDoAtual && call(dados, callDoAtual) && (
         <Link className="ws-guia-atalho" to={`/mentoradas/${dados.jornada.id}/call/${callDoAtual}`}>
           <span className="mem-label">Guia da Call {callDoAtual}</span>
@@ -112,6 +113,7 @@ export default function MentoradaM1() {
         <>
           {mentoriaId &&
             ([
+              [10, "M10 · decisão e relatório final", SecaoM10],
               [9, "M9 · teste comercial", SecaoM9],
               [8, "M8 · oferta preparada para teste", SecaoM8],
               [7, "M7 · oferta assumida", SecaoM7],
@@ -123,7 +125,7 @@ export default function MentoradaM1() {
             ] as const).map(([codigo, rotulo, Secao]) => {
               const estado = dados.movimentos.find((m) => m.codigo === codigo)?.estado;
               // O M5 aparece antes de abrir: ela compara antes da Call 4.
-              const ativo = estado === "aberto" || (codigo === 5 && estado === "nao_iniciado" && comparacaoLiberada(dados));
+              const ativo = estado === "aberto" || (codigo === 10 && estado === "fechado") || (codigo === 5 && estado === "nao_iniciado" && comparacaoLiberada(dados));
               if (estado === "nao_iniciado" && !ativo) return null;
               return ativo ? (
                 <Secao key={codigo} dados={dados} mentoriaId={mentoriaId} recarregar={recarregar} />
