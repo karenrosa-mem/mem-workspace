@@ -3,7 +3,19 @@ import { Link, useLocation } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { MOVIMENTOS } from "../../lib/metodo";
 import { dataCurta, dataHora } from "../../lib/datas";
+import { rotuloDecisao, rotuloStatusJornada } from "../../lib/m10";
 import Aviso from "../../componentes/Aviso";
+
+type Concluida = {
+  id: string;
+  nome: string;
+  encerrada_em: string | null;
+  status: string | null;
+  publico: string;
+  oferta: string;
+  preco: string;
+  decisao: string;
+};
 
 type Linha = {
   id: string;
@@ -16,10 +28,12 @@ type Linha = {
   folga_restante: number | null;
 };
 
-// Tela da mentora: as jornadas em andamento que ela acompanha.
+// Tela da mentora: as jornadas em andamento e, abaixo, as concluídas, para consulta.
 export default function Mentoradas() {
   const [linhas, setLinhas] = useState<Linha[] | null>(null);
   const [erro, setErro] = useState(false);
+  const [concluidas, setConcluidas] = useState<Concluida[] | null>(null);
+  const [busca, setBusca] = useState("");
   const local = useLocation();
   const recemIniciada = (local.state as { iniciada?: string } | null)?.iniciada;
 
@@ -67,8 +81,46 @@ export default function Mentoradas() {
           };
         }),
       );
+
+      // Jornadas concluídas: ficam para consulta, com o essencial de cada uma.
+      const conc = await db
+        .from("jornada")
+        .select("id, encerrada_em, status_autonomia, conta(pessoa(nome))")
+        .eq("estado", "concluida")
+        .order("encerrada_em", { ascending: false });
+      const cj = (conc.data ?? []) as unknown as { id: string; encerrada_em: string | null; status_autonomia: string | null; conta: { pessoa: { nome: string } | null } | null }[];
+      if (!cj.length) return setConcluidas([]);
+      const regs = await db
+        .from("registro")
+        .select("id, jornada_id, tipo, conteudo, conteudo_mentora")
+        .in("jornada_id", cj.map((j) => j.id))
+        .in("tipo", ["oferta", "decisao_m10", "decisao_m5", "hipotese"]);
+      type R = { id: string; jornada_id: string; tipo: string; conteudo: Record<string, unknown>; conteudo_mentora: Record<string, unknown> };
+      const rs = (regs.data ?? []) as R[];
+      setConcluidas(
+        cj.map((j) => {
+          const de = rs.filter((r) => r.jornada_id === j.id);
+          const of = de.find((r) => r.tipo === "oferta")?.conteudo as { entrega?: { texto?: string }; preco?: { valor?: number } } | undefined;
+          const d10 = de.find((r) => r.tipo === "decisao_m10")?.conteudo as { decisao?: string } | undefined;
+          const ap = (de.find((r) => r.tipo === "decisao_m5")?.conteudo_mentora as { aposta?: string } | undefined)?.aposta;
+          const h = de.find((r) => r.id === ap)?.conteudo as { publico?: string; problema?: string } | undefined;
+          return {
+            id: j.id,
+            nome: j.conta?.pessoa?.nome ?? "—",
+            encerrada_em: j.encerrada_em,
+            status: j.status_autonomia,
+            publico: [h?.publico, h?.problema].filter(Boolean).join(" · "),
+            oferta: of?.entrega?.texto ?? "",
+            preco: typeof of?.preco?.valor === "number" ? of.preco.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "",
+            decisao: d10?.decisao ? rotuloDecisao(d10.decisao) : "",
+          };
+        }),
+      );
     })();
   }, []);
+
+  const termo = busca.trim().toLowerCase();
+  const filtradas = (concluidas ?? []).filter((c) => !termo || [c.nome, c.publico, c.oferta, c.decisao].join(" ").toLowerCase().includes(termo));
 
   return (
     <>
@@ -132,6 +184,47 @@ export default function Mentoradas() {
           Iniciar jornada
         </Link>
       </div>
+
+      {concluidas && concluidas.length > 0 && (
+        <section className="ws-secao">
+          <h2 className="mem-h2">Jornadas concluídas</h2>
+          <p className="mem-body-sm mem-muted ws-measure">
+            Para consultar como vocês trabalharam. Busque por público, problema ou oferta para achar um caso parecido com o de uma mentorada nova.
+          </p>
+          <input className="mem-input ws-busca" type="search" aria-label="Buscar nas jornadas concluídas" placeholder="Buscar: gestores, clínica, conflito…" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          <div className="mem-table-wrap">
+            <table className="mem-table">
+              <thead>
+                <tr>
+                  <th>Mentorada</th>
+                  <th>Para quem e qual problema</th>
+                  <th>Oferta</th>
+                  <th>Decisão</th>
+                  <th>Concluída em</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtradas.map((c) => (
+                  <tr key={c.id}>
+                    <td>
+                      <Link to={`/mentoradas/${c.id}`}>{c.nome}</Link>
+                      <div className="mem-body-sm mem-muted">{rotuloStatusJornada(c.status ?? undefined).replace("Jornada concluída · ", "")}</div>
+                    </td>
+                    <td className="mem-body-sm">{c.publico || "—"}</td>
+                    <td className="mem-body-sm">
+                      {c.oferta || "—"}
+                      {c.preco && <div className="mem-muted">{c.preco}</div>}
+                    </td>
+                    <td>{c.decisao || "—"}</td>
+                    <td>{c.encerrada_em ? dataCurta(c.encerrada_em) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {filtradas.length === 0 && <p className="mem-body-sm mem-muted">Nenhuma jornada concluída com “{busca}”.</p>}
+        </section>
+      )}
     </>
   );
 }

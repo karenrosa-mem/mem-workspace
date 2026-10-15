@@ -1725,3 +1725,7 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
     break-inside: avoid;
   }
 }
+
+.ws-busca {
+  max-width: 420px;
+}
