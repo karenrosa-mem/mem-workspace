@@ -78,7 +78,7 @@ export default function MentoradaM1() {
   if (dados === null)
     return (
       <Aviso variante="warn" titulo="Jornada não encontrada">
-        Ela pode ter sido encerrada. Volte para <Link to="/">Mentoradas</Link>.
+        Ela pode ter sido encerrada. Volte para <Link to="/mentoradas">Mentoradas</Link>.
       </Aviso>
     );
 
@@ -91,7 +91,7 @@ export default function MentoradaM1() {
   return (
     <>
       <span className="mem-label mem-muted">
-        <Link to="/" className="ws-voltar">
+        <Link to="/mentoradas" className="ws-voltar">
           Mentoradas
         </Link>{" "}
         · {nome}

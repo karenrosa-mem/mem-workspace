@@ -7,7 +7,10 @@ import { useSessao } from "../lib/sessao";
 export default function Shell() {
   const { pessoa, sair } = useSessao();
   const links = pessoa?.e_mentora
-    ? [{ para: "/", nome: "Mentoradas", fim: false }]
+    ? [
+        { para: "/", nome: "Fila", fim: true },
+        { para: "/mentoradas", nome: "Mentoradas", fim: false },
+      ]
     : [
         { para: "/", nome: "Agora", fim: true },
         { para: "/jornada", nome: "Jornada", fim: false },

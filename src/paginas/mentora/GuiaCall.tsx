@@ -121,7 +121,7 @@ export default function GuiaCall() {
   return (
     <div className="ws-guia">
       <span className="mem-label mem-muted">
-        <Link to="/" className="ws-voltar">
+        <Link to="/mentoradas" className="ws-voltar">
           Mentoradas
         </Link>{" "}
         ·{" "}

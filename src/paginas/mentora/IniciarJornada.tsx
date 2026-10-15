@@ -66,7 +66,7 @@ export default function IniciarJornada() {
       );
       return;
     }
-    navegar("/", { state: { iniciada: email.trim() } });
+    navegar("/mentoradas", { state: { iniciada: email.trim() } });
   }
 
   const ultima = calls[9]?.data;

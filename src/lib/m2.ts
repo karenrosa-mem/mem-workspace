@@ -75,6 +75,7 @@ export type Reacao = {
   como_sabe?: string | string[]; // lista desde 11/10; respostas antigas guardam um valor só
   vontade?: string;
   outras_vezes?: string;
+  provas?: { caminho: string; nome: string }[]; // opcional, arquivos no Storage (0015)
 };
 
 export const DEFINICAO_ATIVO =

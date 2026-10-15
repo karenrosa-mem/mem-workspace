@@ -37,6 +37,7 @@ import {
 import { dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
+import Provas from "../../componentes/Provas";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
@@ -238,6 +239,7 @@ function ResumoReacao({ reacao, podeEditar, aoEditar }: { reacao?: Reacao; podeE
     ["Vontade nos próximos 5 a 10 anos", rotuloDe(VONTADE, reacao.vontade)],
   ];
   if (reacao.outras_vezes) linhas.push(["Outras vezes", rotuloDe(OUTRAS_VEZES, reacao.outras_vezes)]);
+  if (reacao.provas?.length) linhas.push(["Provas anexadas", reacao.provas.map((p) => p.nome).join(" · ")]);
   return (
     <div className="ws-padrao__parte">
       <p className="mem-label mem-muted">Suas respostas</p>
@@ -365,6 +367,11 @@ function FormReacao({
           opcoes={COMO_SABE}
           marcados={sinaisMarcados}
           aoEscolher={(v) => setR({ ...r, como_sabe: alternarComoSabe(sinaisMarcados, v) })}
+        />
+        <Provas jornadaId={dados.jornada.id} pasta={padrao.id} valor={r.provas ?? []} aoMudar={(provas) => setR({ ...r, provas })} />
+        <Colinha
+          serve="Opcional. Se você tem um print, um e-mail, um número ou um certificado que mostra o resultado, anexe. A Karen vê; ninguém mais."
+          exemplo="O print da mensagem do gestor agradecendo pela conversa que evitou a saída do time."
         />
       </Pergunta>
 

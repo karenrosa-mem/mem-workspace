@@ -1,0 +1,54 @@
+# Rotina do banco (decisão do índice, 09/10):
+#  · todo dia: uma consulta simples, para o Supabase gratuito não pausar o banco;
+#  · todo domingo (e quando rodado à mão): cópia completa dos dados, guardada
+#    por 90 dias como arquivo desta execução, visível só para quem acessa o repositório.
+# Precisa do segredo SUPABASE_DB_URL (Settings → Secrets and variables → Actions),
+# colocado pela Karen direto no GitHub: a "Session pooler" connection string do Supabase.
+name: Banco
+
+on:
+  schedule:
+    - cron: "17 9 * * *" # todo dia, 6h17 em Brasília
+  workflow_dispatch:
+    inputs:
+      copia:
+        description: "Fazer a cópia completa agora"
+        type: boolean
+        default: true
+
+jobs:
+  banco:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar o cliente do Postgres 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Manter o banco ativo
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          test -n "$DB" || { echo "Falta o segredo SUPABASE_DB_URL"; exit 1; }
+          /usr/lib/postgresql/17/bin/psql "$DB" -tAc "select now()"
+
+      - name: Cópia completa
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "7" ]; then echo "Cópia só aos domingos"; exit 0; fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.copia }}" != "true" ]; then echo "Sem cópia nesta execução"; exit 0; fi
+          dia=$(date -u +%F)
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=public --schema=auth --no-owner --no-privileges -Fc -f "mem-$dia.dump"
+          ls -lh "mem-$dia.dump"
+          echo "DIA=$dia" >> "$GITHUB_ENV"
+
+      - name: Guardar a cópia
+        if: env.DIA != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: banco-${{ env.DIA }}
+          path: mem-${{ env.DIA }}.dump
+          retention-days: 90

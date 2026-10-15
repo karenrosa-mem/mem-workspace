@@ -32,6 +32,7 @@ import { dataCurta, dataHora } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import NotaPrivada from "../../componentes/NotaPrivada";
+import Provas from "../../componentes/Provas";
 import Colinha from "../../componentes/Colinha";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
 import { Opcoes, Pergunta } from "../../componentes/Perguntas";
@@ -748,6 +749,12 @@ function CartaoRespostas({
               </div>
             ))}
           </dl>
+          {(r.provas ?? []).length > 0 && (
+            <div>
+              <p className="mem-body-sm mem-muted">Provas que ela anexou</p>
+              <Provas jornadaId={dados.jornada.id} pasta={padrao.id} valor={r.provas ?? []} editavel={false} />
+            </div>
+          )}
         </div>
       )}
 

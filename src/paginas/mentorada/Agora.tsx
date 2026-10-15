@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
 import { Link } from "react-router-dom";
 import { useJornada } from "../../lib/useJornada";
 import { MOVIMENTOS, SEMANAS_DA_JORNADA, movimentosDaCall } from "../../lib/metodo";
@@ -518,6 +520,11 @@ function passoPassagem(d: DadosJornada): Passo | null {
 
 export default function Agora() {
   const { dados, erro } = useJornada();
+  const [acessoFim, setAcessoFim] = useState<string | null>(null);
+  useEffect(() => {
+    if (dados !== null || !supabase) return;
+    supabase.rpc("acesso_encerrado_em").then(({ data }) => setAcessoFim((data as string | null) ?? null));
+  }, [dados]);
 
   if (erro)
     return (
@@ -526,6 +533,17 @@ export default function Agora() {
       </Aviso>
     );
   if (dados === undefined) return null;
+  if (dados === null && acessoFim)
+    return (
+      <>
+        <span className="mem-label mem-muted">Agora</span>
+        <h1 className="mem-h1">O seu acesso ao Workspace terminou</h1>
+        <p className="mem-body-lg ws-measure">
+          A sua jornada foi concluída, e o acesso ficou aberto até {dataCurta(acessoFim)}. O PDF da jornada completa que você baixou é o seu registro de tudo o que
+          construiu. Se precisar de algo, fale com a Karen.
+        </p>
+      </>
+    );
   if (dados === null)
     return (
       <>

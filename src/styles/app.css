@@ -1729,3 +1729,52 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-busca {
   max-width: 420px;
 }
+
+/* Prova anexada (M2) */
+.ws-provas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.ws-provas li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.ws-provas__enviar {
+  cursor: pointer;
+}
+
+/* Fila da mentora */
+.ws-fila {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.ws-fila__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ws-fila__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: inherit;
+  text-decoration: none;
+}
+
+.ws-fila__link:hover strong {
+  text-decoration: underline;
+}
