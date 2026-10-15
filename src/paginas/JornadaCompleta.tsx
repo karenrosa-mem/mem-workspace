@@ -34,10 +34,13 @@ export default function JornadaCompleta() {
     if (!id || !supabase) return;
     supabase
       .from("jornada")
-      .select("conta(pessoa(nome))")
+      .select("conta(nome, pessoa(nome))")
       .eq("id", id)
       .maybeSingle()
-      .then(({ data }) => setNome((data as unknown as { conta?: { pessoa?: { nome?: string } } } | null)?.conta?.pessoa?.nome ?? ""));
+      .then(({ data }) => {
+        const c = (data as unknown as { conta?: { nome?: string | null; pessoa?: { nome?: string } | null } } | null)?.conta;
+        setNome(c?.pessoa?.nome ?? c?.nome ?? "");
+      });
   }, [id]);
 
   if (erro)

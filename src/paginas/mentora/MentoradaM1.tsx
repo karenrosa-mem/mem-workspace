@@ -19,6 +19,7 @@ import {
 import { dataHora } from "../../lib/datas";
 import { Trilha } from "../mentorada/Jornada";
 import Aviso from "../../componentes/Aviso";
+import CodigoAcesso from "../../componentes/CodigoAcesso";
 import LeituraKaren from "../../componentes/LeituraKaren";
 import Colinha from "../../componentes/Colinha";
 import { Etapa, Roteiro, type Passo } from "../../componentes/Passos";
@@ -58,12 +59,12 @@ export default function MentoradaM1() {
     if (!supabase || !id) return;
     supabase
       .from("jornada")
-      .select("conta(pessoa(nome)), mentoria(id)")
+      .select("conta(nome, email_convite, pessoa(nome)), mentoria(id)")
       .eq("id", id)
       .maybeSingle()
       .then(({ data }) => {
-        const d = data as unknown as { conta: { pessoa: { nome: string } }; mentoria: { id: string } | null } | null;
-        setNome(d?.conta?.pessoa?.nome ?? "");
+        const d = data as unknown as { conta: { nome: string | null; email_convite: string | null; pessoa: { nome: string } | null }; mentoria: { id: string } | null } | null;
+        setNome(d?.conta?.pessoa?.nome ?? d?.conta?.nome ?? d?.conta?.email_convite ?? "");
         setMentoriaId(d?.mentoria?.id ?? null);
       });
   }, [id]);
@@ -108,6 +109,8 @@ export default function MentoradaM1() {
       )}
 
       <Trilha movimentos={dados.movimentos} encontros={dados.encontros} ligar={() => `/mentoradas/${dados.jornada.id}`} />
+
+      <CodigoAcesso jornadaId={dados.jornada.id} nome={nome} />
 
       {leituraCall1 ? (
         <>

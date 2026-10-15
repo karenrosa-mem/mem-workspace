@@ -44,7 +44,7 @@ export default function Mentoradas() {
       const [jornadas, movimentos, encontros, cronogramas] = await Promise.all([
         db
           .from("jornada")
-          .select("id, data_inicio, data_limite, conta(pessoa(nome, email))")
+          .select("id, data_inicio, data_limite, conta(nome, email_convite, pessoa(nome, email))")
           .eq("estado", "em_andamento")
           .order("data_inicio"),
         db.from("movimento").select("jornada_id, codigo").eq("estado", "aberto"),
@@ -63,15 +63,15 @@ export default function Mentoradas() {
         id: string;
         data_inicio: string;
         data_limite: string;
-        conta: { pessoa: { nome: string; email: string | null } | null } | null;
+        conta: { nome: string | null; email_convite: string | null; pessoa: { nome: string; email: string | null } | null } | null;
       };
       setLinhas(
         (jornadas.data as unknown as J[]).map((j) => {
           const prox = encontros.data?.find((e) => e.jornada_id === j.id) ?? null;
           return {
             id: j.id,
-            nome: j.conta?.pessoa?.nome ?? "—",
-            email: j.conta?.pessoa?.email ?? null,
+            nome: j.conta?.pessoa?.nome ?? j.conta?.nome ?? j.conta?.email_convite ?? "—",
+            email: j.conta?.pessoa ? j.conta.pessoa.email ?? null : `${j.conta?.email_convite ?? ""} · ainda não entrou`,
             data_inicio: j.data_inicio,
             data_limite: j.data_limite,
             movimento: movimentos.data?.find((m) => m.jornada_id === j.id)?.codigo ?? null,
@@ -85,10 +85,10 @@ export default function Mentoradas() {
       // Jornadas concluídas: ficam para consulta, com o essencial de cada uma.
       const conc = await db
         .from("jornada")
-        .select("id, encerrada_em, status_autonomia, conta(pessoa(nome))")
+        .select("id, encerrada_em, status_autonomia, conta(nome, pessoa(nome))")
         .eq("estado", "concluida")
         .order("encerrada_em", { ascending: false });
-      const cj = (conc.data ?? []) as unknown as { id: string; encerrada_em: string | null; status_autonomia: string | null; conta: { pessoa: { nome: string } | null } | null }[];
+      const cj = (conc.data ?? []) as unknown as { id: string; encerrada_em: string | null; status_autonomia: string | null; conta: { nome: string | null; pessoa: { nome: string } | null } | null }[];
       if (!cj.length) return setConcluidas([]);
       const regs = await db
         .from("registro")
@@ -106,7 +106,7 @@ export default function Mentoradas() {
           const h = de.find((r) => r.id === ap)?.conteudo as { publico?: string; problema?: string } | undefined;
           return {
             id: j.id,
-            nome: j.conta?.pessoa?.nome ?? "—",
+            nome: j.conta?.pessoa?.nome ?? j.conta?.nome ?? "—",
             encerrada_em: j.encerrada_em,
             status: j.status_autonomia,
             publico: [h?.publico, h?.problema].filter(Boolean).join(" · "),
@@ -140,8 +140,7 @@ export default function Mentoradas() {
 
       {linhas && linhas.length === 0 && (
         <p className="mem-body ws-measure">
-          Nenhuma jornada em andamento. Para começar, cadastre o e-mail da mentorada no Supabase e
-          inicie a jornada dela aqui.
+          Nenhuma jornada em andamento. Para começar, inicie a jornada: o Workspace gera o código de acesso dela.
         </p>
       )}
 

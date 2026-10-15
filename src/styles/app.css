@@ -1778,3 +1778,10 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
 .ws-fila__link:hover strong {
   text-decoration: underline;
 }
+
+/* Acesso por código */
+.ws-acesso__codigo {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  margin: 0;
+}

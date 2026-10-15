@@ -18,9 +18,9 @@ export default function Fila() {
     if (!supabase) return;
     const db = supabase;
     (async () => {
-      const js = await db.from("jornada").select("id, estado, encerrada_em, conta(pessoa(nome))").in("estado", ["em_andamento", "concluida"]);
+      const js = await db.from("jornada").select("id, estado, encerrada_em, conta(nome, pessoa(nome))").in("estado", ["em_andamento", "concluida"]);
       if (js.error) return setErro(true);
-      type J = { id: string; estado: string; encerrada_em: string | null; conta: { pessoa: { nome: string } | null } | null };
+      type J = { id: string; estado: string; encerrada_em: string | null; conta: { nome: string | null; pessoa: { nome: string } | null } | null };
       const recentes = (js.data as unknown as J[]).filter(
         (j) => j.estado === "em_andamento" || (j.encerrada_em && Date.now() - new Date(j.encerrada_em).getTime() < 15 * 864e5),
       );
@@ -29,7 +29,7 @@ export default function Fila() {
       for (const j of recentes) {
         const d = await carregarJornada(db, j.id).catch(() => null);
         if (!d) continue;
-        const nome = j.conta?.pessoa?.nome ?? "—";
+        const nome = j.conta?.pessoa?.nome ?? j.conta?.nome ?? "—";
         todos.push(...itensDaFila(d, nome));
         d.encontros
           .filter((e) => e.tipo === "call" && e.estado === "marcado" && new Date(e.data_atual).getTime() - Date.now() < 7 * 864e5 && new Date(e.data_atual).getTime() > Date.now() - 864e5)

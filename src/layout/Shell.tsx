@@ -34,6 +34,9 @@ export default function Shell() {
         </ul>
         <div className="ws-nav__pe">
           <span className="mem-body-sm ws-nav__sig">{pessoa?.nome}</span>
+          <NavLink to="/senha" className="ws-nav__sair">
+            Trocar senha
+          </NavLink>
           <button type="button" className="ws-nav__sair" onClick={sair}>
             Sair
           </button>

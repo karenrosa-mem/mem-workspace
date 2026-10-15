@@ -14,6 +14,7 @@ import M9 from "./paginas/mentorada/M9";
 import M10 from "./paginas/mentorada/M10";
 import JornadaCompleta from "./paginas/JornadaCompleta";
 import Fila from "./paginas/mentora/Fila";
+import Senha from "./paginas/Senha";
 import GuiaCall from "./paginas/mentora/GuiaCall";
 import MentoradaM1 from "./paginas/mentora/MentoradaM1";
 import Jornada, { MovimentoEmConstrucao, MOVIMENTOS_PRONTOS } from "./paginas/mentorada/Jornada";
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="jornada/:n" element={<PaginaMovimento />} />
           </>
         )}
+        <Route path="senha" element={<Senha />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

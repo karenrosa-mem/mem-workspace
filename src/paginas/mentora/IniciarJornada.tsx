@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { dataCurta, hojeBrasilia, isoBrasilia, somarDias, diasEntre } from "../../lib/datas";
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
+import CodigoAcesso from "../../componentes/CodigoAcesso";
 
 type Call = { data: string; hora: string };
 
@@ -16,6 +17,8 @@ function sugerirCalls(inicio: string, hora: string): Call[] {
 export default function IniciarJornada() {
   const navegar = useNavigate();
   const [email, setEmail] = useState("");
+  const [nome, setNome] = useState("");
+  const [criada, setCriada] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState("");
   const [inicio, setInicio] = useState(hojeBrasilia());
   const [calls, setCalls] = useState<Call[]>(() => sugerirCalls(hojeBrasilia(), "19:00"));
@@ -50,7 +53,8 @@ export default function IniciarJornada() {
     if (!supabase || problemas.length) return;
     setErro(null);
     setEnviando(true);
-    const { error } = await supabase.rpc("iniciar_jornada", {
+    const { data, error } = await supabase.rpc("iniciar_jornada", {
+      p_nome: nome.trim() || null,
       p_email: email.trim(),
       p_data_inicio: inicio,
       p_calls: calls.map((c) => isoBrasilia(c.data, c.hora)),
@@ -66,11 +70,26 @@ export default function IniciarJornada() {
       );
       return;
     }
-    navegar("/mentoradas", { state: { iniciada: email.trim() } });
+    setCriada(data as string);
   }
 
   const ultima = calls[9]?.data;
   const folgaFinal = ultima ? diasEntre(ultima, limite) : null;
+
+  if (criada)
+    return (
+      <>
+        <span className="mem-label mem-muted">Mentora · Nova jornada</span>
+        <h1 className="mem-h1">Jornada de {nome.trim() || email.trim()} iniciada</h1>
+        <p className="mem-body-lg ws-measure">Agora mande o código de acesso para ela pelo WhatsApp. Ela entra com o e-mail, o código e cria a própria senha.</p>
+        <CodigoAcesso jornadaId={criada} nome={nome} abrirJa />
+        <div className="ws-acoes">
+          <button type="button" className="mem-btn mem-btn--secondary" onClick={() => navegar(`/mentoradas/${criada}`)}>
+            Ir para a página dela
+          </button>
+        </div>
+      </>
+    );
 
   return (
     <>
@@ -83,6 +102,13 @@ export default function IniciarJornada() {
 
       <form className="ws-form" onSubmit={iniciar}>
         <div className="mem-field">
+          <label className="mem-field__label" htmlFor="nome">
+            Nome da mentorada
+          </label>
+          <input className="mem-input" id="nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
+        </div>
+
+        <div className="mem-field">
           <label className="mem-field__label" htmlFor="email">
             E-mail da mentorada
           </label>
@@ -94,7 +120,7 @@ export default function IniciarJornada() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Colinha serve="O mesmo e-mail que você cadastrou para ela em Authentication → Users, no Supabase. É com ele que ela entra." />
+          <Colinha serve="É com ele que ela entra. Não precisa cadastrar nada no Supabase: ao iniciar, o Workspace gera um código para você mandar pelo WhatsApp." />
         </div>
 
         <div className="mem-field">
