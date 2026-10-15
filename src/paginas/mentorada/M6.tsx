@@ -5,6 +5,7 @@ import { useJornada } from "../../lib/useJornada";
 import { call, type DadosJornada } from "../../lib/jornada";
 import { dataCurta, dataHora } from "../../lib/datas";
 import {
+  retornoDe,
   NIVEIS,
   PASSOS,
   TRANSVERSAL,
@@ -27,6 +28,7 @@ import {
   type Oportunidade,
   type Passo,
 } from "../../lib/m6";
+import { FormConversa } from "./M4";
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
@@ -63,7 +65,7 @@ export default function M6() {
 
       {assumida ? (
         <OportunidadeAssumida dados={dados} />
-      ) : (
+      ) : retornoDe(dados) ? null : (
         <section className="ws-bloco ws-como">
           <p className="mem-body-lg ws-measure">
             Agora a gente pega tudo o que você descobriu e diz exatamente o que estamos escolhendo construir. Muita coisa já vem pronta do caminho
@@ -84,8 +86,10 @@ export default function M6() {
         </section>
       )}
 
+      {!assumida && <AvisoRetorno dados={dados} aoSalvar={recarregar} />}
+
       <section className="ws-bloco">
-        <p className="mem-label mem-muted">A sua aposta, como ficou na Call 4</p>
+        <p className="mem-label mem-muted">{retornoDe(dados)?.caminho === "reserva" ? "A sua aposta agora (a reserva da Call 4)" : "A sua aposta, como ficou na Call 4"}</p>
         <p className="mem-body ws-serif">{fraseOriginal(dados)}</p>
       </section>
 
@@ -99,6 +103,44 @@ export default function M6() {
         </>
       )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Depois da Call 5, se vocês decidiram voltar um passo.
+function AvisoRetorno({ dados, aoSalvar }: { dados: DadosJornada; aoSalvar: () => Promise<void> }) {
+  const r = retornoDe(dados);
+  const [nova, setNova] = useState(false);
+  if (!r) return null;
+  const frente = aposta(dados)?.frente;
+  return (
+    <section className="ws-bloco ws-passo">
+      <span className="mem-label mem-muted">Vocês decidiram voltar um passo · você</span>
+      <p className="mem-h3">
+        {r.caminho === "reserva" ? "Refaça os passos com a sua reserva como aposta" : "Volte a ouvir pessoas e refaça os passos que mudarem"}
+        {r.prazo ? `, até ${dataHora(r.prazo)}` : ""}.
+      </p>
+      <p className="mem-body mem-muted">Por quê: {r.motivo}</p>
+      <section className="mem-mentor ws-measure">
+        <span className="mem-label mem-muted">Recomendação da Karen</span>
+        <p className="mem-mentor__text">{r.recomendacao}</p>
+        <span className="mem-mentor__sig">— Karen, mentora</span>
+      </section>
+      <p className="mem-body-sm mem-muted">
+        Sem call nova: quando terminar, envie para a Karen. Ela confere e registra a oportunidade por escrito. As próximas calls andaram uma semana.
+      </p>
+      {r.caminho === "campo" && frente && (
+        <div>
+          {nova ? (
+            <FormConversa dados={dados} frente={frente} movimento={6} aoFechar={() => setNova(false)} aoSalvar={async () => { await aoSalvar(); setNova(false); }} />
+          ) : (
+            <button type="button" className="mem-btn mem-btn--secondary" onClick={() => setNova(true)}>
+              Registrar uma conversa nova
+            </button>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
 

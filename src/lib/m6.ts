@@ -342,3 +342,10 @@ const FORMATO = /\b(curso|mentoria|workshop|e-?book|aula|aulas|semanas?|meses|m[
 export function pareceFormato(texto?: string): boolean {
   return !!texto && FORMATO.test(texto);
 }
+
+// Retorno único (0016): a mentora aciona na Call 5, com a recomendação dela.
+export type Retorno = { caminho?: "reserva" | "campo"; motivo?: string; recomendacao?: string; acionado_em?: string; prazo?: string; aposta_anterior?: string };
+export function retornoDe(d: DadosJornada): (Retorno & { id: string }) | undefined {
+  const r = d.registros.find((x) => x.tipo === "retorno");
+  return r ? { id: r.id, ...(r.conteudo_mentora as Retorno) } : undefined;
+}

@@ -6,6 +6,7 @@ import { somarHoras } from "./datas";
 import { CALLS_DO_MOVIMENTO, MOVIMENTOS } from "./metodo";
 import { dadosTeste, desenhoFeito, exposicoes, mentoraTeste } from "./m9";
 import { mentoraM10 } from "./m10";
+import { mentoraOportunidade, retornoDe } from "./m6";
 
 export type ItemFila = {
   jornadaId: string;
@@ -70,6 +71,14 @@ export function itensDaFila(d: DadosJornada, nome: string): ItemFila[] {
         para: `/mentoradas/${id}/call/${numero}`,
       });
     }
+  }
+
+  // 3b. Retorno único: depois que ela refaz, você confere e registra por escrito.
+  const ret = retornoDe(d);
+  if (ret && atual === 6 && !mentoraOportunidade(d).assumida_em) {
+    const env = enviadoEm(d, 6);
+    if (env && ret.acionado_em && env > ret.acionado_em)
+      itens.push({ jornadaId: id, nome, titulo: "Conferir a oportunidade refeita e registrar por escrito", detalhe: "Retorno único, sem call", prazo: somarHoras(env, 48), para: pagina });
   }
 
   // 4. Teste comercial: conferência do desenho e revisão das duas primeiras exposições (48 h).

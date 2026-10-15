@@ -5,6 +5,7 @@ import { call, leitura, type DadosJornada } from "../../lib/jornada";
 import { dataHora, somarHoras } from "../../lib/datas";
 import { enviadoEm } from "../../lib/envio";
 import {
+  retornoDe,
   DESTINOS,
   NIVEIS,
   PASSOS,
@@ -25,6 +26,7 @@ import {
   type Destino,
   type OportunidadeMentora,
 } from "../../lib/m6";
+import { reservaM5 } from "../../lib/m10";
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
 import LeituraKaren from "../../componentes/LeituraKaren";
@@ -121,6 +123,8 @@ export default function SecaoM6({ dados, mentoriaId, recarregar }: { dados: Dado
       {!assumida && !op && (
         <p className="mem-body mem-muted">Ela ainda não começou os passos. A preparação abre quando houver o que ler.</p>
       )}
+
+      {!assumida && op && <RetornoMentora dados={dados} recarregar={recarregar} />}
 
       <Etapa n={4} passo={passos[3]} porque="O que assumimos, o que estamos apostando e o que vem no M7.">
         {leituraC5 ? (
@@ -453,3 +457,72 @@ function PreparacaoECall({ dados, mentoriaId, passos, recarregar }: { dados: Dad
 
 export type { ChaveItem };
 export { PASSOS };
+
+// ---------------------------------------------------------------------
+// Retorno único: decidido na Call 5, com a sua recomendação explícita.
+function RetornoMentora({ dados, recarregar }: { dados: DadosJornada; recarregar: () => Promise<void> }) {
+  const op = oportunidadeDe(dados)!;
+  const r = retornoDe(dados);
+  const reserva = reservaM5(dados);
+  const [caminho, setCaminho] = useState<string | undefined>(reserva ? undefined : "campo");
+  const [motivo, setMotivo] = useState("");
+  const [recomendacao, setRecomendacao] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const nivel3 = Object.values(mentoraOportunidade(dados).niveis ?? {}).includes(3);
+
+  if (r)
+    return (
+      <section className="ws-bloco">
+        <span className="mem-label mem-muted">Retorno único · acionado em {r.acionado_em ? dataHora(r.acionado_em) : "—"}</span>
+        <p className="mem-body">
+          {r.caminho === "reserva" ? "Pela reserva: a reserva virou a aposta e a oportunidade recomeçou." : "Voltando a ouvir pessoas: ela registra as conversas novas no M6."} Prazo
+          dela: {r.prazo ? dataHora(r.prazo) : "—"}.
+        </p>
+        <p className="mem-body-sm mem-muted">
+          Motivo: {r.motivo} · sua recomendação: {r.recomendacao}. Quando ela enviar, confira e registre a oportunidade por escrito, sem call. As Calls 6 a 10
+          andaram uma semana.
+        </p>
+      </section>
+    );
+
+  async function acionar() {
+    if (!supabase || !caminho) return;
+    setErro(null);
+    const res = await supabase.rpc("acionar_retorno", { p_oportunidade: op.id, p_caminho: caminho, p_motivo: motivo, p_recomendacao: recomendacao });
+    if (res.error) return setErro(res.error.message);
+    await recarregar();
+  }
+
+  return (
+    <details className="ws-bloco" open={nivel3}>
+      <summary className="mem-label">Retorno único · se a decisão da Call 5 for voltar um passo</summary>
+      <div className="ws-form">
+      <p className="mem-body-sm mem-muted ws-measure">
+        Só com mudança de nível 3 (pessoa ou problema que não foi ouvido) ou com a condição da reserva atingida. A decisão é dela, com a sua recomendação
+        por escrito. Ela tem uma semana; sem call nova. Usa 7 dias de folga; sem folga, não há retorno. Acontece uma vez por jornada.
+      </p>
+      <Opcoes
+        rotulo="Caminho do retorno"
+        opcoes={[
+          ...(reserva ? [{ valor: "reserva", rotulo: "Pela reserva", detalhe: `${reserva.frase} (entra se ${reserva.condicao})` }] : []),
+          { valor: "campo", rotulo: "Voltar a ouvir pessoas", detalhe: "mesma aposta; ela registra conversas novas no M6" },
+        ]}
+        valor={caminho}
+        aoEscolher={setCaminho}
+      />
+      <input className="mem-input" aria-label="Motivo" placeholder="Por que voltar (ela vê)" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+      <textarea className="mem-input ws-serif" rows={2} aria-label="Sua recomendação" placeholder="A sua recomendação, por escrito (ela vê, assinada por você)" value={recomendacao} onChange={(e) => setRecomendacao(e.target.value)} />
+      {erro && (
+        <Aviso variante="danger" titulo="Retorno não acionado">
+          {erro}
+        </Aviso>
+      )}
+      <div className="ws-acoes">
+        <button type="button" className="mem-btn mem-btn--primary" disabled={!caminho || !motivo.trim() || !recomendacao.trim()} onClick={acionar}>
+          Acionar o retorno
+        </button>
+      </div>
+      </div>
+    </details>
+  );
+}
