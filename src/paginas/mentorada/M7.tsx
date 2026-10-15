@@ -382,7 +382,7 @@ function FormDecisao({ dados, chave, aoSalvar, aoFechar }: { dados: DadosJornada
           <Pergunta n={1} feita titulo="Que tipo de oferta é essa?">
             <Opcoes rotulo="Tipo de oferta" opcoes={TIPOS_OFERTA} valor={o.forma?.tipo ?? "mentoria"} aoEscolher={(v) => setForma({ tipo: v as TipoOferta })} />
             <Colinha
-              serve="O seu primeiro produto é uma oferta de acompanhamento, vendida antes de existir. Mentoria é o caminho padrão. Se o que você sabe é fazer, e não ensinar, consultoria ou serviço podem servir melhor."
+              serve="O seu primeiro produto é uma oferta de acompanhamento: você define e vende antes, e entrega depois que a pessoa compra. Mentoria é o caminho padrão. Se o que você sabe é fazer, e não ensinar, consultoria ou serviço podem servir melhor."
               exemplo="Mentoria: “eu te acompanho nas suas conversas difíceis até você conduzir sozinho”. Serviço: “eu monto a planilha de controle do seu time”."
             />
           </Pergunta>

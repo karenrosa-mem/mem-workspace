@@ -26,7 +26,7 @@ export type OfertaMentora = {
 };
 
 // Premissa do MEM (15/10): o primeiro produto é uma oferta de acompanhamento,
-// vendida antes de existir. Mentoria por padrão; consultoria ou serviço quando
+// definida e vendida antes de ser entregue. Mentoria por padrão; consultoria ou serviço quando
 // o que ela sabe é fazer, não ensinar.
 export type TipoOferta = "mentoria" | "consultoria" | "servico";
 export const TIPOS_OFERTA: { valor: TipoOferta; rotulo: string; detalhe: string }[] = [
