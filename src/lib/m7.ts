@@ -10,7 +10,7 @@ import { aposta, mentoraOportunidade, valorItem } from "./m6";
 export type Oferta = {
   entrega?: { texto?: string; cobre?: string; fora?: string };
   como?: { etapas?: string[]; diferencial?: string; competencia?: Record<string, { qual?: string; ja_fez?: string }> };
-  forma?: { texto?: string; porque?: string; inclui?: string; exclui?: string };
+  forma?: { tipo?: TipoOferta; texto?: string; porque?: string; inclui?: string; exclui?: string };
   capacidade?: { horas_semana?: number; horas_cliente?: number; limites?: string; pronto_antes?: string };
   preco?: { valor?: number; condicao?: string; racional?: string };
   transversal?: string;
@@ -24,6 +24,19 @@ export type OfertaMentora = {
   assumida_em?: string;
   clientes_simultaneos?: number;
 };
+
+// Premissa do MEM (15/10): o primeiro produto é uma oferta de acompanhamento,
+// vendida antes de existir. Mentoria por padrão; consultoria ou serviço quando
+// o que ela sabe é fazer, não ensinar.
+export type TipoOferta = "mentoria" | "consultoria" | "servico";
+export const TIPOS_OFERTA: { valor: TipoOferta; rotulo: string; detalhe: string }[] = [
+  { valor: "mentoria", rotulo: "Mentoria", detalhe: "você ensina a pessoa a fazer, acompanhando de perto" },
+  { valor: "consultoria", rotulo: "Consultoria", detalhe: "você analisa e diz o que fazer; ela executa" },
+  { valor: "servico", rotulo: "Serviço", detalhe: "você faz por ela, com começo e fim definidos" },
+];
+export function rotuloTipoOferta(v?: string): string | undefined {
+  return TIPOS_OFERTA.find((t) => t.valor === v)?.rotulo;
+}
 
 export type ChaveDecisao = "entrega" | "como" | "forma" | "capacidade" | "preco";
 export const DECISOES: { chave: ChaveDecisao; n: number; titulo: string; pergunta: string }[] = [

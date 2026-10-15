@@ -6,6 +6,9 @@ import { call, type DadosJornada } from "../../lib/jornada";
 import { dataCurta, dataHora } from "../../lib/datas";
 import { listasIncertezas, mentoraOportunidade, valorItem } from "../../lib/m6";
 import {
+  TIPOS_OFERTA,
+  rotuloTipoOferta,
+  type TipoOferta,
   DECISOES,
   HIPOTESE_FIXA,
   TRANSVERSAL_M7,
@@ -27,7 +30,7 @@ import {
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
-import { Pergunta } from "../../componentes/Perguntas";
+import { Opcoes, Pergunta } from "../../componentes/Perguntas";
 
 // M7 · Desenhar a Oferta — tela da mentorada.
 export default function M7() {
@@ -232,7 +235,7 @@ function Resumo({ dados, chave }: { dados: DadosJornada; chave: ChaveDecisao }) 
   if (chave === "forma")
     return (
       <p className="mem-body">
-        <strong>{o.forma?.texto}</strong> <span className="mem-muted">· inclui: {o.forma?.inclui} · não inclui: {o.forma?.exclui}</span>
+        {o.forma?.texto && <span className="mem-tag mem-tag--decisao">{rotuloTipoOferta(o.forma?.tipo ?? "mentoria")}</span>} <strong>{o.forma?.texto}</strong> <span className="mem-muted">· inclui: {o.forma?.inclui} · não inclui: {o.forma?.exclui}</span>
       </p>
     );
   if (chave === "capacidade") {
@@ -376,19 +379,26 @@ function FormDecisao({ dados, chave, aoSalvar, aoFechar }: { dados: DadosJornada
 
       {chave === "forma" && (
         <>
-          <Pergunta n={1} feita={!!o.forma?.texto?.trim()} titulo="Como acontece: formato, duração, frequência, suporte">
+          <Pergunta n={1} feita titulo="Que tipo de oferta é essa?">
+            <Opcoes rotulo="Tipo de oferta" opcoes={TIPOS_OFERTA} valor={o.forma?.tipo ?? "mentoria"} aoEscolher={(v) => setForma({ tipo: v as TipoOferta })} />
+            <Colinha
+              serve="O seu primeiro produto é uma oferta de acompanhamento, vendida antes de existir. Mentoria é o caminho padrão. Se o que você sabe é fazer, e não ensinar, consultoria ou serviço podem servir melhor."
+              exemplo="Mentoria: “eu te acompanho nas suas conversas difíceis até você conduzir sozinho”. Serviço: “eu monto a planilha de controle do seu time”."
+            />
+          </Pergunta>
+          <Pergunta n={2} feita={!!o.forma?.texto?.trim()} titulo="Como acontece: formato, duração, frequência, suporte">
             <textarea className="mem-input" rows={2} aria-label="Forma" value={o.forma?.texto ?? ""} onChange={(e) => setForma({ texto: e.target.value })} />
             <Colinha serve="Com as suas palavras, sem escolher de uma lista. Uma ou duas linhas." exemplo="Acompanhamento individual, 6 semanas, um encontro semanal de 1 h + uma mensagem de preparação antes de cada conversa difícil." />
           </Pergunta>
-          <Pergunta n={2} feita={!!o.forma?.porque?.trim()} titulo="Por que esse formato serve a essa entrega? (opcional)">
+          <Pergunta n={3} feita={!!o.forma?.porque?.trim()} titulo="Por que esse formato serve a essa entrega? (opcional)">
             <input className="mem-input" aria-label="Por que esse formato" value={o.forma?.porque ?? ""} onChange={(e) => setForma({ porque: e.target.value })} />
             <Colinha serve="Se a resposta for “porque todo mundo faz assim”, vale repensar." exemplo="Individual porque cada gestor tem conversas diferentes com o próprio time." />
           </Pergunta>
-          <Pergunta n={3} feita={!!o.forma?.inclui?.trim()} titulo="O que está incluído">
+          <Pergunta n={4} feita={!!o.forma?.inclui?.trim()} titulo="O que está incluído">
             <input className="mem-input" aria-label="Inclui" value={o.forma?.inclui ?? ""} onChange={(e) => setForma({ inclui: e.target.value })} />
             <Colinha serve="Uma linha." exemplo="Conversas de cobrança e alinhamento com o próprio time." />
           </Pergunta>
-          <Pergunta n={4} feita={!!o.forma?.exclui?.trim()} titulo="O que não está incluído">
+          <Pergunta n={5} feita={!!o.forma?.exclui?.trim()} titulo="O que não está incluído">
             <input className="mem-input" aria-label="Não inclui" value={o.forma?.exclui ?? ""} onChange={(e) => setForma({ exclui: e.target.value })} />
             <Colinha serve="Obrigatório. É o que a pessoa poderia esperar e você não vai fazer." exemplo="Conflitos com pares ou com o chefe, desligamentos, treinamento do time." />
           </Pergunta>
