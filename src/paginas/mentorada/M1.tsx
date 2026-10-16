@@ -439,7 +439,7 @@ function CartaoSituacao({
             </li>
           ))}
         </ul>
-        <DicaExpertIA>
+        <DicaExpertIA dados={dados} tarefa="lembrar">
           Se travar para lembrar, converse com o ExpertIA: ele faz perguntas sobre a sua trajetória e ajuda a puxar situações.
           O que entra aqui é escrito por você, do seu jeito.
         </DicaExpertIA>

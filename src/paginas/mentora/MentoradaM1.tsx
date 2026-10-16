@@ -17,6 +17,7 @@ import {
   type Situacao,
 } from "../../lib/m1";
 import { dataHora } from "../../lib/datas";
+import { notasExpertIA } from "../../lib/expertia";
 import { Trilha } from "../mentorada/Jornada";
 import Aviso from "../../componentes/Aviso";
 import CodigoAcesso from "../../componentes/CodigoAcesso";
@@ -139,6 +140,25 @@ export default function MentoradaM1() {
                 </details>
               );
             })}
+          {notasExpertIA(dados).length > 0 && (
+            <details className="ws-bloco">
+              <summary className="mem-label">O que ela guardou das conversas com o ExpertIA ({notasExpertIA(dados).length})</summary>
+              <ul className="ws-notas-expertia">
+                {[...notasExpertIA(dados)].reverse().map((r) => {
+                  const c = r.conteudo as { texto?: string; movimento?: number };
+                  return (
+                    <li key={r.id} className="mem-card ws-nota-expertia">
+                      <span className="mem-body-sm mem-muted">
+                        {dataHora(r.criado_em)}
+                        {c.movimento ? ` · M${c.movimento}` : ""}
+                      </span>
+                      <p className="mem-body">{c.texto}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          )}
           <details className="ws-bloco">
             <summary className="mem-label">M1 · leitura da Call 1 e material dela</summary>
             <LeituraKaren registro={leituraCall1} />

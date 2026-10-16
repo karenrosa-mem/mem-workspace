@@ -27,6 +27,7 @@ import {
   type ChaveDecisao,
   type Oferta,
 } from "../../lib/m7";
+import DicaExpertIA from "../../componentes/DicaExpertIA";
 import Aviso from "../../componentes/Aviso";
 import Colinha from "../../componentes/Colinha";
 import EnviarParaKaren from "../../componentes/EnviarParaKaren";
@@ -185,6 +186,9 @@ function Decisoes({ dados, travada, aoSalvar }: { dados: DadosJornada; travada: 
                       </ul>
                     </div>
                   ))}
+                  <DicaExpertIA dados={dados} tarefa="oferta" foco={`${dec.titulo}: ${dec.pergunta}`}>
+                    Se quiser ver caminhos possíveis antes de decidir, o ExpertIA mostra opções e faz perguntas. A decisão é sua.
+                  </DicaExpertIA>
                 </aside>
               </div>
             ) : feita ? (

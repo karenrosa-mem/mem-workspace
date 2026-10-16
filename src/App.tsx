@@ -18,6 +18,7 @@ import Senha from "./paginas/Senha";
 import GuiaCall from "./paginas/mentora/GuiaCall";
 import MentoradaM1 from "./paginas/mentora/MentoradaM1";
 import Jornada, { MovimentoEmConstrucao, MOVIMENTOS_PRONTOS } from "./paginas/mentorada/Jornada";
+import ExpertIA from "./paginas/mentorada/ExpertIA";
 import M1 from "./paginas/mentorada/M1";
 import M2 from "./paginas/mentorada/M2";
 import { useParams } from "react-router-dom";
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="jornada" element={<Jornada />} />
             <Route path="jornada/completa" element={<JornadaCompleta />} />
             <Route path="jornada/:n" element={<PaginaMovimento />} />
+            <Route path="expertia" element={<ExpertIA />} />
           </>
         )}
         <Route path="senha" element={<Senha />} />

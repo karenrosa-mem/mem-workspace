@@ -1785,3 +1785,30 @@ details.ws-etapa:not([open]) > summary .ws-etapa__titulo::after {
   letter-spacing: 0.08em;
   margin: 0;
 }
+
+/* ExpertIA: abrir no ChatGPT ou no Claude, e anotações trazidas das conversas */
+.ws-expertia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ws-expertia > p {
+  margin: 0;
+}
+.ws-nota-expertia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.ws-nota-expertia > p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.ws-notas-expertia {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

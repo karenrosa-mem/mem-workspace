@@ -562,7 +562,7 @@ function PesquisaFrente({ dados, frente, travado, aoSalvar }: { dados: DadosJorn
               <li key={x}>{x}</li>
             ))}
           </ul>
-          <DicaExpertIA>
+          <DicaExpertIA dados={dados} tarefa="mercado" foco={fraseDaFrente(dados, frente)}>
             Comece pedindo ao ExpertIA palavras-chave sobre este tema: os termos que este público usaria para buscar o problema,
             do jeito que ele fala, não do jeito técnico. Use essas palavras na biblioteca de anúncios, nas plataformas de cursos, na
             Amazon e no Google Trends. Depois, ele também pode garimpar comentários e avaliações e organizar o que achar. O que entra

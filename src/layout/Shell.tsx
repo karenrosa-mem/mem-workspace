@@ -14,6 +14,7 @@ export default function Shell() {
     : [
         { para: "/", nome: "Agora", fim: true },
         { para: "/jornada", nome: "Jornada", fim: false },
+        { para: "/expertia", nome: "ExpertIA", fim: false },
       ];
 
   return (

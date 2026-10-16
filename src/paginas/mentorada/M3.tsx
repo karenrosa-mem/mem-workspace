@@ -208,7 +208,7 @@ function QuemMaisAtivo({
           exemplo={"Donas de pequenos negócios com sócias\nGerentes de clínica"}
         />
         {!travado && (
-          <DicaExpertIA>
+          <DicaExpertIA dados={dados} tarefa="publicos" foco={`o que ela sabe fazer: ${ativo.nome}${ativo.quemTinha ? `; quem tinha o problema: ${ativo.quemTinha}` : ""}`}>
             Se travar, peça ao ExpertIA outros tipos de pessoa que vivem exatamente este problema. Fique só com os que você
             reconhece: ter o mesmo problema, não só poder se beneficiar.
           </DicaExpertIA>
