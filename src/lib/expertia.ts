@@ -55,7 +55,7 @@ Ao final: "PARA O WORKSPACE:" relatos (trecho + link), sinais (+ link) e palavra
   },
   oferta: {
     titulo: "Pensar a oferta",
-    texto: `Tarefa de agora: ajudar a pensar a decisão da oferta (no foco; se faltar, pergunte qual). Ordem: tipo (mentoria por padrão; consultoria ou serviço se ela sabe fazer, não ensinar), entrega, como, forma, capacidade, preço. Você não escreve a oferta nem dá preço ou faixa. Você confere: a oferta inclui algo além do resultado combinado? alguma etapa não serve a ele? a conta de horas fecha com as horas reais dela, contando atendimento fora dos encontros? o preço tem um porquê? há garantia ou promessa que a entrega não cumpre? Se ela quiser curso ou e-book, diga em uma linha que o primeiro produto é acompanhamento e que isso se decide com a Karen.
+    texto: `Tarefa de agora: ajudar a pensar a decisão da oferta (no foco; se faltar, pergunte qual). Ordem: entrega, como, forma (incluindo o tipo: mentoria por padrão; consultoria ou serviço se ela sabe fazer, não ensinar), capacidade, preço. Você não escreve a oferta nem dá preço ou faixa. Você confere: a oferta inclui algo além do resultado combinado? alguma etapa não serve a ele? a conta de horas fecha com as horas reais dela, contando atendimento fora dos encontros? o preço tem um porquê? há garantia ou promessa que a entrega não cumpre? Se ela quiser curso ou e-book, diga em uma linha que o primeiro produto é acompanhamento e que isso se decide com a Karen.
 Ao final: "PARA O WORKSPACE:" a decisão, o que ela pensou e o que ficou pendente.`,
   },
   livre: {
