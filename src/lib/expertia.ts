@@ -155,8 +155,9 @@ function textoDoContexto(blocos: { titulo: string; linhas: string[] }[]): string
     .join("\n\n");
 }
 
-// Links ficam abaixo deste tamanho (texto já codificado) para abrir com segurança.
-const LIMITE = 7000;
+// Links ficam abaixo deste tamanho (texto já codificado). Testado em 16/10/2026: o ChatGPT
+// gratuito abriu links de até 16.000; fica uma margem.
+const LIMITE = 14000;
 
 export function montarTexto(d: DadosJornada, tarefa: ChaveTarefa, foco?: string, pergunta?: string): string {
   const blocos = blocosDeContexto(d).map((b) => ({ ...b, linhas: [...b.linhas] }));
