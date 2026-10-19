@@ -3,6 +3,7 @@ import logo from "../../mem-brand/logo/mem-horizontal.svg";
 import { supabase } from "../lib/supabase";
 import Aviso from "../componentes/Aviso";
 import Colinha from "../componentes/Colinha";
+import { AJUDA_SENHA, problemaDaSenha } from "../lib/senha";
 
 // Entrada sem e-mail (decisão de 15/10): e-mail + senha. No primeiro acesso,
 // ou para criar uma senha nova, ela usa o código que a Karen mandou pelo WhatsApp.
@@ -29,7 +30,8 @@ export default function Entrar() {
     e.preventDefault();
     if (!supabase) return;
     setErro(null);
-    if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
+    const fraca = problemaDaSenha(senha, email);
+    if (fraca) return setErro(fraca);
     if (senha !== senha2) return setErro("As duas senhas não estão iguais.");
     setEnviando(true);
     const db = supabase;
@@ -143,7 +145,7 @@ export default function Entrar() {
               Crie a sua senha
             </label>
             <input className="mem-input" id="nova" type="password" autoComplete="new-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
-            <span className="mem-field__help">Pelo menos 8 caracteres. Só você sabe; dá para trocar depois, dentro do Workspace.</span>
+            <span className="mem-field__help">{AJUDA_SENHA} Só você sabe; dá para trocar depois, dentro do Workspace.</span>
           </div>
           <div className="mem-field">
             <label className="mem-field__label" htmlFor="nova2">

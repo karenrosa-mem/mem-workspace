@@ -14,12 +14,14 @@ select public.t_ok(:'cod' ~ '^[A-Z2-9]{4}-[A-Z2-9]{4}$', 'código no formato XXX
 select public.t_ok((public.situacao_acesso(:'jb') ->> 'entrou')::boolean = false, 'a mentora vê que ela ainda não entrou');
 
 set role anon;
-select public.t_ok(public.definir_senha_com_codigo('bia@mem.test', 'AAAA-AAAA', '12345678') = 'codigo_errado', 'código errado não passa');
+select public.t_ok(public.definir_senha_com_codigo('bia@mem.test', 'AAAA-AAAA', 'Bia2026xyz') = 'codigo_errado', 'código errado não passa');
 reset role;
 select public.t_ok((select tentativas from public.codigo_acesso where lower(email) = 'bia@mem.test' and usado_em is null and expira_em > now()) = 1, 'a tentativa errada fica contada');
 set role anon;
 select public.t_erro(format($$select public.definir_senha_com_codigo('bia@mem.test', %L, '123')$$, :'cod'), 'senha curta não passa');
-select public.t_ok(public.definir_senha_com_codigo('bia@mem.test', :'cod', '12345678') = 'criar', 'primeiro acesso: ainda não há login, o app cria');
+select public.t_erro(format($$select public.definir_senha_com_codigo('bia@mem.test', %L, 'senha123')$$, :'cod'), 'senha comum não passa');
+select public.t_erro(format($$select public.definir_senha_com_codigo('bia@mem.test', %L, 'somenteletras')$$, :'cod'), 'senha sem número não passa');
+select public.t_ok(public.definir_senha_com_codigo('bia@mem.test', :'cod', 'Bia2026xyz') = 'criar', 'primeiro acesso: ainda não há login, o app cria');
 
 -- O app faz o signUp: o Supabase cria o usuário.
 reset role;
@@ -46,7 +48,7 @@ set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 select public.gerar_codigo_acesso(:'jb') as cod3 \gset
 set role anon;
-select public.definir_senha_com_codigo('bia@mem.test', 'ZZZZ-ZZZZ', '12345678') from generate_series(1, 5);
-select public.t_erro(format($$select public.definir_senha_com_codigo('bia@mem.test', %L, '12345678')$$, :'cod3'), 'depois de 5 erros, nem o código certo passa');
+select public.definir_senha_com_codigo('bia@mem.test', 'ZZZZ-ZZZZ', 'Bia2026xyz') from generate_series(1, 5);
+select public.t_erro(format($$select public.definir_senha_com_codigo('bia@mem.test', %L, 'Bia2026xyz')$$, :'cod3'), 'depois de 5 erros, nem o código certo passa');
 reset role;
 \echo TODOS OS TESTES DO ACESSO PASSARAM

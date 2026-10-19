@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { supabase } from "../lib/supabase";
 import Aviso from "../componentes/Aviso";
+import { AJUDA_SENHA, problemaDaSenha } from "../lib/senha";
+import { useSessao } from "../lib/sessao";
 
 // Trocar a própria senha, já logada. Não envia e-mail.
 export default function Senha() {
+  const { pessoa } = useSessao();
   const [senha, setSenha] = useState("");
   const [senha2, setSenha2] = useState("");
   const [estado, setEstado] = useState<"" | "salvando" | "feito">("");
@@ -13,7 +16,8 @@ export default function Senha() {
     e.preventDefault();
     if (!supabase) return;
     setErro(null);
-    if (senha.length < 8) return setErro("A senha precisa ter pelo menos 8 caracteres.");
+    const fraca = problemaDaSenha(senha, pessoa?.email ?? undefined);
+    if (fraca) return setErro(fraca);
     if (senha !== senha2) return setErro("As duas senhas não estão iguais.");
     setEstado("salvando");
     const { error } = await supabase.auth.updateUser({ password: senha });
@@ -36,7 +40,7 @@ export default function Senha() {
             Senha nova
           </label>
           <input className="mem-input" id="nova" type="password" autoComplete="new-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
-          <span className="mem-field__help">Pelo menos 8 caracteres.</span>
+          <span className="mem-field__help">{AJUDA_SENHA}</span>
         </div>
         <div className="mem-field">
           <label className="mem-field__label" htmlFor="nova2">
